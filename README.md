@@ -1,2 +1,3 @@
-api.dpool.cluster.sina.com.cn
+web admin
 ========
+api.dpool.cluster.sina.com.cn
