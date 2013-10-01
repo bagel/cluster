@@ -77,6 +77,25 @@ class Status:
                     ips = ["0.0.0.0"]
         return (ips, caption)
 
+    def idcMod(self):
+        idcs = self.idc.keys()
+        mods = self.mod.keys()
+        idc = self.query.get("idc", [""])[0]
+        mod = self.query.get("mod", [""])[0]
+        if idc and not mod:
+            caption = idc
+            ims = [ "-".join([idc, m]) for m in mods ]
+        elif not idc and mod:
+            caption = mod
+            ims = [ "-".join([i, mod]) for i in idcs ]
+        elif not idc and not mod:
+            caption = time.strftime("%Y-%m-%d", time.localtime())
+            ims = [ "-".join([i, m]) for i in idcs for m in mods ]
+        else:
+            caption = " ".join([idc, mod])
+            ims = [ "-".join([idc, mod]) ]
+        return (ims, caption) 
+
     def data(self):
         t = int(time.time())
         t1 = time.time()
@@ -108,51 +127,19 @@ class Status:
         t = t - t % offset - 30 * m * offset
         data = []
         print "1:", time.time() -  t1
-        ips, caption = self.sip()
+        ims, caption = self.idcMod()
         print "2:", time.time() -  t1
-        if ips and not self.query.has_key("domain"):
-            #values = self.r.mget([ "_".join([ip, str(t + (i * offset))]) for i in xrange(30 * m + 1) for ip in ips ])
-            pipe = self.r.pipeline()
-            print "2.5:", time.time() - t1
-            [ pipe.hget(str(t + (i * offset)), ip) for i in xrange(30 * m + 1) for ip in ips ]
-            print "2.6:", time.time() - t1
-            values = pipe.execute()
-        elif not ips and self.query.has_key("domain"):
-            domain = self.query["domain"][0]
-            caption = domain
-            #values = self.r.mget([ "_".join([self.query["domain"][0], str(t + (i * offset))]) for i in xrange(30 * m + 1) ])
-            pipe = self.r.pipeline()
-            print "2.5:", time.time() - t1
-            [ pipe.hget(str(t + (i * offset)), domain) for i in xrange(30 * m + 1) ]
-            print "2.6:", time.time() - t1
-            values = pipe.execute()
-        elif ips and self.query.has_key("domain"):
-            domain = self.query["domain"][0]
-            #values = self.r.mget([ "_".join([ip, self.query["domain"][0], str(t + (i * offset))]) for i in xrange(30 * m + 1) for ip in ips ])
-            pipe = self.r.pipeline()
-            print "2.5:", time.time() - t1
-            #[ pipe.hget("_".join([str(t + (i * offset)), ip]), domain) for i in xrange(30 * m + 1) for ip in ips ]
-            keys = [ "_".join([str(t + (i * offset)), ip]) for i in xrange(30 * m + 1) for ip in ips ]
-            print "2.6:", time.time() - t1
-            [ pipe.hget(k, domain) for k in keys ]
-            #n = len(keys) / 10000
-            #values = []
-            #thread = []
-            #q = Queue.Queue()
-            #for i in xrange(0, n + 1):
-            #    t = Multi(pipe, keys[i*10000:(i+1)*10000], domain, q)
-            #    t.start()
-            #    thread.append(t)
-            #for t in thread:
-            #    t.join()
-            #print q.get()
-            print "2.7:", time.time() - t1
-            values = pipe.execute()
-            caption = " ".join([caption, domain])
+        pipe = self.r.pipeline()
+        domain = self.query.get("domain", ["sum"])[0]
+        print "2.1:", time.time() - t1
+        keys = [ pipe.hget('-'.join([str(t + (i * offset)), im]), domain) for i in xrange(30 * m + 1) for im in ims ]
+        print "2.2:", time.time() - t1
+        values = pipe.execute()
+        caption = " ".join([caption, domain])
         print "3:", time.time() -  t1
 
-        #sum ips values
-        p = len(ips)
+        #sum ims values
+        p = len(ims)
         v = len(values)
         print v
         for k in xrange(v):
