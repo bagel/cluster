@@ -1,0 +1,116 @@
+{# base.html #}
+
+{% content %}
+<form class="form-horizontal" method="post" action="/vhost">
+<fieldset>
+<legend>配置管理</legend>
+<div class="control-group">
+    <label class="control-label" for="input01">主域名</label>
+<div class="controls">
+    <input type="text" class="span6" id="input01" name="ServerName" value="ServerName {$ ServerName $}">
+    <p class="help-block">字母，数字，汉字皆可</p>
+</div>
+</div>
+<div class="control-group">
+    <label for="textarea" class="control-label">项目别名</label>
+<div class="controls">
+    <textarea rows="4" id="textarea" class="span6" name="ServerAlias">
+<script type="text/python">
+    for alias in Tdict['ServerAlias']:
+        echo "ServerAlias %s\n" % alias
+</script>
+</textarea>
+</div>
+</div>
+<div class="control-group">
+    <label class="control-label" for="input01">管理员</label>
+<div class="controls">
+    <input type="text" class="span6" id="input01" value="ServerAdmin {$ ServerAdmin $}" name="ServerAdmin">
+</div>
+</div>
+<div class="control-group">
+    <label for="textarea" class="control-label">别名日志</label>
+<div class="controls">
+    <textarea rows="4" id="textarea" class="span6" name="AliasLog">
+<script type="text/python">
+    for alias in Tdict['AliasLog']:
+        AliasName = alias['AliasName'] 
+        AliasGroup = alias['AliasGroup']
+        echo 'SetEnvIf Host "%s" %s\n' % (str(AliasName), str(AliasGroup))
+</script>
+</textarea>
+</div>
+</div>
+<div class="control-group">
+    <label for="textarea" class="control-label">数据库</label>
+<div class="controls">
+    <textarea rows="10" id="textarea" class="span6" name="DB">
+<script type="text/python">
+    for db in Tdict['DB']:
+        n = str(db['N'])
+        if db.has_key('HOST'):
+            echo 'SetEnv SINASRV_DB%s_HOST %s\n' % (n, str(db['HOST']))
+        if db.has_key('HOST_R'):
+            echo 'SetEnv SINASRV_DB%s_HOST_R %s\n' % (n, str(db['HOST_R']))
+        if db.has_key('PORT'):
+            echo 'SetEnv SINASRV_DB%s_PORT %s\n' % (n, str(db['PORT']))
+        if db.has_key('NAME'):
+            echo 'SetEnv SINASRV_DB%s_NAME %s\n' % (n, str(db['NAME']))
+        if db.has_key('USER'):
+            echo 'SetEnv SINASRV_DB%s_USER %s\n' % (n, str(db['USER']))
+        if db.has_key('PASS'):
+            echo 'SetEnv SINASRV_DB%s_PASS %s\n' % (n, str(db['PASS']))
+        if db.has_key('PORT_R'):
+            echo 'SetEnv SINASRV_DB%s_PORT_R %s\n' % (n, str(db['PORT_R']))
+        if db.has_key('NAME_R'):
+            echo 'SetEnv SINASRV_DB%s_NAME_R %s\n' % (n, str(db['NAME_R']))
+        if db.has_key('USER_R'):
+            echo 'SetEnv SINASRV_DB%s_USER_R %s\n' % (n, str(db['USER_R']))
+        if db.has_key('PASS_R'):
+            echo 'SetEnv SINASRV_DB%s_PASS_R %s\n' % (n, str(db['PASS_R']))
+        echo '\n'
+</script>
+</textarea>
+</div>
+</div>
+<div class="control-group">
+    <label for="textarea" class="control-label">memcache</label>
+<div class="controls">
+    <textarea rows="4" id="textarea" class="span6" name="MC">
+<script type="text/python">
+    for s in Tdict['MC']:
+        servers = s['SERVERS']
+        mc = []
+        for server in servers:
+            mc.append('%s:%s' % (str(server['SERVER']), str(server['PORT'])))
+        echo 'SetEnv SINASRV_MEMCACHED%s_SERVERS "%s"\n' % (str(s['N']), ' '.join(mc))
+</script>
+</textarea>
+</div>
+</div>
+<div class="control-group">
+    <label for="textarea" class="control-label">重写规则</label>
+<div class="controls">
+    <textarea rows="4" id="textarea" class="span6" name="RW">
+<script type="text/python">
+    for rw in Tdict['RW']:
+        O = str(rw['O'])
+        P = str(rw['P'])
+        T = str(rw['T'])
+        F = str(rw['F'])
+        echo 'Rewrite%s %s %s %s\n' % (O, P, T, F)
+</script>
+</textarea>
+</div>
+</div>
+<div class="control-group">
+    <label for="textarea" class="control-label">其他</label>
+<div class="controls">
+    <textarea rows="4" id="textarea" class="span6" name="Other">
+</textarea>
+</div>
+</div>
+<button type="submit" class="btn offset6">提交</button>
+</fieldset>
+</form>
+{% end %}

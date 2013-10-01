@@ -1,0 +1,218 @@
+{# base.html #}
+
+{% content %}
+<script type="text/javascript">
+    function addInput(c='', s='', n=0) {
+        var newInput = document.createElement("input");
+        newInput.type = "text";
+        if(! c && ! s && ! n) {
+            return newInput;
+        }
+        newInput.setAttribute("class", c);
+        newInput.setAttribute("name", s + "Input" + n);
+        return newInput;
+    }
+
+    function addSpan(s, n) {
+        var newSpan = document.createElement("span");
+        newSpan.setAttribute("class", "btn");
+        newSpan.setAttribute("onclick", "del" + '("' + s + '",' + n + ")");
+        var newIcon = document.createElement("i");
+        newIcon.setAttribute("class", "icon-remove");
+        newSpan.appendChild(newIcon);
+        return newSpan;
+    }
+
+    function addBr(s, n) {
+        var newBr = document.createElement("br");
+        return newBr;
+    }
+
+    function addDiv(s, n) {
+        var newDiv = document.createElement("div");
+        newDiv.id = s + n;
+        return newDiv;
+    }
+
+    function addServerAlias() {
+        s = "ServerAlias"
+        var temp = document.getElementById(s);
+        var n = temp.innerHTML.split("<div").length;
+        Div = addDiv(s, n);
+        Div.appendChild(addInput("span4", s, n));
+        Div.appendChild(addSpan(s, n));
+        Div.appendChild(addBr(s, n));
+        temp.appendChild(Div);
+    }
+
+    function addAlias() {
+        s = "Alias";
+        var temp = document.getElementById(s);
+        var n = temp.innerHTML.split("<div").length;
+        Div = addDiv(s, n);
+        Div.appendChild(addInput("span4", s + "Name", n));
+        Div.appendChild(addInput("span2", s + "Group", n));
+        Div.appendChild(addSpan(s, n));
+        Div.appendChild(addBr(s, n));
+        temp.appendChild(Div);
+    }
+
+    function addDB() {
+        s = "DB";
+        var temp = document.getElementById(s);
+        var n = temp.innerHTML.split("<div").length;
+        //alert(temp.innerHTML);
+        Div = addDiv(s, n);
+        Div.innerHTML += 'db:';
+        Div.appendChild(addInput("span1", s, n));
+        Div.appendChild(addSpan(s, n));
+        Div.appendChild(addBr(s, n));
+        var newSpan1 = document.createElement('span');
+        newSpan1.setAttribute("class", "offset1");
+        newSpan1.innerHTML = "主库";
+        Div.appendChild(newSpan1);
+        var newSpan2 = document.createElement('span');
+        newSpan2.setAttribute("class", "offset3");
+        newSpan2.innerHTML = "从库";
+        Div.appendChild(newSpan2);
+        Div.appendChild(addBr(s, n));
+        Div.innerHTML += "host: ";
+        Div.appendChild(addInput());
+        Div.appendChild(addInput());
+        Div.appendChild(addBr(s, n));
+        temp.appendChild(Div);
+    }
+
+    function delDiv(s, n) {
+        return document.getElementById(s + n);
+    }
+
+    function del(s, n) {
+        //alert(n);
+        var temp = document.getElementById(s);
+        temp.removeChild(delDiv(s, n));
+    }
+</script>
+<form class="form-horizontal" method="post" action="/vhost">
+<fieldset>
+<legend>配置管理</legend>
+<div class="control-group">
+    <label class="control-label" for="input01">主域名</label>
+<div class="controls">
+    <input type="text" class="span4" id="input01" name="ServerName" value="{$ ServerName $}">
+    <p class="help-block">字母，数字，汉字皆可</p>
+</div>
+</div>
+<div class="control-group">
+    <label for="ServerAliasInput0" class="control-label">项目别名</label>
+<div class="controls" id="ServerAlias">
+<script type="text/python">
+    for alias in Tdict['ServerAlias']:
+        n = Tdict['ServerAlias'].index(alias)
+        echo '<div id="ServerAlias%d"><input type="text" class="span4" name="ServerAlias%d" value="%s"><span class="btn" onclick=del("ServerAlias","%d")><i class="icon-remove"></i></span><br></div>' % (n, n, alias, n)
+</script>
+</div>
+<div class="controls">
+<span class="btn" onclick="addServerAlias()"><i class="icon-plus"></i></span>
+</div>
+</div>
+<div class="control-group">
+    <label class="control-label" for="input03">管理员</label>
+<div class="controls">
+    <input type="text" class="span4" id="input03" value="{$ ServerAdmin $}" name="ServerAdmin">
+</div>
+</div>
+<div class="control-group">
+    <label for="AliasNameInput0" class="control-label">别名日志</label>
+<div class="controls" id="Alias">
+<script type="text/python">
+    n = 0
+    for alias in Tdict['AliasLog']:
+        AliasName = alias['AliasName'] 
+        AliasGroup = alias['AliasGroup']
+        echo '<div id="Alias%d"><input type="text" class="span4" value="%s"><input type="text" class="span2" value="%s"><span class="btn" onclick=del("Alias","%d")><i class="icon-remove"></i></span><br></div>' % (n, str(AliasName), str(AliasGroup), n)
+        n += 1
+</script>
+</div>
+<div class="controls">
+<span class="btn" onclick="addAlias()"><i class="icon-plus"></i></span>
+</div>
+</div>
+<div class="control-group">
+    <label for="textarea" class="control-label">数据库</label>
+<div class="controls" id="DB">
+<script type="text/python">
+    n = 0
+    for db in Tdict['DB']:
+        echo '<div id="DB%d">' % n
+        echo 'db:<input type="text" class="span1" value="%s"><span class="btn" onclick=del("DB","%d")><i class="icon-remove"></i></span><br>' % (str(db['N']), n)
+        echo '<span class="offset1">主库</span><span class="offset3">从库</span><br>'
+        if db.has_key('HOST'):
+            echo 'HOST: <input type="text" value="%s">' % str(db['HOST'])
+        if db.has_key('HOST_R'):
+            echo '<input type="text" value="%s"><br>' % str(db['HOST_R'])
+        if db.has_key('PORT'):
+            echo 'port:  <input type="text" value="%s">' % str(db['PORT'])
+        if db.has_key('PORT_R'):
+            echo '<input type="text" value="%s"><br>' % str(db['PORT_R'])
+        if db.has_key('NAME'):
+            echo 'name:  <input type="text" value="%s">' % str(db['NAME'])
+        if db.has_key('NAME_R'):
+            echo '<input type="text" value="%s"><br>' % str(db['NAME_R'])
+        if db.has_key('USER'):
+            echo 'user:  <input type="text" value="%s">' % str(db['USER'])
+        if db.has_key('USER_R'):
+            echo '<input type="text" value="%s"><br>' % str(db['USER_R'])
+        if db.has_key('PASS'):
+            echo 'pass:  <input type="text" value="%s">' % str(db['PASS'])
+        if db.has_key('PASS_R'):
+            echo '<input type="text" value="%s"><br>' % str(db['PASS_R'])
+        echo '</div>'
+        n += 1
+</script>
+</div>
+<div class="controls">
+<span class="btn" onclick="addDB()"><i class="icon-plus"></i></span>
+</div>
+</div>
+<div class="control-group">
+    <label for="textarea" class="control-label">memcache</label>
+<div class="controls" id="MC">
+<script type="text/python">
+    n = 0
+    for s in Tdict['MC']:
+        echo '<div id="MC%d">' % n
+        echo 'mc: <input type="text" class="span1" value="%s"><span class="btn" onclick=del("MC","%d")><i class="icon-remove"></i></span><br>' % (str(s['N']), n)
+        for server in s['SERVERS']:
+            echo '<input type="text" class="span2" value="%s"><input type="text" class="span1" value="%s"><br>' % (str(server['SERVER']), str(server['PORT']))
+        echo '</div>'
+        n += 1
+</script>
+</div>
+</div>
+<div class="control-group">
+    <label for="textarea" class="control-label">重写规则</label>
+<div class="controls">
+    <textarea rows="4" id="textarea" class="span6" name="RW">
+<script type="text/python">
+    for rw in Tdict['RW']:
+        O = str(rw['O'])
+        P = str(rw['P'])
+        T = str(rw['T'])
+        F = str(rw['F'])
+        echo 'Rewrite%s %s %s %s\n' % (O, P, T, F)
+</script>
+</textarea>
+</div>
+</div>
+<div class="control-group">
+    <label for="textarea" class="control-label">其他</label>
+<div class="controls">
+    <textarea rows="4" id="textarea" class="span6" name="Other">
+</textarea>
+</div>
+</div>
+<button type="submit" class="btn offset6">提交</button>
+</fieldset>
+</form>
+{% end %}

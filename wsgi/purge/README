@@ -1,0 +1,11 @@
+Varnish缓存purge接口
+
+1.通常js、css、html等静态文件默认通过缓存访问，缓存默认有效时间是一天。静态文件代码更新后，如果出现代码不更新，
+  很可能是静态文件被缓存命中, 还没有过期。可以通过purge接口清除要更新的静态文件url。
+
+2.purge接口地址，http://{$ host $}/purge?url=http://www.example.com/Public/Js/app.js ，
+  "http://www.example.com/Public/Js/app.js" ，是需要更新的url。
+  接口使用方法，访问 "http://{$ host $}/purge?url=http://www.example.com/Public/Js/app.js"。
+  接口返回结果，"Purge OK.", url已经从缓存中清除或url没有被缓存命中；"Purge Failed.", url清除失败；
+  "Purge too often", url清除过于频繁，默认同一个url在5分钟内只能清除一次。
+  此接口只用于Varnish缓存，Squid还使用老接口。

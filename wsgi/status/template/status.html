@@ -1,0 +1,81 @@
+{# base.html #}
+
+{% head %}
+<script type="text/javascript" src="/static/fusioncharts/FusionCharts.js"></script>
+<script type="text/javascript" src="/static/fusioncharts/FusionCharts.jqueryplugin.js"></script>
+<script>
+    var srcUrl = "/status/data?{$ query_string $}";
+    var fileUrl = '/status/fusioncharts/Line.swf';
+
+    $(function(){
+        $("#chartContainer").insertFusionCharts({ 
+            swfUrl: fileUrl,
+            renderer : 'JavaScript',
+            width: "100%",
+            height: "400",
+            id: "myChartId",
+            dataFormat: "jsonurl",
+            dataSource: srcUrl,
+            //  debugMode: "1",
+        });
+    });
+
+    function update(t) {
+        var chartReference = FusionCharts("myChartId");
+        chartReference.setJSONUrl("/status/data?{$ query_string $}&time=".concat(t));
+    };
+
+    $(function(){
+        $('#domain').typeahead({
+            source: {$ domains $},
+            items: 5
+        });
+
+        $('.domain').typeahead({
+            name: 'domain',
+            prefetch: '/status/domain',
+            limit: 10
+        });
+    });
+
+</script>
+{% end %}
+
+{% content %}
+<form class="well form-inline" action="/status" method="get">
+    <select class="span2" name="idc">
+        <option value="">机房</option>
+<script type="text/python">
+    for idc, idc_cn in Tdict["idc"].iteritems():
+        if idc == Tdict["qidc"]:
+            echo '<option value="%s" selected="selected">%s</option>' % (idc.encode("utf-8"), idc_cn.encode("utf-8"))
+        else:
+            echo '<option value="%s">%s</option>' % (idc.encode("utf-8"), idc_cn.encode("utf-8"))
+</script>
+    </select>
+    <select class="span2" name="mod">
+        <option value="">模块</option>
+<script type="text/python">
+    for mod, mod_cn in Tdict["mod"].iteritems():
+        if mod == Tdict["qmod"]:
+            echo '<option value="%s" selected="selected">%s</option>' % (mod.encode("utf-8"), mod_cn.encode("utf-8"))
+        else:
+            echo '<option value="%s">%s</option>' % (mod.encode("utf-8"), mod_cn.encode("utf-8"))
+</script>
+    </select>
+    <input class="span2" type="text" name="ip" placeholder="IP" value="{$ qip $}">
+    <input id="domain" type="text" autocomplete="off" name="domain" placeholder="域名" style="margin: 0 auto;" data-provide="typeahead" value="{$ qdomain $}">
+    <button type="submit" class="btn btn-primary">查看</button>
+</form>
+
+<div class="well">
+    <input class="btn btn-success" type="button" onClick='update("week");' value="1周"></input>
+    <input class="btn btn-success" type="button" onClick='update("day");' value="1天"></input>
+    <input class="btn btn-success" type="button" onClick='update("4hour");' value="4小时"></input>
+    <input class="btn btn-success" type="button" onClick='update("hour");' value="1小时"></input>
+    <input class="btn btn-success" type="button" onClick='update("30min");' value="30分"></input>
+</div>
+
+<div id="chartContainer"></div>
+
+{% end %}

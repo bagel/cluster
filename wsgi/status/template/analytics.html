@@ -1,0 +1,45 @@
+{# base.html #}
+
+{% content %}
+<form class="well form-inline" action="/status" method="get">
+    <select name="idc" id="select01">
+        <option value="all">机房</option>
+    </select>
+    <select name="ip" id="select02">
+        <option value="all">IP</option>
+    </select>
+    <select name="domain" id="select03">
+        <option value="all">域名</option>
+    </select>
+    <button type="submit" class="btn btn-primary">查看</button>
+</form>
+
+<table id="data">
+    <tfoot>
+        <tr>
+<script type="text/python">
+    import time
+    i = 0
+    for k in sorted(Tdict["data"].keys()):
+        if i % 3 == 0:
+            echo "<th>%s</th>" % time.strftime("%H:%M", time.localtime(k))
+        else:
+            echo "<th></th>"
+        i += 1
+</script>
+        </tr>
+    </tfoot>
+    <tbody>
+        <tr>
+<script type="text/python">
+    for k in sorted(Tdict["data"].keys()):
+        n = Tdict["data"][k]
+        if not n:
+            n = 0
+        echo "<td>%d</td>" % (int(n) / 60)
+</script>
+        </tr>
+    </tbody>
+</table>
+<div id="holder"></div>
+{% end %}

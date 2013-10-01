@@ -1,0 +1,32 @@
+{# base.html #}
+
+{% head %}
+<meta http-equiv="refresh" content="1500">
+{% end %}
+
+{% content %}
+<form class="well form-inline" action="/mon" method="get">
+    <select name="module" id="select01">
+<script type="text/python">
+    echo '<option value="all">模块</option>'
+    for mod in Tdict["mods"]:
+        if mod == Tdict["module"]:
+            echo '<option value="%s" selected="selected">%s</option>' % (str(mod), str(mod))
+        else:
+            echo '<option value="%s">%s</option>' % (str(mod), str(mod))
+</script>
+    </select>
+    <select name="idc" id="select02">
+<script type="text/python">
+    echo '<option value="all">机房</option>'
+    for idc, idc_cn in Tdict["idcs"].items():
+        if idc == Tdict["idc"]:
+            echo '<option value="%s" selected="selected">%s</option>' % (str(idc), str(idc_cn.encode("utf-8")))
+        else:
+            echo '<option value="%s">%s</option>' % (str(idc), str(idc_cn.encode("utf-8")))
+</script>
+    </select>
+    <button type="submit" class="btn btn-primary">查看</button>
+</form>
+{+ detail +}
+{% end %}

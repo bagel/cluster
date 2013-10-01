@@ -1,0 +1,81 @@
+<h1>{$ t $}</h1>
+<h2>other</h2>
+
+    <html>  
+        <head>  
+            <title>动态添加表单元素</title>  
+        </head>  
+        <script language="javascript">     
+          
+        //以下代码是动态添加表单元素。  
+          
+        var elementCount = 0;   
+        
+        //动态增加表单元素。  
+        function AddElement(mytype){     
+            //得到需要被添加的html元素。  
+            var TemO=document.getElementById("add");     
+            //创建一个指定名称（名称指定了html的类型）html元素。  
+            var newInput = document.createElement("input");      
+              
+            elementCount = elementCount + 1;     
+              
+            //指定input的类型。  
+            newInput.type=mytype;      
+              
+            //动态生成id。  
+            newInput.id="input"+(elementCount);     
+                 
+            TemO.appendChild(newInput);     
+                 
+            var newline= document.createElement("br");   
+              
+            newline.id = "br"+(elementCount);   
+              
+            TemO.appendChild(newline);     
+        }     
+          
+        //动态删除表单元素。     
+        function delElement(mytype){     
+            var TemO=document.getElementById("add");     
+              
+            if (elementCount>0){     
+                var newInput = document.getElementById("input"+elementCount);      
+                 
+                TemO.removeChild(newInput);   
+         
+                var newline= document.getElementById("br"+(elementCount));   
+                  
+                elementCount = elementCount - 1;    
+                  
+                TemO.removeChild(newline);     
+            }   
+        }     
+        </script>  
+          
+        <body>  
+            <input name="" type="button" value="新建文本框"  
+                onClick="AddElement('text')" />  
+            <input name="" type="button" value="新建复选框"  
+                onClick="AddElement('checkbox')" />  
+            <input name="" type="button" value="新建单选框"  
+                onClick="AddElement('radio')" />  
+            <input name="" type="button" value="新建文件域"  
+                onClick="AddElement('file')" />  
+            <input name="" type="button" value="新建密码框"  
+                onClick="AddElement('password')" />  
+            <input name="" type="button" value="新建提交按钮"  
+                onClick="AddElement('submit')" />  
+            <input name="" type="button" value="新建恢复按钮"  
+                onClick="AddElement('reset')" />  
+            <input name="" type="button" value="删除恢复按钮"  
+                onClick="delElement('reset')" />  
+            <br>  
+            <form action="" method="get" name="frm">  
+                <div id="add">  
+                    <input type="text" name="textfield">  
+                    <br>  
+                </div>  
+            </form>  
+        </body>  
+    </html>  
