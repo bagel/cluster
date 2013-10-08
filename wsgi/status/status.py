@@ -38,7 +38,7 @@ class Status:
             caption = mod
             ims = [ "-".join([i, mod]) for i in idcs ]
         elif not idc and not mod:
-            caption = time.strftime("%Y-%m-%d", time.localtime())
+            caption = ""
             ims = [ "-".join([i, m]) for i in idcs for m in mods ]
         else:
             caption = " ".join([idc, mod])
@@ -123,7 +123,10 @@ class Status:
         print "5:", time.time() -  t1
 
         max_hits = max(values)
-        max_time = time.strftime("%H:%M", time.localtime(t - (30 * m + 1 - values.index(max_hits)) * offset))
+        if xname == "week":
+            max_time = time.strftime("%m/%d %H:%M", time.localtime(t - (30 * m + 1 - values.index(max_hits)) * offset))
+        else:
+            max_time = time.strftime("%H:%M", time.localtime(t - (30 * m + 1 - values.index(max_hits)) * offset))
         caption = " ".join([caption, max_time, str(max_hits / 60)])
 
         chartdata = {
