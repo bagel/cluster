@@ -22,7 +22,7 @@
 
     function update(t) {
         var chartReference = FusionCharts("myChartId");
-        chartReference.setJSONUrl("/status/data?{$ query_string $}&time=".concat(t));
+        chartReference.setJSONUrl("/status/data?&time=".concat(t) + "&{$ query_string $}");
     };
 
     $(function(){
@@ -61,6 +61,15 @@
             echo '<option value="%s" selected="selected">%s</option>' % (mod.encode("utf-8"), mod_cn.encode("utf-8"))
         else:
             echo '<option value="%s">%s</option>' % (mod.encode("utf-8"), mod_cn.encode("utf-8"))
+</script>
+    </select>
+    <select class="span2" name="time">
+<script type="text/python">
+    for t in Tdict["times"]:
+        if t == Tdict["qtime"]:
+            echo '<option value="%s" selected="selected">%s</option>' % (t, t)
+        else:
+            echo '<option value="%s">%s</option>' % (t, t)
 </script>
     </select>
     <input id="domain" type="text" autocomplete="off" name="domain" placeholder="域名" style="margin: 0 auto;" data-provide="typeahead" value="{$ qdomain $}">

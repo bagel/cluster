@@ -5,6 +5,7 @@ import sys
 import os
 import script
 import urllib2
+import urllib
 import mc
 import json
 import shortcut
@@ -188,14 +189,17 @@ class Status:
         return ("application/json", json.JSONEncoder().encode(chartdata))
 
     def response(self):
+        times = ["30min", "hour", "4hour", "day", "week"]
         tdict = {
-            "query_string": self.environ["QUERY_STRING"], 
+            "query_string": self.environ["QUERY_STRING"],
             "qdomain": self.query.get("domain", [""])[0],
             "qip": self.query.get("ip", [""])[0],
             "qidc": self.query.get("idc", [""])[0],
             "qmod": self.query.get("mod", [""])[0],
+            "qtime": self.query.get("time", [""])[0],
             "idc": self.idc, 
             "mod": self.mod,
+            "times": times,
             "domains": list(self.domain)
         }
         return (self.ctype, script.response(os.path.join(self.template, "status.html"), tdict))
