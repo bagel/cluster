@@ -147,6 +147,16 @@ class Status:
         }
         return ("application/json", json.JSONEncoder().encode(chartdata))
 
+    def sum(self):
+        qtime = self.query.get("time", [""])[0]
+        t = time.time()
+        if qtime:
+            sum = self.r.hgetall(qtime)
+        else:
+            sum = {}
+        print time.time() - t
+        return ("application/json", json.JSONEncoder().encode(sum))
+
     def response(self):
         times = ["30min", "hour", "4hour", "day", "week"]
         t = time.time()
