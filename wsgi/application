@@ -23,10 +23,10 @@ libs = [
 def application(environ, start_response):
     environ.update(os.environ)
     ctype = 'text/plain; charset=utf-8'
-    if re.match(r'/test', environ['PATH_INFO'][:5]):
+    if re.match(r'/test', environ['PATH_INFO']):
         import test
         ctype, response_body = test.urls(environ)
-    elif re.match(r'/purge', environ['PATH_INFO'][:6]):
+    elif re.match(r'/purge', environ['PATH_INFO']):
         import purge
         ctype, response_body = purge.urls(environ)
     elif re.match(r'/vhost', environ['PATH_INFO']):
@@ -46,27 +46,12 @@ def application(environ, start_response):
     elif environ['PATH_INFO'] == '/online':
         import tools
         ctype, response_body = tools.online(environ)
-    elif environ['PATH_INFO'] == '/config':
-        import tools
-        ctype, response_body = tools.config(environ)
-    elif environ['PATH_INFO'] == '/mail':
-        import tools
-        ctype, response_body = tools.mail(environ)
     elif environ['PATH_INFO'] == '/ip':
         import ip
         ctype, response_body = ip.urls(environ)
     elif environ['PATH_INFO'] == '/publish':
         import tools
         ctype, response_body = tools.publish(environ)
-    elif environ['PATH_INFO'] == '/logset':
-        import tools
-        ctype, response_body = tools.logset(environ)
-    elif environ['PATH_INFO'] == '/logget':
-        import tools
-        ctype, response_body = tools.logget(environ)
-    elif environ['PATH_INFO'] == '/logkey':
-        import tools
-        ctype, response_body = tools.logkey(environ)
     elif environ['PATH_INFO'] == '/ok':
         response_body = "ok"
     elif environ['PATH_INFO'] == '/mon':
@@ -74,16 +59,16 @@ def application(environ, start_response):
         ctype, response_body = mon.urls(environ)
     elif re.match(r'/status', environ['PATH_INFO']):
         import status
-        import time
-        t1 = time.time()
         ctype, response_body = status.urls(environ)
-        print time.time() - t1
     elif environ['PATH_INFO'] == '/home':
         import status
         ctype, response_body = status.urls(environ)
     elif re.match(r'/info', environ['PATH_INFO']):
         import info
         ctype, response_body = info.urls(environ)
+    elif re.match(r'/config', environ['PATH_INFO']):
+        import config
+        ctype, response_body = config.urls(environ)
     else:
         response_body = 'It works!'
 
