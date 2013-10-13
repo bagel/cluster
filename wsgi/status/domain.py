@@ -20,7 +20,7 @@ def domainWeb3():
     d = []
     for line in domainConf('nginx.conf.vhost'):
         if re.match(r'\s+server_name', line):
-            d.extend([ m for m in line.strip().lstrip('server_name').rstrip(';').strip().split(' ') if m ])
+            d.extend([ m for m in re.sub(r'\s+server_name\s+\[\-.*\-\]\s+(.*)', r'\1', line).rstrip(';').strip().split(' ') if m ])
     return d
 
 def update():
