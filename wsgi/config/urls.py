@@ -7,15 +7,13 @@ import re
 
 def urls(environ):
     template = os.path.join(environ['DOCUMENT_ROOT'], 'wsgi/config/template')
-    if re.match(r"/status/data", environ['PATH_INFO']):
-        return status.Status(environ, template).data()
-    elif re.match(r"/status/node", environ['PATH_INFO']):
-        import node
-        node.update()
-        return ("text/plain", "node update ok")
-    elif re.match(r"/status/domain", environ["PATH_INFO"]):
-        import domain
-        domain.update()
-        return ("text/plain", "domain update ok")
+    if re.match(r"/config/read", environ['PATH_INFO']):
+        return config.ConfigData(environ, template).read()
+    elif re.match(r"/config/update", environ['PATH_INFO']):
+        return config.ConfigData(environ, template).update()
+    elif re.match(r"/config/delete", environ["PATH_INFO"]):
+        return config.ConfigData(environ, template).delete()
+    elif re.match(r"/config/history", environ["PATH_INFO"]):
+        return config.ConfigData(environ, template).history()
     else:
-        return config.Config(environ, template).response()
+        return config.ConfigHtml(environ, template).response()

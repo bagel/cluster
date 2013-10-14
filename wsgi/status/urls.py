@@ -17,5 +17,7 @@ def urls(environ):
         import domain
         domain.update()
         return ("text/plain", "domain update ok")
+    elif re.match(r"/status/sum", environ['PATH_INFO']):
+        return status.Status(environ, template).sum()
     else:
         return status.Status(environ, template).response()
