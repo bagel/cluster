@@ -15,5 +15,7 @@ def urls(environ):
         return config.ConfigData(environ, template).delete()
     elif re.match(r"/config/history", environ["PATH_INFO"]):
         return config.ConfigData(environ, template).history()
+    elif re.match(r"/config/edit", environ["PATH_INFO"]):
+        return config.ConfigHtml(environ, template).configEdit()
     else:
-        return config.ConfigHtml(environ, template).response()
+        return config.ConfigHtml(environ, template).configEdit()

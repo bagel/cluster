@@ -1,0 +1,24 @@
+{# config.html #}
+
+{% config %}
+<form class="form-horizontal">
+    <div class="control-group">
+    <span>名称:</span>
+    <input type="text" class="input-small" value="{$ name $}">
+    <span>路径:</span>
+    <input type="text" class="input-xlarge" value="{$ path $}">
+    <span>所有者:</span>
+    <input type="text" class="span1" value="{$ owner $}">
+    <span>权限:</span>
+    <input type="text" class="span1" value="{$ perm $}">
+    </div>
+    <div class="control-group">
+    <span>命令:</span>
+    <input type="text" class="span11" value="{$ cmd $}">
+    </div>
+    <span>最近修改: {$ author $} 于 {$ mtime $}</span>
+    <div>
+    <textarea class="span12" rows="20"></textarea>
+    </div>
+</form>
+{% end %}

@@ -4,6 +4,7 @@
     "owner": "root:root",
     "perm": "0644",
     "type": "file",
+    "module": "global",
     "version": 1,
     "author": "caoyu2",
     "cmd": "echo test",
