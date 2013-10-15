@@ -56,6 +56,73 @@ class ConfigData:
         return (ctype, json.JSONEncoder().encode([ d for d in data ]))
 
 
+class NodeData(ConfigData):
+    def __init__(self, environ, template):
+        ConfigData.__init__(self, environ, template)
+        self.S = []
+
+
+    def Collection(self):
+        self.fileData = json.loads(self.environ['wsgi.input'].read(int(self.environ['CONTENT_LENGTH'])))
+        self.collection = self.db["node"]
+
+    def dictSearch(self, d, key, ks=[]):
+        for k, v in d.items():
+            if k == key:
+                ks.append(k)
+                self.S = ks[:]
+            else:
+                ks.append(k)
+                self.dictSearch(v, key)
+                ks.remove(k)
+
+    def test(self):
+        d = {"s": {"m": {"p": {}, "q": {}}, "n": {"t": {}}}, "o": {"h": {}}}
+        self.dictSearch(d, "a")
+        print self.S
+
+    def create(self):
+        ctype = "text/plain"
+        self.Collection()
+        root = self.fileData["data"]["root"]
+        self.fileData["data"] = {root: {}}
+        self.fileData["mtime"] = int(time.time())
+        self.fileData["version"] = 1
+        self.collection.insert(self.fileData)
+        return (ctype, "0")
+
+    def add(self):
+        ctype = "text/plain"
+        self.Collection()
+        parent = self.fileData["parent"]
+        current = self.fileData["current"]
+        child = self.fileData["child"]
+        node = self.collection.find(fields={"_id": False}, sort=[("version", -1)], limit=1).next()
+        node['mtime'] = int(time.time())
+        node['version'] = int(node["version"]) + 1
+        self.dictSearch(node["data"], parent)
+        s = 'node["data"]'
+        for key in self.S:
+            s += '["' + key + '"]'
+        print s
+        if not child:
+            s += '["%s"]={}' % (current)
+        else:
+            exec('value=' + s)
+            s += '["%s"]=%s' % (current, value)
+        print s
+        exec(s)
+        self.collection.insert(node)
+        return (ctype, "0")
+            
+        
+    def update(self):
+        ctype = "text/plain"
+        self.Collection()
+        node = {}
+            
+
+
 class ConfigHtml(ConfigData):
     def __init__(self, environ, template):
         ConfigData.__init__(self, environ, template)
@@ -64,7 +131,7 @@ class ConfigHtml(ConfigData):
         self.fileData = self.data
         self.collection = self.db[self.fileData["name"]]
 
-    def configEdit(self):
+    def edit(self):
         ctype = "text/html"
         self.data = {"name": "nginx.conf"}
         tdict = json.loads(self.read()[-1])
@@ -76,3 +143,13 @@ class ConfigHtml(ConfigData):
         ctype = "text/html"
         response_body = script.response(os.path.join(self.template, "edit.html"), {})
         return (ctype, response_body)
+
+
+def main():
+    environ = ""
+    template = ""
+    d = {"s": {"m": {"p": {}, "q": {}}, "n": {"t": {}}}, "o": {"h": {}}}
+    NodeData(environ, template).test()
+
+if __name__ == "__main__":
+    main()
