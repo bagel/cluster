@@ -59,18 +59,15 @@ class ConfigData:
 class NodeData(ConfigData):
     def __init__(self, environ, template):
         ConfigData.__init__(self, environ, template)
-        self.S = []
-
-
-    def Collection(self):
-        self.fileData = json.loads(self.environ['wsgi.input'].read(int(self.environ['CONTENT_LENGTH'])))
-        self.collection = self.db["node"]
+        self.K = []
+        self.V = {}
 
     def dictSearch(self, d, key, ks=[]):
         for k, v in d.items():
             if k == key:
                 ks.append(k)
-                self.S = ks[:]
+                self.K = ks[:]
+                self.V = v.copy()
             else:
                 ks.append(k)
                 self.dictSearch(v, key)
@@ -78,8 +75,8 @@ class NodeData(ConfigData):
 
     def test(self):
         d = {"s": {"m": {"p": {}, "q": {}}, "n": {"t": {}}}, "o": {"h": {}}}
-        self.dictSearch(d, "a")
-        print self.S
+        self.dictSearch(d, "m")
+        print self.K, self.V
 
     def create(self):
         ctype = "text/plain"
@@ -96,31 +93,52 @@ class NodeData(ConfigData):
         self.Collection()
         parent = self.fileData["parent"]
         current = self.fileData["current"]
-        child = self.fileData["child"]
         node = self.collection.find(fields={"_id": False}, sort=[("version", -1)], limit=1).next()
         node['mtime'] = int(time.time())
         node['version'] = int(node["version"]) + 1
         self.dictSearch(node["data"], parent)
         s = 'node["data"]'
-        for key in self.S:
+        for key in self.K:
             s += '["' + key + '"]'
         print s
-        if not child:
-            s += '["%s"]={}' % (current)
-        else:
-            exec('value=' + s)
-            s += '["%s"]=%s' % (current, value)
-        print s
+        s += '["%s"]={}' % (current)
         exec(s)
         self.collection.insert(node)
         return (ctype, "0")
-            
-        
+ 
     def update(self):
         ctype = "text/plain"
         self.Collection()
-        node = {}
-            
+        delete = self.fileData["delete"]
+        node = self.collection.find(fields={"_id": False}, sort=[("version", -1)], limit=1).next()
+        node['mtime'] = int(time.time())
+        node['version'] = int(node['version']) + 1
+        self.dictSearch(node["data"], delete)
+        s = 'node["data"]'
+        for key in self.K[:-1]:
+            s += '["' + key + '"]'
+        s += '.pop("%s")' % delete
+        exec(s)
+        self.collection.insert(node)
+        return (ctype, "0")
+
+    def rename(self): 
+        ctype = "text/plain"
+        self.Collection()
+        rename = self.fileData["rename"]
+        node = self.collection.find(fields={"_id": False}, sort=[("version", -1)], limit=1).next()
+        node['mtime'] = int(time.time())
+        node['version'] = int(node['version']) + 1
+        self.dictSearch(node["data"], rename[0])
+        s = 'node["data"]'
+        for key in self.K[:-1]:
+            s += '["' + key + '"]'
+        exec(s + '.pop("%s")' % rename[0])
+        s += '["%s"]=%s' % (rename[1], self.V)
+        exec(s)
+        self.collection.insert(node)
+        return (ctype, "0")
+        
 
 
 class ConfigHtml(ConfigData):
