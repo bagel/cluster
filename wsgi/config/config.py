@@ -138,7 +138,86 @@ class NodeData(ConfigData):
         exec(s)
         self.collection.insert(node)
         return (ctype, "0")
-        
+
+    def addnodes(self):
+        ctype = "text/plain"
+        self.Collection()
+        nodes = self.fileData["nodes"]
+        current = self.fileData["current"]
+        node = self.collection.find(fields={"_id": False}, sort=[("version", -1)], limit=1).next()
+        node['mtime'] = int(time.time())
+        node['version'] = int(node['version']) + 1
+        self.dictSearch(node["data"], current)
+        s = 'node["data"]'
+        for key in self.K:
+            s += '["' + key + '"]'
+        s += '={"nodes": %s}' % nodes
+        exec(s)
+        self.collection.insert(node)
+        return (ctype, "0")
+
+class ConfigGroup(ConfigData):
+    def __init__(self, environ, template):
+        ConfigData.__init__(self, environ, template)
+
+    def create(self):
+        ctype = "text/plain"
+        self.Collection()
+        self.fileData['mtime'] = int(time.time())
+        self.fileData['version'] = 1
+        self.fileData["data"] = {}
+        print self.fileData
+        print self.collection.insert(self.fileData)
+        return (ctype, "0")
+
+    def add(self):
+        ctype = "text/plain"
+        self.Collection()
+        group = self.fileData["group"]
+        node = self.fileData["node"]
+        groupData = self.collection.find(fields={"_id": False}, limit=1, sort=[("version", -1)]).next()
+        groupData['mtime'] = int(time.time())
+        groupData['version'] = int(groupData["version"]) + 1
+        print groupData
+        if not groupData["data"].has_key(group):
+           groupData["data"][group] = node
+        else:
+            groupData["data"][group].extend(node)
+        self.collection.insert(groupData)
+        return (ctype, "0")
+   
+    def update(self):
+        ctype = "text/plain"
+        self.Collection()
+        group = self.fileData["group"]
+        node = self.fileData["node"]
+        groupData = self.collection.find(fields={"_id": False}, limit=1, sort=[("version", -1)]).next()
+        groupData['mtime'] = int(time.time())
+        groupData['version'] = int(groupData["version"]) + 1
+        if not node:
+            groupData["data"].pop(group)
+        else:
+            groupData["data"][group].remove(node)
+        self.collection.insert(groupData)
+        return (ctype, "0")
+
+    def rename(self):
+        ctype = "text/plain"
+        self.Collection()
+        group = self.fileData["group"]
+        node = self.fileData["node"]
+        groupData = self.collection.find(fields={"_id": False}, limit=1, sort=[("version", -1)]).next()
+        groupData['mtime'] = int(time.time())
+        groupData['version'] = int(groupData["version"]) + 1
+        if not node:
+            groupData["data"][group[1]] = groupData["data"][group[0]]
+            groupData["data"].pop(group[0])
+        else:
+            groupData["data"][group].remove(node[0])
+            groupData["data"][group].append(node[1])
+        self.collection.insert(groupData)
+        return (ctype, "0")
+
 
 
 class ConfigHtml(ConfigData):
