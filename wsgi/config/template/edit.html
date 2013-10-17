@@ -7,15 +7,16 @@
         var path = document.getElementById("path").value;
         var owner = document.getElementById("owner").value;
         var perm = document.getElementById("perm").value;
+        var group = document.getElementById("group").value;
         var cmd0 = window.btoa(document.getElementById("cmd0").value);
         var cmd1 = window.btoa(document.getElementById("cmd1").value);
-        var formData = window.btoa(document.getElementById("data").value);
+        var textData = window.btoa(document.getElementById("data").value);
         var author = document.getElementById("author").value;
         alert(cmd0);
         $.ajax({
             type: "POST",
             url: "/config/edit/post",
-            data: '{"name":"' + name + '","path":"' + path + '","owner":"' + owner +  '","perm":"' + perm + '","cmd0":"' + cmd0 + '","cmd1":"' + cmd1 + '","data":"' + formData + '","author":"' + author + '"}',
+            data: '{"name":"' + name + '","path":"' + path + '","owner":"' + owner +  '","perm":"' + perm + '","group":"' + group + '","cmd0":"' + cmd0 + '","cmd1":"' + cmd1 + '","data":"' + textData + '","author":"' + author + '"}',
             dataType: "json",
             contentType: "application/json"
         });
@@ -32,7 +33,7 @@
         <span>权限:</span>
         <input type="text" class="span1" id="perm" name="perm" value="{$ perm $}">
         <span>属组:</span>
-        <input type="text" class="input-big" id="group" name="group" value="">
+        <input type="text" class="input-big" id="group" name="group" value="{$ group $}">
     </div>
     <div class="control-group">
         <span>下发前命令:</span>

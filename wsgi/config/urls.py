@@ -47,5 +47,7 @@ def urls(environ):
         return config.ConfigHtml(environ, template).configEditPost()
     elif re.match(r"/config/list", environ["PATH_INFO"]):
         return config.ConfigHtml(environ, template).configList()
+    elif re.match(r"/config/version", environ["PATH_INFO"]):
+        return config.ConfigHtml(environ, template).configVersion()
     else:
         return config.ConfigHtml(environ, template).configList()

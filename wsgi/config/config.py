@@ -62,7 +62,7 @@ class ConfigData:
     def history(self):
         ctype = "application/json"
         self.Collection()
-        data = self.collection.find(fields={"_id": False, "version": True, "author": True, "mtime": True}, sort=[("version", 1)])
+        data = self.collection.find(fields={"_id": False, "version": True, "author": True, "mtime": True}, sort=[("version", -1)])
         return (ctype, json.JSONEncoder().encode([ d for d in data ]))
 
 
@@ -242,16 +242,25 @@ class ConfigHtml(ConfigData):
         tdict = {}
         for conf in conflist:
             collection = self.db[conf]
-            tdict[conf] = collection.find(fields={"_id": False, "name": True, "path": True, "author": True, "mtime": True}, limit=1, sort=[("version", -1)]).next()
+            tdict[conf] = collection.find(fields={"_id": False, "name": True, "path": True, "group": True, "author": True, "mtime": True}, limit=1, sort=[("version", -1)]).next()
             tdict[conf]["mtime"] = time.strftime("%Y/%m/%d %H:%M:%S", time.localtime(tdict[conf]["mtime"]))
         response_body = script.response(os.path.join(self.template, "list.html"), tdict)
+        return (ctype, response_body)
+
+    def configVersion(self):
+        ctype = "text/html"
+        self.data = dict(urlparse.parse_qsl(self.environ['QUERY_STRING']))
+        response_body = script.response(os.path.join(self.template, "version.html"), {"history": json.loads(self.history()[-1]), "name": self.data["name"]})
         return (ctype, response_body)
 
     def configEdit(self):
         ctype = "text/html"
         self.data = dict(urlparse.parse_qsl(self.environ['QUERY_STRING']))
-        tdict = json.loads(self.read()[-1])
-        tdict['mtime'] = time.strftime('%Y/%m/%d %H:%M:%S', time.localtime(tdict['mtime']))
+        if self.data["name"] != "add":
+            tdict = json.loads(self.read()[-1])
+            tdict['mtime'] = time.strftime('%Y/%m/%d %H:%M:%S', time.localtime(tdict['mtime']))
+        else:
+            tdict = {"name": "", "path": "", "owner": "", "perm": "", "group": "", "cmd0": "", "cmd1": "", "data": "", "author": "", "mtime": ""}
         response_body = script.response(os.path.join(self.template, "edit.html"), tdict)
         return (ctype, response_body)
 
