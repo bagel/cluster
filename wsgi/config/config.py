@@ -7,6 +7,7 @@ import redis
 import time
 import json
 import script
+import urlparse
 
 
 class ConfigData:
@@ -14,9 +15,19 @@ class ConfigData:
         self.environ = environ
         self.template = template
         self.db = pymongo.MongoClient("10.13.32.21", 2701)["config"]
+        self.data = {}
 
     def Collection(self):
-        self.fileData = json.loads(self.environ['wsgi.input'].read(int(self.environ['CONTENT_LENGTH'])))
+        if self.environ["REQUEST_METHOD"] == "POST":
+            postData = self.environ['wsgi.input'].read(int(self.environ['CONTENT_LENGTH']))
+            print postData
+            try:
+                self.fileData = json.loads(postData)
+            except:
+                self.fileData = postData
+        else:
+            self.fileData = self.data
+        print self.fileData["name"]
         self.collection = self.db[self.fileData["name"]]
 
     def update(self):
@@ -27,7 +38,6 @@ class ConfigData:
             versionMax = self.collection.find(fields={"version": True}, limit=1, sort=[("version", -1)]).next()["version"]
         self.fileData['mtime'] = int(time.time())
         self.fileData['version'] = int(versionMax) + 1
-        self.fileData['data'] = self.fileData['data'].split('@@')
         print self.collection.insert(self.fileData)
         return (ctype, "0")
 
@@ -224,17 +234,31 @@ class ConfigHtml(ConfigData):
     def __init__(self, environ, template):
         ConfigData.__init__(self, environ, template)
 
-    def Collection(self):
-        self.fileData = self.data
-        self.collection = self.db[self.fileData["name"]]
-
-    def edit(self):
+    def configList(self):
         ctype = "text/html"
-        self.data = {"name": "nginx.conf"}
+        conflist = self.db.collection_names(include_system_collections=False)
+        for conf in ["node", "group", "groups"]:
+            conflist.remove(conf)
+        tdict = {}
+        for conf in conflist:
+            collection = self.db[conf]
+            tdict[conf] = collection.find(fields={"_id": False, "name": True, "path": True, "author": True, "mtime": True}, limit=1, sort=[("version", -1)]).next()
+            tdict[conf]["mtime"] = time.strftime("%Y/%m/%d %H:%M:%S", time.localtime(tdict[conf]["mtime"]))
+        response_body = script.response(os.path.join(self.template, "list.html"), tdict)
+        return (ctype, response_body)
+
+    def configEdit(self):
+        ctype = "text/html"
+        self.data = dict(urlparse.parse_qsl(self.environ['QUERY_STRING']))
         tdict = json.loads(self.read()[-1])
         tdict['mtime'] = time.strftime('%Y/%m/%d %H:%M:%S', time.localtime(tdict['mtime']))
         response_body = script.response(os.path.join(self.template, "edit.html"), tdict)
         return (ctype, response_body)
+
+    def configEditPost(self):
+        ctype = "text/html"
+        self.update()
+        return (ctype, "0")
 
     def response(self):
         ctype = "text/html"

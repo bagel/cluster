@@ -1,0 +1,35 @@
+{# config.html #}
+
+{% config %}
+<script>
+    function edit(){
+        var confname = $("#confname").text();
+        $.ajax({
+            type: "POST",
+            url: "/config/edit", 
+            data: '{"name":"' + confname + '"}',
+            dataType: "text/html",
+            contentType: "application/json"
+        });
+    }
+</script>
+<legend>配置文件列表<i class="btn btn-success pull-right">添加</i></legend>
+<table class="table table-striped table-bordered">
+    <thead>
+        <tr>
+        <th>文件名</th>
+        <th>路径</th>
+        <th>最后修改时间</th>
+        <th>修改者</th>
+        <th>操作</th>
+        <tr>
+    </thead>
+    <tbody>
+<script type="text/python">
+    for conf in Tdict.keys():
+        echo '<tr><td id="confname">%s</td><td>%s</td><td>%s</td><td>%s</td>' % (Tdict[conf]["name"].encode('utf-8'), Tdict[conf]["path"].encode('utf-8'), Tdict[conf]["mtime"].encode('utf-8'), Tdict[conf]["author"].encode('utf-8'))
+        echo '<td><a href="/config/edit?name=%s"><i class="btn btn-success">编辑</i></a></td></tr>' % Tdict[conf]["name"].encode('utf-8')
+</script>
+    </tbody>
+</table>
+{% end %}

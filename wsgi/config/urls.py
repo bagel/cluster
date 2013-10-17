@@ -41,7 +41,11 @@ def urls(environ):
         return config.ConfigGroup(environ, template).read()
     elif re.match(r"/config/group/history", environ["PATH_INFO"]):
         return config.ConfigGroup(environ, template).history()
-    elif re.match(r"/config/edit", environ["PATH_INFO"]):
-        return config.ConfigHtml(environ, template).edit()
+    elif re.match(r"/config/edit$", environ["PATH_INFO"]):
+        return config.ConfigHtml(environ, template).configEdit()
+    elif re.match(r"/config/edit/post", environ["PATH_INFO"]):
+        return config.ConfigHtml(environ, template).configEditPost()
+    elif re.match(r"/config/list", environ["PATH_INFO"]):
+        return config.ConfigHtml(environ, template).configList()
     else:
-        return config.ConfigHtml(environ, template).edit()
+        return config.ConfigHtml(environ, template).configList()

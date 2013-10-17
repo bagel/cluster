@@ -1,24 +1,62 @@
 {# config.html #}
 
 {% config %}
-<form class="form-horizontal">
+<script>
+    function save(){
+        var name = document.getElementById("name").value;
+        var path = document.getElementById("path").value;
+        var owner = document.getElementById("owner").value;
+        var perm = document.getElementById("perm").value;
+        var cmd0 = window.btoa(document.getElementById("cmd0").value);
+        var cmd1 = window.btoa(document.getElementById("cmd1").value);
+        var formData = window.btoa(document.getElementById("data").value);
+        var author = document.getElementById("author").value;
+        alert(cmd0);
+        $.ajax({
+            type: "POST",
+            url: "/config/edit/post",
+            data: '{"name":"' + name + '","path":"' + path + '","owner":"' + owner +  '","perm":"' + perm + '","cmd0":"' + cmd0 + '","cmd1":"' + cmd1 + '","data":"' + formData + '","author":"' + author + '"}',
+            dataType: "json",
+            contentType: "application/json"
+        });
+    }
+</script>
+<!--<form class="form-horizontal" method="post">-->
     <div class="control-group">
-    <span>名称:</span>
-    <input type="text" class="input-small" value="{$ name $}">
-    <span>路径:</span>
-    <input type="text" class="input-xlarge" value="{$ path $}">
-    <span>所有者:</span>
-    <input type="text" class="span1" value="{$ owner $}">
-    <span>权限:</span>
-    <input type="text" class="span1" value="{$ perm $}">
+        <span>名称:</span>
+        <input type="text" class="input-small" id="name" name="name" value="{$ name $}">
+        <span>路径:</span>
+        <input type="text" class="input-xlarge" id="path" name="path" value="{$ path $}">
+        <span>所有者:</span>
+        <input type="text" class="span1" id="owner" name="owner" value="{$ owner $}">
+        <span>权限:</span>
+        <input type="text" class="span1" id="perm" name="perm" value="{$ perm $}">
+        <span>属组:</span>
+        <input type="text" class="input-big" id="group" name="group" value="">
     </div>
     <div class="control-group">
-    <span>命令:</span>
-    <input type="text" class="span11" value="{$ cmd $}">
+        <span>下发前命令:</span>
+<script>
+    var cmd0 = window.atob("{$ cmd0 $}");
+    document.write('<textarea class="span4" rows="1" id="cmd0" name="cmd0">' + cmd0 + '</textarea>');
+</script>
+        <span>下发后命令:</span>
+<script>
+    var cmd1 = window.atob("{$ cmd1 $}");
+    document.write('<textarea class="span4" rows="1" id="cmd1" name="cmd1">' + cmd1 + '</textarea>');
+</script>
     </div>
-    <span>最近修改: {$ author $} 于 {$ mtime $}</span>
-    <div>
-    <textarea class="span12" rows="20"></textarea>
+    <div class="control-group">
+        <span>最近修改: {$ author $} 于 {$ mtime $}</span>
+<script>
+    var data = window.atob("{$ data $}");
+    document.write('<textarea class="span12" rows="20" id="data" name="data">' + data + '</textarea>');
+</script>
     </div>
-</form>
+    <div class="control-group">
+        <span>修改者:</span>
+        <input type="text" class="input-small" id="author" name="author" value="{$ author $}">
+        <button type="submit" class="btn btn-primary pull-right" onclick="save()">保存</button>
+    </div>
+<!--</form>-->
 {% end %}
