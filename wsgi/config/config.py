@@ -228,6 +228,38 @@ class ConfigGroup(ConfigData):
         self.collection.insert(groupData)
         return (ctype, "0")
 
+class ConfigPublish(ConfigData):
+    def __init__(self, environ, template):
+        ConfigData.__init__(self, environ, template)
+
+    def add(self):
+        ctype = "text/plain"
+        self.Collection()
+        versionMax = 0
+        if self.collection.count() >= 1:
+            versionMax = self.collection.find(fields={"version": True}, limit=1, sort=[("version", -1)]).next()["version"]
+        self.fileData['version'] = int(versionMax) + 1
+        self.fileData["stime"] = int(time.time())
+        self.fileData["confirm"] = 0
+        self.fileData["group"] = self.db[self.fileData["file"]].find(fields={"group": True}, limit=1).next()["group"]
+        if not self.fileData.has_key("fileversion"):
+            self.fileData["fileversion"] = self.db[self.fileData["file"]].find(fields={"version": True}, limit=1, sort=[("version", -1)]).next()["version"]
+        self.collection.insert(self.fileData)
+        return (ctype, "0")
+
+    def update(self):
+        ctype = "text/plain"
+        self.Collection()
+        version = self.fileData["version"]
+        self.fileData.pop("name")
+        self.fileData.pop("version")
+        if self.fileData.has_key("cauthor"):
+            self.fileData["ctime"] = int(time.time())
+            self.fileData["confirm"] = 1
+        elif self.fileData.has_key("pauthor"):
+            self.fileData["ptime"] = int(time.time())
+        self.collection.update({"version": int(version)}, {"$set": self.fileData})
+        return (ctype, "0")
 
 
 class ConfigHtml(ConfigData):
@@ -237,7 +269,7 @@ class ConfigHtml(ConfigData):
     def configList(self):
         ctype = "text/html"
         conflist = self.db.collection_names(include_system_collections=False)
-        for conf in ["node", "group", "groups"]:
+        for conf in ["node", "group", "groups", "publish"]:
             conflist.remove(conf)
         tdict = {}
         for conf in conflist:
@@ -265,6 +297,38 @@ class ConfigHtml(ConfigData):
         return (ctype, response_body)
 
     def configEditPost(self):
+        ctype = "text/html"
+        self.update()
+        return (ctype, "0")
+
+
+class ConfigPubHtml(ConfigPublish):
+    def __init__(self, environ, template):
+        ConfigPublish.__init__(self, environ, template)
+
+    def configPub(self):
+        ctype = "text/html"
+        self.data = {"name": "publish"}
+        self.Collection()
+        pubData = [ d for d in self.collection.find(fields={"_id": False}, sort=[("stime", -1)]) ]
+        response_body = script.response(os.path.join(self.template, "publish.html"), {"pubData": pubData})
+        return (ctype, response_body)
+
+    def configPubGet(self):
+        ctype = "text/html"
+        self.data = dict(urlparse.parse_qsl(self.environ['QUERY_STRING']))
+        self.data['file'] = self.data['name']
+        self.data['name'] = 'publish'
+        self.data['sauthor'] = 'caoyu2'
+        self.add()
+        return self.configPub()
+
+    def configPubPost(self):
+        ctype = "text/html"
+        self.add()
+        return (ctype, "0")
+
+    def configPubUpdate(self):
         ctype = "text/html"
         self.update()
         return (ctype, "0")

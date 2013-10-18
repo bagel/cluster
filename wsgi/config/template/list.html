@@ -2,13 +2,13 @@
 
 {% config %}
 <script>
-    function edit(){
-        var confname = $("#confname").text();
+    function pub(name) {
+        alert(name);
         $.ajax({
             type: "POST",
-            url: "/config/edit", 
-            data: '{"name":"' + confname + '"}',
-            dataType: "text/html",
+            url: "/config/pub/post",
+            data: '{"name":"publish", "sauthor": "caoyu2", "file":"' + name + '"}',
+            dataType: "json",
             contentType: "application/json"
         });
     }
@@ -34,10 +34,13 @@
 <td>%s</td>
 <td>%s</td>
 <td>%s</td>''' % (Tdict[conf]["name"].encode('utf-8'), Tdict[conf]["path"].encode('utf-8'), Tdict[conf]["group"].encode('utf-8'), Tdict[conf]["mtime"].encode('utf-8'), Tdict[conf]["author"].encode('utf-8'))
-        echo '''<td>
+        echo '''<td class="span3">
+<span class="pull-left">
 <a href="/config/edit?name=%s"><button class="btn btn-success">编辑</button></a>
 <a href="/config/version?name=%s"><button class="btn btn-success">版本</button></a>
-</td></tr>''' % (Tdict[conf]["name"].encode('utf-8'), Tdict[conf]["name"].encode('utf-8'))
+<button class="btn btn-primary" onclick='pub("%s")'>分发</button>
+</span>
+</td></tr>''' % (Tdict[conf]["name"].encode('utf-8'), Tdict[conf]["name"].encode('utf-8'), Tdict[conf]["name"].encode('utf-8'))
 </script>
     </tbody>
 </table>

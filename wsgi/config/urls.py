@@ -41,6 +41,10 @@ def urls(environ):
         return config.ConfigGroup(environ, template).read()
     elif re.match(r"/config/group/history", environ["PATH_INFO"]):
         return config.ConfigGroup(environ, template).history()
+    elif re.match(r"/config/publish/add", environ["PATH_INFO"]):
+        return config.ConfigPublish(environ, template).add()
+    elif re.match(r"/config/publish/update", environ["PATH_INFO"]):
+        return config.ConfigPublish(environ, template).update()
     elif re.match(r"/config/edit$", environ["PATH_INFO"]):
         return config.ConfigHtml(environ, template).configEdit()
     elif re.match(r"/config/edit/post", environ["PATH_INFO"]):
@@ -49,5 +53,13 @@ def urls(environ):
         return config.ConfigHtml(environ, template).configList()
     elif re.match(r"/config/version", environ["PATH_INFO"]):
         return config.ConfigHtml(environ, template).configVersion()
+    elif re.match(r"/config/pub$", environ["PATH_INFO"]):
+        return config.ConfigPubHtml(environ, template).configPub()
+    elif re.match(r"/config/pub/get", environ["PATH_INFO"]):
+        return config.ConfigPubHtml(environ, template).configPubGet()
+    elif re.match(r"/config/pub/post", environ["PATH_INFO"]):
+        return config.ConfigPubHtml(environ, template).configPubPost()
+    elif re.match(r"/config/pub/update", environ["PATH_INFO"]):
+        return config.ConfigPubHtml(environ, template).configPubUpdate()
     else:
         return config.ConfigHtml(environ, template).configList()

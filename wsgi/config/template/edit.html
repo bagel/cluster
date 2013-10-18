@@ -32,7 +32,7 @@
         <input type="text" class="span1" id="owner" name="owner" value="{$ owner $}">
         <span>权限:</span>
         <input type="text" class="span1" id="perm" name="perm" value="{$ perm $}">
-        <span>属组:</span>
+        <span>分组:</span>
         <input type="text" class="input-big" id="group" name="group" value="{$ group $}">
     </div>
     <div class="control-group">
@@ -57,7 +57,10 @@
     <div class="control-group">
         <span>修改者:</span>
         <input type="text" class="input-small" id="author" name="author" value="{$ author $}">
-        <button type="submit" class="btn btn-primary pull-right" onclick="save()">保存</button>
+        <span class="pull-right">
+        <button type="submit" class="btn btn-success" onclick="save()">保存</button>
+        <button type="submit" class="btn btn-primary">分发</button>
+        </span>
     </div>
 <!--</form>-->
 {% end %}
