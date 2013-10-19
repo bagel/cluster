@@ -6,14 +6,15 @@
         //alert(version);
         //if (window.confirm("确认")){
         $.ajax({
+            async: false,
             type: "POST",
             url: "/config/pub/update",
-            data: '{"name":"publish", "sauthor": "caoyu2", "cauthor": "caoyu2", "confirm": 1, "version":' + version + '}',
+            data: JSON.stringify({"name": "publish", "sauthor": "caoyu2", "cauthor": "caoyu2", "confirm": 1, "version": parseInt(version)}),
             dataType: "json",
             //success: function(){alert("send success");},
             contentType: "application/json"
         });
-        //window.location.reload()
+        window.location.reload()
         //}
         //window.setTimeout(window.location.reload(), 1000);
     }
@@ -22,14 +23,16 @@
         //alert(version);
         //if (window.confirm("确认")){
         $.ajax({
+            async: false,
             type: "POST",
             url: "/config/pub/update",
-            data: '{"name":"publish", "sauthor": "caoyu2", "cauthor": "caoyu2", "confirm": -1, "version":' + version + '}',
+            //data: '{"name":"publish", "sauthor": "caoyu2", "cauthor": "caoyu2", "confirm": -1, "version":' + version + '}',
+            data: JSON.stringify({"name":"publish", "sauthor": "caoyu2", "cauthor": "caoyu2", "confirm": -1, "version": parseInt(version)}),
             dataType: "json",
             //success: function(){alert("send success");},
             contentType: "application/json"
         });
-        //window.location.reload()
+        window.location.reload()
         //}
         //window.setTimeout(window.location.reload(), 1000);
     }
@@ -38,14 +41,15 @@
         //alert(version);
         //if (window.confirm("确认")){
         $.ajax({
+            async: false,
             type: "POST",
             url: "/config/pub/update",
-            data: '{"name":"publish", "sauthor": "caoyu2", "cauthor": "caoyu2", "confirm": 0, "version":' + version + '}',
+            data: JSON.stringify({"name":"publish", "sauthor": "caoyu2", "cauthor": "caoyu2", "confirm": 0, "version": parseInt(version)}),
             dataType: "json",
             //success: function(){alert("send success");},
             contentType: "application/json"
         });
-        //window.location.reload()
+        window.location.reload()
         //}
         //window.setTimeout(window.location.reload(), 1000);
     }

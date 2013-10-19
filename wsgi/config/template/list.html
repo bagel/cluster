@@ -5,9 +5,10 @@
     function pub(name) {
         alert(name);
         $.ajax({
+            async: false,
             type: "POST",
             url: "/config/pub/post",
-            data: '{"name":"publish", "sauthor": "caoyu2", "file":"' + name + '"}',
+            data: JSON.stringify({"name": "publish", "sauthor": "caoyu2", "file": name}),
             dataType: "json",
             contentType: "application/json"
         });

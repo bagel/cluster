@@ -16,7 +16,7 @@
         $.ajax({
             type: "POST",
             url: "/config/edit/post",
-            data: '{"name":"' + name + '","path":"' + path + '","owner":"' + owner +  '","perm":"' + perm + '","group":"' + group + '","cmd0":"' + cmd0 + '","cmd1":"' + cmd1 + '","data":"' + textData + '","author":"' + author + '"}',
+            data: JSON.stringify({"name": name, "path": path, "owner": owner, "perm": perm, "group": group,"cmd0": cmd0, "cmd1": cmd1, "data": textData, "author": author}),
             dataType: "json",
             contentType: "application/json"
         });
@@ -25,9 +25,10 @@
     function pub(name) {
         alert(name);
         $.ajax({
+            async: false,
             type: "POST",
             url: "/config/pub/post",
-            data: '{"name":"publish", "sauthor": "caoyu2", "file":"' + name + '"}',
+            data: JSON.stringify({"name": "publish", "sauthor": "caoyu2", "file": name}),
             dataType: "json",
             contentType: "application/json"
         });

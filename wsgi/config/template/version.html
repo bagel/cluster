@@ -5,9 +5,10 @@
     function pub(name, version) {
         alert(name);
         $.ajax({
+            async: false,
             type: "POST",
             url: "/config/pub/post",
-            data: '{"name":"publish", "sauthor": "caoyu2", "file":"' + name + '","fileversion":' + version + '}',
+            data: JSON.stringify({"name": "publish", "sauthor": "caoyu2", "file": name, "fileversion": parseInt(version)}),
             dataType: "json",
             contentType: "application/json"
         });
