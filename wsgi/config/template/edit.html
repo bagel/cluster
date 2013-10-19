@@ -21,6 +21,19 @@
             contentType: "application/json"
         });
     }
+
+    function pub(name) {
+        alert(name);
+        $.ajax({
+            type: "POST",
+            url: "/config/pub/post",
+            data: '{"name":"publish", "sauthor": "caoyu2", "file":"' + name + '"}',
+            dataType: "json",
+            contentType: "application/json"
+        });
+        window.location.href="/config/pub"
+    }
+
 </script>
 <!--<form class="form-horizontal" method="post">-->
     <div class="control-group">
@@ -59,7 +72,7 @@
         <input type="text" class="input-small" id="author" name="author" value="{$ author $}">
         <span class="pull-right">
         <button type="submit" class="btn btn-success" onclick="save()">保存</button>
-        <button type="submit" class="btn btn-primary">分发</button>
+        <button type="submit" class="btn btn-primary" onclick='pub("{$ name $}")'>分发</button>
         </span>
     </div>
 <!--</form>-->

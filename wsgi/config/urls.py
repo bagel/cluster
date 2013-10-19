@@ -62,4 +62,4 @@ def urls(environ):
     elif re.match(r"/config/pub/update", environ["PATH_INFO"]):
         return config.ConfigPubHtml(environ, template).configPubUpdate()
     else:
-        return config.ConfigHtml(environ, template).configList()
+        return config.ConfigPubHtml(environ, template).configPub()

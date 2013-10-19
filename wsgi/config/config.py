@@ -255,7 +255,6 @@ class ConfigPublish(ConfigData):
         self.fileData.pop("version")
         if self.fileData.has_key("cauthor"):
             self.fileData["ctime"] = int(time.time())
-            self.fileData["confirm"] = 1
         elif self.fileData.has_key("pauthor"):
             self.fileData["ptime"] = int(time.time())
         self.collection.update({"version": int(version)}, {"$set": self.fileData})
@@ -308,10 +307,22 @@ class ConfigPubHtml(ConfigPublish):
 
     def configPub(self):
         ctype = "text/html"
-        self.data = {"name": "publish"}
+        if self.environ["REQUEST_METHOD"] == "GET":
+            query_string = urlparse.parse_qs(self.environ["QUERY_STRING"])
+            if not query_string.has_key("page"):
+                self.data = {"name": "publish", "page": 1}
+            else:
+                self.data = {"name": "publish", "page": int(query_string["page"][0])}
         self.Collection()
+        page = int(self.fileData["page"])
+        count = self.collection.count()
+        if count % 12 == 0:
+            pageMax = count / 12
+        else:
+            pageMax = count / 12 + 1
         pubData = [ d for d in self.collection.find(fields={"_id": False}, sort=[("stime", -1)]) ]
-        response_body = script.response(os.path.join(self.template, "publish.html"), {"pubData": pubData})
+        pubData = pubData[((page - 1) * 12):(page * 12)]
+        response_body = script.response(os.path.join(self.template, "publish.html"), {"pubData": pubData, "page": page, "pageMax": pageMax})
         return (ctype, response_body)
 
     def configPubGet(self):

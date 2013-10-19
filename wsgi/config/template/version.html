@@ -7,10 +7,11 @@
         $.ajax({
             type: "POST",
             url: "/config/pub/post",
-            data: '{"name":"publish", "sauthor": "caoyu2", "file":"' + name + '","fileversion":"' + version + '"}',
+            data: '{"name":"publish", "sauthor": "caoyu2", "file":"' + name + '","fileversion":' + version + '}',
             dataType: "json",
             contentType: "application/json"
         });
+        window.location.href="/config/pub"
     }
 </script>
 <legend>文件名: {$ name $}<a href="/config/edit?name=add"><button class="btn btn-success pull-right">添加</button></a></legend>

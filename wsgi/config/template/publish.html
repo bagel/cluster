@@ -3,7 +3,8 @@
 {% config %}
 <script>
     function audit(version) {
-        alert(version);
+        //alert(version);
+        //if (window.confirm("确认")){
         $.ajax({
             type: "POST",
             url: "/config/pub/update",
@@ -11,10 +12,14 @@
             dataType: "json",
             contentType: "application/json"
         });
+        window.location.reload()
+        //}
+        //window.setTimeout(window.location.reload(), 1000);
     }
 
     function deny(version) {
-        alert(version);
+        //alert(version);
+        //if (window.confirm("确认")){
         $.ajax({
             type: "POST",
             url: "/config/pub/update",
@@ -22,17 +27,42 @@
             dataType: "json",
             contentType: "application/json"
         });
+        window.location.reload()
+        //}
+        //window.setTimeout(window.location.reload(), 1000);
+    }
+
+    function retry(version) {
+        //alert(version);
+        //if (window.confirm("确认")){
+        $.ajax({
+            type: "POST",
+            url: "/config/pub/update",
+            data: '{"name":"publish", "sauthor": "caoyu2", "cauthor": "caoyu2", "confirm": 0, "version":' + version + '}',
+            dataType: "json",
+            contentType: "application/json"
+        });
+        window.location.reload()
+        //}
+        //window.setTimeout(window.location.reload(), 1000);
+    }
+
+    var page = $("#page").text();
+    function pageBefore(page) {
+        page = parseInt(page) + 1;
     }
 </script>
 <legend>审核文件列表</legend>
 <table class="table table-striped table-bordered">
     <thead>
         <tr>
+        <th>ID</th>
         <th>分组</th>
         <th>文件名</th>
-        <th>创建</th>
-        <th>审核</th>
-        <th>下发</th>
+        <th>创建者</th>
+        <th>创建时间</th>
+        <th>审核者</th>
+        <th>下发时间</th>
         <th>状态</th>
         <th>操作</th>
         <tr>
@@ -41,16 +71,21 @@
 <script type="text/python">
     import time
     for pub in Tdict["pubData"]:
-        if not pub.has_key("group"):
-            echo '<tr><td></td>'
+        echo '<tr><td>%s</td>' % pub['version']
+        echo '<td>%s</td>' % pub["group"].encode('utf-8')
+        echo '<td><a href="/config/edit?name=%s&version=%s">%s</a></td>' % (pub["file"].encode('utf-8'), pub["fileversion"], pub["file"].encode('utf-8'))
+        if not pub.has_key("sauthor"):
+            echo '<td></td><td></td>'
         else:
-            echo '<tr><td>%s</td>' % pub["group"].encode('utf-8')
-        echo '<td>%s</td>' % pub["file"].encode('utf-8')
-        for author in ["sauthor", "cauthor", "pauthor"]:
-            if not pub.has_key(author):
-                echo '<td></td>'
-            else:
-                echo '<td>%s 于 %s</td>' % (pub[author].encode('utf-8'), time.strftime("%Y/%m/%d %H:%M:%S", time.localtime(pub[author[0] + "time"])))
+            echo '<td>%s</td><td>%s</td>' % (pub["sauthor"].encode('utf-8'), time.strftime("%Y/%m/%d %H:%M:%S", time.localtime(pub["stime"])))
+        if not pub.has_key("cauthor"):
+            echo '<td></td>'
+        else:
+            echo '<td>%s</td>' % pub["cauthor"].encode('utf-8')
+        if not pub.has_key("pauthor"):
+            echo '<td></td>'
+        else:
+            echo '<td>%s</td>' % time.strftime("%Y/%m/%d %H:%M:%S", time.localtime(pub["ptime"]))
         if pub["confirm"] == 0:
             echo '<td>待审核</td>'
             echo '''<td>
@@ -64,9 +99,26 @@
             echo '<td>已经下发</td>'
             echo '<td><button class="btn btn-success">重开</button></td></tr>'
         elif pub["confirm"] == -1:
-            echo '<td>审核不通过</td>'
-            echo '<td><button class="btn btn-success">重审</button></td></tr>'
+            echo '<td>被打回</td>'
+            echo '''<td><button class="btn btn-success" onclick='retry("%s")'>重审</button></td></tr>''' % pub['version']
 </script>
     </tbody>
 </table>
+<div class="pager pull-right">
+    <ul>
+<script type="text/python">
+    if Tdict["page"] > 1:
+        echo '''<li><a href="/config/pub?page=%s">前一页</a></li>\n''' % (Tdict["page"] - 1)
+
+    if Tdict["pageMax"] > 1:
+        echo '''<li class="disabled" id="page"><a href="">%s</a></li>\n''' % Tdict["page"]
+
+    if Tdict["pageMax"] > 1 and Tdict["page"] != Tdict["pageMax"]:
+        echo '''<li class="disabled"><a href="">...</a></li>
+<li><a href="/config/pub?page=%s">%s</a></li>
+<li><a href="/config/pub?page=%s">后一页</a></li>
+''' % (Tdict["pageMax"], Tdict["pageMax"], Tdict["page"] + 1)
+</script>
+    </ul>
+</div>
 {% end %}
