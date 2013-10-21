@@ -2,11 +2,11 @@ web admin
 ========
 api.dpool.cluster.sina.com.cn
 
-##Config
+#Config
 
-#config file
+##config file
 
-* **update**
+###update
 
 	curl 10.13.32.236/config/update -d @conf.json -H "Host: api.dpool.cluster.sina.com.cn"
 
