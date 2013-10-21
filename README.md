@@ -6,7 +6,7 @@ api.dpool.cluster.sina.com.cn
 
 ##config file
 
-###update
+#### update
 
 	curl 10.13.32.236/config/update -d @conf.json -H "Host: api.dpool.cluster.sina.com.cn"
 
@@ -27,3 +27,13 @@ conf.json
 	}
 
 cmd0, cmd1 and data are base64 encode
+
+#### delete
+
+	curl 10.13.32.236/config/delete -d '{"name": "nginx.conf", "version": 2}' -H "Host: api.dpool.cluster.sina.com.cn"
+
+delete config "nginx.conf" with version 2
+
+	curl 10.13.32.236/config/delete -d '{"name": "nginx.conf"}' -H "Host: api.dpool.cluster.sina.com.cn"
+
+delete config "nginx.conf" all
