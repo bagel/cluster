@@ -6,7 +6,7 @@ api.dpool.cluster.sina.com.cn
 
 * **config file**
 
-update
+1.update
 
 	curl 10.13.32.236/config/update -d @conf.json -H "Host: api.dpool.cluster.sina.com.cn"
 
