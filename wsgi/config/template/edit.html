@@ -22,13 +22,13 @@
         });
     }
 
-    function pub(name) {
+    function pub(name, version) {
         alert(name);
         $.ajax({
             async: false,
             type: "POST",
             url: "/config/pub/post",
-            data: JSON.stringify({"name": "publish", "sauthor": "caoyu2", "file": name}),
+            data: JSON.stringify({"name": "publish", "sauthor": "caoyu2", "file": name, "fileversion": parseInt(version)}),
             dataType: "json",
             contentType: "application/json"
         });
@@ -72,8 +72,13 @@
         <span>修改者:</span>
         <input type="text" class="input-small" id="author" name="author" value="{$ author $}">
         <span class="pull-right">
-        <button type="submit" class="btn btn-success" onclick="save()">保存</button>
-        <button type="submit" class="btn btn-primary" onclick='pub("{$ name $}")'>分发</button>
+<script type="text/python">
+        #if not Tdict["disabled"]:
+        echo '''<button type="submit" class="btn btn-success" onclick="save()">保存</button>'''
+        #else:
+        #    echo '''<button type="submit" class="btn btn-success disabled" id="denysave">保存</button>'''
+</script>
+            <button type="submit" class="btn btn-primary" onclick='pub("{$ name $}", "{$ version $}")'>分发</button>
         </span>
     </div>
 <!--</form>-->

@@ -54,6 +54,23 @@
         //window.setTimeout(window.location.reload(), 1000);
     }
 
+    function cancel(version) {
+        //alert(version);
+        //if (window.confirm("确认")){
+        $.ajax({
+            async: false,
+            type: "POST",
+            url: "/config/pub/update",
+            data: JSON.stringify({"name":"publish", "sauthor": "caoyu2", "cauthor": "caoyu2", "confirm": -2, "version": parseInt(version)}),
+            dataType: "json",
+            //success: function(){alert("send success");},
+            contentType: "application/json"
+        });
+        window.location.reload()
+        //}
+        //window.setTimeout(window.location.reload(), 1000);
+    }
+
     var page = $("#page").text();
     function pageBefore(page) {
         page = parseInt(page) + 1;
@@ -101,13 +118,18 @@
 </td></tr>''' % (pub["version"], pub["version"])
         elif pub["confirm"] == 1:
             echo '<td>审核通过</td>'
-            echo '<td><button class="btn btn-success">下发</button></td></tr>'
+            echo '''<td>
+<button class="btn btn-success">下发</button>
+<button class="btn btn-primary" onclick='cancel("%s")'>取消</button>
+</td></tr>''' % pub['version']
         elif pub["confirm"] == 2:
             echo '<td>已经下发</td>'
             echo '<td><button class="btn btn-success">重开</button></td></tr>'
         elif pub["confirm"] == -1:
             echo '<td>被打回</td>'
             echo '''<td><button class="btn btn-success" onclick='retry("%s")'>重审</button></td></tr>''' % pub['version']
+        elif pub["confirm"] == -2:
+            echo '<td>下发取消</td><td></td>'
 </script>
     </tbody>
 </table>

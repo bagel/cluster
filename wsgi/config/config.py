@@ -18,15 +18,15 @@ class ConfigData:
         self.data = {}
 
     def Collection(self):
-        if self.environ["REQUEST_METHOD"] == "POST":
+        if self.data:
+            self.fileData = self.data
+        else:
             postData = self.environ['wsgi.input'].read(int(self.environ['CONTENT_LENGTH']))
             print postData
             try:
                 self.fileData = json.loads(postData)
             except:
                 self.fileData = postData
-        else:
-            self.fileData = self.data
         print self.fileData["name"]
         self.collection = self.db[self.fileData["name"]]
 
@@ -71,22 +71,24 @@ class NodeData(ConfigData):
         ConfigData.__init__(self, environ, template)
         self.K = []
         self.V = {}
+        self.N = []
 
     def dictSearch(self, d, key, ks=[]):
-        for k, v in d.items():
-            if k == key:
-                ks.append(k)
-                self.K = ks[:]
-                self.V = v.copy()
-            else:
-                ks.append(k)
-                self.dictSearch(v, key)
-                ks.remove(k)
+        if isinstance(d, dict):
+            for k, v in d.iteritems():
+                if k == key:
+                    ks.append(k)
+                    self.K = ks[:]
+                    self.V = v.copy()
+                else:
+                    ks.append(k)
+                    self.dictSearch(v, key, ks)
+                    ks.remove(k)
 
     def test(self):
         d = {"s": {"m": {"p": {}, "q": {}}, "n": {"t": {}}}, "o": {"h": {}}}
-        self.dictSearch(d, "m")
-        print self.K, self.V
+        self.dictSearch(d, "o")
+        print "K: ", self.K, "V: ", self.V
 
     def create(self):
         ctype = "text/plain"
@@ -106,8 +108,13 @@ class NodeData(ConfigData):
         node = self.collection.find(fields={"_id": False}, sort=[("version", -1)], limit=1).next()
         node['mtime'] = int(time.time())
         node['version'] = int(node["version"]) + 1
-        self.dictSearch(node["data"], parent)
+        try:
+            print ks
+        except:
+            pass
+        self.dictSearch(node["data"], parent, [])
         s = 'node["data"]'
+        print self.K
         for key in self.K:
             s += '["' + key + '"]'
         print s
@@ -123,11 +130,17 @@ class NodeData(ConfigData):
         node = self.collection.find(fields={"_id": False}, sort=[("version", -1)], limit=1).next()
         node['mtime'] = int(time.time())
         node['version'] = int(node['version']) + 1
-        self.dictSearch(node["data"], delete)
+        try:
+            print ks
+        except:
+            pass
+        self.dictSearch(node["data"], delete, [])
         s = 'node["data"]'
+        print self.K
         for key in self.K[:-1]:
             s += '["' + key + '"]'
         s += '.pop("%s")' % delete
+        print s
         exec(s)
         self.collection.insert(node)
         return (ctype, "0")
@@ -139,7 +152,7 @@ class NodeData(ConfigData):
         node = self.collection.find(fields={"_id": False}, sort=[("version", -1)], limit=1).next()
         node['mtime'] = int(time.time())
         node['version'] = int(node['version']) + 1
-        self.dictSearch(node["data"], rename[0])
+        self.dictSearch(node["data"], rename[0], [])
         s = 'node["data"]'
         for key in self.K[:-1]:
             s += '["' + key + '"]'
@@ -157,7 +170,7 @@ class NodeData(ConfigData):
         node = self.collection.find(fields={"_id": False}, sort=[("version", -1)], limit=1).next()
         node['mtime'] = int(time.time())
         node['version'] = int(node['version']) + 1
-        self.dictSearch(node["data"], current)
+        self.dictSearch(node["data"], current, [])
         s = 'node["data"]'
         for key in self.K:
             s += '["' + key + '"]'
@@ -165,6 +178,29 @@ class NodeData(ConfigData):
         exec(s)
         self.collection.insert(node)
         return (ctype, "0")
+
+    def dictNodes(self, d):
+        if isinstance(d, dict):
+            for k, v in d.iteritems():
+                if v.has_key("nodes"):
+                    self.N.extend(v["nodes"])
+                else:
+                    self.dictNodes(d)
+
+    def readnodes(self):
+        ctype = "appliction/json"
+        if not self.data:
+            self.Collection()
+            current = self.fileData["current"]
+            collection = self.collection
+        else:
+            current = self.data["current"]
+            collection = self.db[self.data["name"]]
+        node = collection.find(fields={"_id": False}, sort=[("version", -1)], limit=1).next()
+        self.dictSearch(node["data"], current, [])
+        self.dictNodes(self.V)
+        return (ctype, json.JSONEncoder().encode(self.N))
+        
 
 class ConfigGroup(ConfigData):
     def __init__(self, environ, template):
@@ -228,9 +264,9 @@ class ConfigGroup(ConfigData):
         self.collection.insert(groupData)
         return (ctype, "0")
 
-class ConfigPublish(ConfigData):
+class ConfigPublish(NodeData):
     def __init__(self, environ, template):
-        ConfigData.__init__(self, environ, template)
+        NodeData.__init__(self, environ, template)
 
     def add(self):
         ctype = "text/plain"
@@ -242,6 +278,8 @@ class ConfigPublish(ConfigData):
         self.fileData["stime"] = int(time.time())
         self.fileData["confirm"] = 0
         self.fileData["group"] = self.db[self.fileData["file"]].find(fields={"group": True}, limit=1).next()["group"]
+        self.data = {"name": "node", "current": self.fileData["group"]}
+        self.fileData["nodes"] = json.loads(self.readnodes()[-1])
         if not self.fileData.has_key("fileversion"):
             self.fileData["fileversion"] = self.db[self.fileData["file"]].find(fields={"version": True}, limit=1, sort=[("version", -1)]).next()["version"]
         self.collection.insert(self.fileData)
@@ -268,13 +306,12 @@ class ConfigHtml(ConfigData):
     def configList(self):
         ctype = "text/html"
         conflist = self.db.collection_names(include_system_collections=False)
-        for conf in ["node", "group", "groups", "publish"]:
-            conflist.remove(conf)
         tdict = {}
         for conf in conflist:
             collection = self.db[conf]
-            tdict[conf] = collection.find(fields={"_id": False, "name": True, "path": True, "group": True, "author": True, "mtime": True}, limit=1, sort=[("version", -1)]).next()
-            tdict[conf]["mtime"] = time.strftime("%Y/%m/%d %H:%M:%S", time.localtime(tdict[conf]["mtime"]))
+            if len(collection.find_one()) == 12:
+                tdict[conf] = collection.find(fields={"_id": False, "name": True, "path": True, "group": True, "author": True, "mtime": True}, limit=1, sort=[("version", -1)]).next()
+                tdict[conf]["mtime"] = time.strftime("%Y/%m/%d %H:%M:%S", time.localtime(tdict[conf]["mtime"]))
         response_body = script.response(os.path.join(self.template, "list.html"), tdict)
         return (ctype, response_body)
 
@@ -287,11 +324,18 @@ class ConfigHtml(ConfigData):
     def configEdit(self):
         ctype = "text/html"
         self.data = dict(urlparse.parse_qsl(self.environ['QUERY_STRING']))
+        if not self.data.has_key("version"):
+            self.data['version'] = self.db["publish"].find(spec={"file":{"$in": [self.data['name']]}}, fields={"_id": False, "fileversion": True}, limit=1, sort=[("version", -1)]).next()["fileversion"]
         if self.data["name"] != "add":
             tdict = json.loads(self.read()[-1])
             tdict['mtime'] = time.strftime('%Y/%m/%d %H:%M:%S', time.localtime(tdict['mtime']))
         else:
             tdict = {"name": "", "path": "", "owner": "", "perm": "", "group": "", "cmd0": "", "cmd1": "", "data": "", "author": "", "mtime": ""}
+        if self.db["publish"].find(spec={"$and": [{"file":{"$in": [tdict['name']]}}, {"confirm":{"$in": [0, 1]}}]}).count() >= 1:
+            disabled = "disabled"
+        else:
+            disabled = ""
+        tdict["disabled"] = disabled
         response_body = script.response(os.path.join(self.template, "edit.html"), tdict)
         return (ctype, response_body)
 

@@ -21,7 +21,7 @@ def urls(environ):
         return config.NodeData(environ, template).update()
     elif re.match(r"/config/node/add$", environ["PATH_INFO"]):
         return config.NodeData(environ, template).add()
-    elif re.match(r"/config/node/read", environ["PATH_INFO"]):
+    elif re.match(r"/config/node/read$", environ["PATH_INFO"]):
         return config.NodeData(environ, template).read()
     elif re.match(r"/config/node/history", environ["PATH_INFO"]):
         return config.NodeData(environ, template).history()
@@ -29,6 +29,8 @@ def urls(environ):
         return config.NodeData(environ, template).rename()
     elif re.match(r"/config/node/addnodes", environ["PATH_INFO"]):
         return config.NodeData(environ, template).addnodes()
+    elif re.match(r"/config/node/readnodes", environ["PATH_INFO"]):
+        return config.NodeData(environ, template).readnodes()
     elif re.match(r"/config/group/create", environ["PATH_INFO"]):
         return config.ConfigGroup(environ, template).create()
     elif re.match(r"/config/group/add", environ["PATH_INFO"]):

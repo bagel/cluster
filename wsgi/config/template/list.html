@@ -30,12 +30,13 @@
     <tbody>
 <script type="text/python">
     for conf in Tdict.keys():
+        print Tdict[conf]
         echo '''<tr>
+<td><a href="/config/edit?name=%s">%s</a></td>
 <td>%s</td>
 <td>%s</td>
 <td>%s</td>
-<td>%s</td>
-<td>%s</td>''' % (Tdict[conf]["name"].encode('utf-8'), Tdict[conf]["path"].encode('utf-8'), Tdict[conf]["group"].encode('utf-8'), Tdict[conf]["mtime"].encode('utf-8'), Tdict[conf]["author"].encode('utf-8'))
+<td>%s</td>''' % (Tdict[conf]["name"].encode('utf-8'), Tdict[conf]["name"].encode('utf-8'), Tdict[conf]["path"].encode('utf-8'), Tdict[conf]["group"].encode('utf-8'), Tdict[conf]["mtime"].encode('utf-8'), Tdict[conf]["author"].encode('utf-8'))
         echo '''<td class="span3">
 <span class="pull-left">
 <a href="/config/edit?name=%s"><button class="btn btn-success">编辑</button></a>
