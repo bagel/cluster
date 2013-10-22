@@ -55,3 +55,59 @@ read config "nginx.conf" with the last version
 	curl 10.13.32.236/config/history -d '{"name": "nginx.conf"}' -H "Host: api.dpool.cluster.sina.com.cn"
 
 version, author and mtime history of config "nginx.conf"
+
+
+##node
+
+#### create
+
+	curl 10.13.32.236/config/node/create -d '{"name": "node", "data": {"root": "dpool"}' -H "Host: api.dpool.cluster.sina.com.cn"
+
+create node tree root "dpool"
+
+
+#### add
+
+	curl 10.13.32.236/config/node/add -d '{"name": "node", "parent": "dpool", "current": "web3"}' -H "Host: api.dpool.cluster.sina.com.cn"
+
+add node "web3" to "dpool"
+
+#### update
+
+	curl 10.13.32.236/config/node/create -d '{"name": "node", "delete": "nginx"}' -H "Host: api.dpool.cluster.sina.com.cn"
+
+delete a node
+
+#### addnodes
+
+	curl 10.13.32.236/config/node/addnodes  -d '{"name": "node", "nodes": ["10.73.48.210"], "current": "nginx"}' -H 'Host: api.dpool.cluster.sina.com.cn'
+
+add nodes to a node
+
+#### read
+
+	curl 10.13.32.236/config/node/read  -d '{"name": "node", "parent": "web3", "current": "nginx"}' -H 'Host: api.dpool.cluster.sina.com.cn'
+
+	{
+	    "data": {
+	        "dpool": {
+	            "ssoweb": {}, 
+	            "web3": {
+	                "nginx": {
+	                    "nodes": [
+	                        "10.73.48.210"
+	                    ]
+	                }
+	            }
+	        }
+	    }, 
+	    "mtime": 1382440967, 
+	    "name": "node", 
+	    "version": 61
+	}
+
+
+#### delete, history 
+
+same to config file part
+
