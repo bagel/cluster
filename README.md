@@ -4,7 +4,7 @@ api.dpool.cluster.sina.com.cn
 
 #Config
 
-##config file
+##config
 
 #### update
 
@@ -111,3 +111,5 @@ add nodes to a node
 
 same to config file part
 
+
+## 
