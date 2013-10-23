@@ -162,7 +162,9 @@ class NodeData(ConfigData):
         s = 'node["data"]'
         for key in self.K:
             s += '["' + key + '"]'
-        s += '={"nodes": %s}' % nodes
+        s = 'if %s.has_key("nodes"): %s["nodes"].extend(%s)\nelse: %s["nodes"]=%s' % (s, s, nodes, s, nodes)
+        #s += '={"nodes": %s}' % nodes
+        print s
         exec(s)
         self.collection.insert(node)
         return (ctype, "0")
