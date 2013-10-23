@@ -1,0 +1,50 @@
+{# config.html #}
+
+{% config %}
+<legend>下发日志</legend>
+<table class="table table-striped table-bordered">
+    <thead>
+        <tr>
+        <th>ID</th>
+        <th>分组</th>
+        <th>文件名</th>
+        <th>下发者</th>
+        <th>下发时间</th>
+        <th>状态</th>
+        <th>操作</th>
+        <tr>
+    </thead>
+    <tbody>
+<script type="text/python">
+    import time
+    for issue in Tdict["issueData"]:
+        echo '''<tr>
+<td>%s</td>
+<td>%s</td>
+<td><a href="/config/edit?name=%s&version=%s">%s</a></td>
+<td>%s</td>
+<td>%s</td>''' % (issue["pubversion"], issue["group"].encode('utf-8'), issue["file"].encode('utf-8'), issue["fileversion"], issue["file"].encode('utf-8'), issue["pauthor"].encode('utf-8'), time.strftime("%Y/%m/%d %H:%M:%S", time.localtime(issue["ptime"])))
+        echo '''<td></td><td>
+<button class="btn btn-primary">查看</button>
+</td></tr>'''
+</script>
+    </tbody>
+</table>
+<div class="pager pull-right">
+    <ul>
+<script type="text/python">
+    if Tdict["page"] > 1:
+        echo '''<li><a href="/config/issue?page=%s">前一页</a></li>\n''' % (Tdict["page"] - 1)
+
+    if Tdict["pageMax"] > 1:
+        echo '''<li class="disabled" id="page"><a href="">%s</a></li>\n''' % Tdict["page"]
+
+    if Tdict["pageMax"] > 1 and Tdict["page"] != Tdict["pageMax"]:
+        echo '''<li class="disabled"><a href="">...</a></li>
+<li><a href="/config/issue?page=%s">%s</a></li>
+<li><a href="/config/issue?page=%s">后一页</a></li>
+''' % (Tdict["pageMax"], Tdict["pageMax"], Tdict["page"] + 1)
+</script>
+    </ul>
+</div>
+{% end %}

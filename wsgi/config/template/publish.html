@@ -71,6 +71,23 @@
         //window.setTimeout(window.location.reload(), 1000);
     }
 
+    function reopen(version) {
+        //alert(version);
+        //if (window.confirm("确认")){
+        $.ajax({
+            async: false,
+            type: "POST",
+            url: "/config/pub/update",
+            data: JSON.stringify({"name":"publish", "sauthor": "caoyu2", "cauthor": "caoyu2", "confirm": 0, "version": parseInt(version)}),
+            dataType: "json",
+            //success: function(){alert("send success");},
+            contentType: "application/json"
+        });
+        window.location.reload()
+        //}
+        //window.setTimeout(window.location.reload(), 1000);
+    }
+
     function issue(version) {
         //alert(version);
         //if (window.confirm("确认")){
@@ -88,11 +105,22 @@
             async: false,
             type: "POST",
             url: "/config/queue/post",
-            data: JSON.stringify({"name":"queue", "pubversion": parseInt(version)}),
+            data: JSON.stringify({"name":"queue", "status": 0, "pubversion": parseInt(version)}),
             dataType: "json",
             //success: function(){alert("send success");},
             contentType: "application/json"
         });
+
+        $.ajax({
+            async: false,
+            type: "POST",
+            url: "/config/issue/post",
+            data: JSON.stringify({"name":"issue", "data": {}, "pubversion": parseInt(version)}),
+            dataType: "json",
+            //success: function(){alert("send success");},
+            contentType: "application/json"
+        });
+
         window.location.reload()
         //}
         //window.setTimeout(window.location.reload(), 1000);
@@ -103,7 +131,7 @@
         page = parseInt(page) + 1;
     }
 </script>
-<legend>审核文件列表</legend>
+<legend>文件审核</legend>
 <table class="table table-striped table-bordered">
     <thead>
         <tr>
@@ -113,7 +141,7 @@
         <th>创建者</th>
         <th>创建时间</th>
         <th>审核者</th>
-        <th>下发时间</th>
+        <th>审核时间</th>
         <th>状态</th>
         <th>操作</th>
         <tr>
@@ -130,33 +158,41 @@
         else:
             echo '<td>%s</td><td>%s</td>' % (pub["sauthor"].encode('utf-8'), time.strftime("%Y/%m/%d %H:%M:%S", time.localtime(pub["stime"])))
         if not pub.has_key("cauthor"):
-            echo '<td></td>'
+            echo '<td></td><td></td>'
         else:
             echo '<td>%s</td>' % pub["cauthor"].encode('utf-8')
-        if not pub.has_key("pauthor"):
-            echo '<td></td>'
-        else:
-            echo '<td>%s</td>' % time.strftime("%Y/%m/%d %H:%M:%S", time.localtime(pub["ptime"]))
+            echo '<td>%s</td>' % time.strftime("%Y/%m/%d %H:%M:%S", time.localtime(pub["ctime"]))
         if pub["confirm"] == 0:
             echo '<td>待审核</td>'
-            echo '''<td>
+            echo '''<td class="span3">
 <button class="btn btn-success" onclick='audit("%s")'>审核</button>
 <button class="btn btn-primary" onclick='deny("%s")'>打回</button>
+<button class="btn btn-primary"'>查看</button>
 </td></tr>''' % (pub["version"], pub["version"])
         elif pub["confirm"] == 1:
             echo '<td>审核通过</td>'
-            echo '''<td>
+            echo '''<td class="span3">
 <button class="btn btn-success" onclick='issue("%s")'>下发</button>
 <button class="btn btn-primary" onclick='cancel("%s")'>取消</button>
+<button class="btn btn-primary">查看</button>
 </td></tr>''' % (pub['version'], pub['version'])
         elif pub["confirm"] == 2:
             echo '<td>已经下发</td>'
-            echo '<td><button class="btn btn-success">重开</button></td></tr>'
+            echo '''<td class="span3">
+<button class="btn btn-success" onclick='reopen("%s")'>重开</button>
+<button class="btn btn-primary">查看</button>
+</td></tr>''' % pub['version']
         elif pub["confirm"] == -1:
             echo '<td>被打回</td>'
-            echo '''<td><button class="btn btn-success" onclick='retry("%s")'>重审</button></td></tr>''' % pub['version']
+            echo '''<td class="span3">
+<button class="btn btn-success" onclick='retry("%s")'>重审</button>
+<button class="btn btn-primary">查看</button>
+</td></tr>''' % pub['version']
         elif pub["confirm"] == -2:
-            echo '<td>下发取消</td><td></td>'
+            echo '<td>下发取消</td>'
+            echo '''<td class="span3">
+<button class="btn btn-primary">查看</button>
+</td></tr>'''
 </script>
     </tbody>
 </table>

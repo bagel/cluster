@@ -379,6 +379,41 @@ class ConfigQueue(ConfigData):
     def configQueuePost(self):
         self.update()
 
+class ConfigIssue(ConfigData):
+    def __init__(self, environ, template):
+        ConfigData.__init__(self, environ, template)
+
+
+class ConfigIssueHtml(ConfigIssue):
+    def __init__(self, environ, template):
+        ConfigIssue.__init__(self, environ, template)
+
+    def configIssue(self):
+        ctype = "text/html"
+        if self.environ["REQUEST_METHOD"] == "GET":
+            query_string = urlparse.parse_qs(self.environ["QUERY_STRING"])
+            if not query_string.has_key("page"):
+                self.data = {"name": "issue", "page": 1}
+            else:
+                self.data = {"name": "issue", "page": int(query_string["page"][0])}
+        self.Collection()
+        page = int(self.fileData["page"])
+        count = self.collection.count()
+        if count % 12 == 0:
+            pageMax = count / 12
+        else:
+            pageMax = count / 12 + 1
+        issueData = []
+        for d in self.collection.find(fields={"_id": False, "data": True, "pubversion": True}, sort=[("version", -1)]):
+            d.update(self.db["publish"].find(spec={"version": d["pubversion"]}, fields={"_id": False, "file": True, "fileversion": True, "group": True, "pauthor": True, "ptime": True}).next())
+            issueData.append(d)
+        issueData = issueData[((page - 1) * 12):(page * 12)]
+        print issueData
+        response_body = script.response(os.path.join(self.template, "issue.html"), {"issueData": issueData, "page": page, "pageMax": pageMax})
+        return (ctype, response_body)
+
+    def configIssuePost(self):
+        self.update()
 
 
 def main():
