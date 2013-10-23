@@ -63,5 +63,7 @@ def urls(environ):
         return config.ConfigPubHtml(environ, template).configPubPost()
     elif re.match(r"/config/pub/update", environ["PATH_INFO"]):
         return config.ConfigPubHtml(environ, template).configPubUpdate()
+    elif re.match(r"/config/queue/post", environ["PATH_INFO"]):
+        return config.ConfigQueue(environ, template).configQueuePost()
     else:
         return config.ConfigPubHtml(environ, template).configPub()

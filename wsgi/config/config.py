@@ -108,16 +108,10 @@ class NodeData(ConfigData):
         node = self.collection.find(fields={"_id": False}, sort=[("version", -1)], limit=1).next()
         node['mtime'] = int(time.time())
         node['version'] = int(node["version"]) + 1
-        try:
-            print ks
-        except:
-            pass
         self.dictSearch(node["data"], parent, [])
         s = 'node["data"]'
-        print self.K
         for key in self.K:
             s += '["' + key + '"]'
-        print s
         s += '["%s"]={}' % (current)
         exec(s)
         self.collection.insert(node)
@@ -130,17 +124,11 @@ class NodeData(ConfigData):
         node = self.collection.find(fields={"_id": False}, sort=[("version", -1)], limit=1).next()
         node['mtime'] = int(time.time())
         node['version'] = int(node['version']) + 1
-        try:
-            print ks
-        except:
-            pass
         self.dictSearch(node["data"], delete, [])
         s = 'node["data"]'
-        print self.K
         for key in self.K[:-1]:
             s += '["' + key + '"]'
         s += '.pop("%s")' % delete
-        print s
         exec(s)
         self.collection.insert(node)
         return (ctype, "0")
@@ -340,9 +328,7 @@ class ConfigHtml(ConfigData):
         return (ctype, response_body)
 
     def configEditPost(self):
-        ctype = "text/html"
         self.update()
-        return (ctype, "0")
 
 
 class ConfigPubHtml(ConfigPublish):
@@ -379,19 +365,18 @@ class ConfigPubHtml(ConfigPublish):
         return self.configPub()
 
     def configPubPost(self):
-        ctype = "text/html"
         self.add()
-        return (ctype, "0")
 
     def configPubUpdate(self):
-        ctype = "text/html"
         self.update()
-        return (ctype, "0")
 
-    def response(self):
-        ctype = "text/html"
-        response_body = script.response(os.path.join(self.template, "edit.html"), {})
-        return (ctype, response_body)
+class ConfigQueue(ConfigData):
+    def __init__(self, environ, template):
+        ConfigData.__init__(self, environ, template)
+
+    def configQueuePost(self):
+        self.update()
+
 
 
 def main():
