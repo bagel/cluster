@@ -8,6 +8,7 @@ import time
 import json
 import script
 import urlparse
+import hashlib
 
 
 class ConfigData:
@@ -330,7 +331,7 @@ class ConfigHtml(ConfigData):
         return (ctype, response_body)
 
     def configEditPost(self):
-        self.update()
+        return self.update()
 
 
 class ConfigPubHtml(ConfigPublish):
@@ -367,17 +368,17 @@ class ConfigPubHtml(ConfigPublish):
         return self.configPub()
 
     def configPubPost(self):
-        self.add()
+        return self.add()
 
     def configPubUpdate(self):
-        self.update()
+        return self.update()
 
 class ConfigQueue(ConfigData):
     def __init__(self, environ, template):
         ConfigData.__init__(self, environ, template)
 
     def configQueuePost(self):
-        self.update()
+        return self.update()
 
 class ConfigIssue(ConfigData):
     def __init__(self, environ, template):
@@ -413,7 +414,7 @@ class ConfigIssueHtml(ConfigIssue):
         return (ctype, response_body)
 
     def configIssuePost(self):
-        self.update()
+        return self.update()
 
 
 def main():

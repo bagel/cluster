@@ -35,7 +35,7 @@ def cn_name(type, name):
     return json.loads(urllib2.urlopen(url=url+name).read())["list"][0]["cn_name"]
 
 def update():
-    mods = ["dpool2_web", "dpool3_web"]
+    mods = ["dpool2_web", "dpool3_web", "ssoweb"]
     node, idc, mod = node_info(mods)
     import redis
     r = redis.StrictRedis("10.13.32.21")
