@@ -65,7 +65,7 @@ run with apache
 	    ErrorLog /data1/www/logs/api.dpool.cluster.sina.com.cn-error_log
 	    CustomLog /data1/www/logs/api.dpool.cluster.sina.com.cn-access_log combinedalias
 
-            Alias /static /data1/www/htdocs/api.dpool.cluster.sina.com.cn/static
+	    Alias /static /data1/www/htdocs/api.dpool.cluster.sina.com.cn/static
 	    WSGIScriptAlias / /data1/www/htdocs/api.dpool.cluster.sina.com.cn/wsgi
 	</VirtualHost>
 	
