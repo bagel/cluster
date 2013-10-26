@@ -4,7 +4,7 @@ api.dpool.cluster.sina.com.cn
 
 #Nginx
 
-config with nginx + uwsgi
+run with nginx + uwsgi
 
 ##nginx
 
@@ -54,6 +54,19 @@ config with nginx + uwsgi
 
 #Apache
 
-config with apache
+run with apache
 
 ##apache
+
+	<VirtualHost *:80>
+	    ServerName api.dpool.cluster.sina.com.cn
+	    ServerAdmin admin@localhost
+	    DocumentRoot /data1/www/htdocs/api.dpool.cluster.sina.com.cn
+	    ErrorLog /data1/www/logs/api.dpool.cluster.sina.com.cn-error_log
+	    CustomLog /data1/www/logs/api.dpool.cluster.sina.com.cn-access_log combinedalias
+
+            Alias /static /data1/www/htdocs/api.dpool.cluster.sina.com.cn/static
+	    WSGIScriptAlias / /data1/www/htdocs/api.dpool.cluster.sina.com.cn/wsgi
+	</VirtualHost>
+	
+
