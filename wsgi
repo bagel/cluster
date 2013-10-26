@@ -14,7 +14,7 @@ os.environ.update(env)
 
 path = os.path.dirname(os.path.realpath(__file__))
 libs = [
-    os.path.join(path, 'libs'),
+    os.path.join(path, 'lib'),
     path,
 ]
 [ sys.path.append(lib) for lib in libs if lib not in sys.path ]
