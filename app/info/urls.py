@@ -6,7 +6,7 @@ import info
 import re
 
 def urls(environ):
-    template = os.path.join(environ['DOCUMENT_ROOT'], 'wsgi/info/template')
+    template = os.path.join(environ['DOCUMENT_ROOT'], 'app/info/template')
     if re.match(r"/status/data", environ['PATH_INFO']):
         return status.Status(environ, template).data()
     elif re.match(r"/status/node", environ['PATH_INFO']):
