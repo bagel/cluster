@@ -5,7 +5,7 @@ import os
 import mon
 
 def urls(environ):
-    template = os.path.join(environ['DOCUMENT_ROOT'], 'wsgi/mon/template')
+    template = os.path.join(environ['DOCUMENT_ROOT'], 'app/mon/template')
     if environ['PATH_INFO'] == '/mon':
         return mon.Response(environ, template).response()
     else:

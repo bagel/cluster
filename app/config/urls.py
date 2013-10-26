@@ -39,7 +39,7 @@ route = {
 }
 
 def urls(environ):
-    template = os.path.join(environ['DOCUMENT_ROOT'], 'wsgi/config/template')
+    template = os.path.join(environ['DOCUMENT_ROOT'], 'app/config/template')
     path =  environ["PATH_INFO"]
     if path not in route.keys():
         path = 'default'
