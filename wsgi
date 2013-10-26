@@ -4,9 +4,11 @@ import sys
 import os
 
 env = {
-    'REDIS_HOST': '127.0.0.1',
+    'REDIS_HOST': '10.13.32.21',
     'REDIS_PORT': '6379',
-    'MEMCACHE_SERVERS': '10.29.10.227:7601',
+    'MONGO_HOST': '10.13.32.21',
+    'MONGO_PORT': '2701',
+    'MEMCACHE_SERVERS': '10.13.32.21:7601',
 }
 os.environ.update(env)
 

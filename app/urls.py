@@ -2,7 +2,6 @@
 
 import sys
 import os
-import re
 
 route = {
     "default": "default",

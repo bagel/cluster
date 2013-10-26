@@ -15,7 +15,7 @@ class ConfigData:
     def __init__(self, environ, template):
         self.environ = environ
         self.template = template
-        self.db = pymongo.MongoClient("10.13.32.21", 2701)["config"]
+        self.db = pymongo.MongoClient(environ["MONGO_HOST"], int(environ["MONGO_PORT"]))["config"]
         self.data = {}
 
     def Collection(self):
