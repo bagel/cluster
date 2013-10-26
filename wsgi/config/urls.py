@@ -2,72 +2,50 @@
 
 import sys
 import os
-import config
-import re
+
+route = {
+    "default": [("config.ConfigPubHtml",), ("configPub",)],
+    "/config/read": [("config.ConfigData",), ("read",)],
+    "/config/update": [("config.ConfigData",), ("update",)],
+    "/config/delete": [("config.ConfigData",), ("delete",)],
+    "/config/history": [("config.ConfigData",), ("history",)],
+    "/config/node/create": [("config.NodeData",), ("create",)],
+    "/config/node/update": [("config.NodeData",), ("update",)],
+    "/config/node/add": [("config.NodeData",), ("add",)],
+    "/config/node/read": [("config.NodeData",), ("read",)],
+    "/config/node/history": [("config.NodeData",), ("history",)],
+    "/config/node/rename": [("config.NodeData",), ("rename",)],
+    "/config/node/addnodes": [("config.NodeData",), ("addnodes",)],
+    "/config/node/readnodes": [("config.NodeData",), ("readnodes",)],
+    "/config/group/create": [("config.ConfigGroup",), ("create",)],
+    "/config/group/add": [("config.ConfigGroup",), ("add",)],
+    "/config/group/update": [("config.ConfigGroup",), ("update",)],
+    "/config/group/rename": [("config.ConfigGroup",), ("rename",)],
+    "/config/group/read": [("config.ConfigGroup",), ("read",)],
+    "/config/group/history": [("config.ConfigGroup",), ("history",)],
+    "/config/publish/add": [("config.ConfigGroup",), ("add",)],
+    "/config/publish/update": [("config.ConfigGroup",), ("update",)],
+    "/config/edit": [("config.ConfigHtml",), ("configEdit",)],
+    "/config/edit/post": [("config.ConfigHtml",), ("configEditPost",)],
+    "/config/list": [("config.ConfigHtml",), ("configList",)],
+    "/config/version": [("config.ConfigHtml",), ("configVersion",)],
+    "/config/pub": [("config.ConfigPubHtml",), ("configPub",)],
+    "/config/pub/get": [("config.ConfigPubHtml",), ("configPubGet",)],
+    "/config/pub/post": [("config.ConfigPubHtml",), ("configPubPost",)],
+    "/config/pub/update": [("config.ConfigPubHtml",), ("configPubUpdate",)],
+    "/config/queue/post": [("config.ConfigQueue",), ("configQueuePost",)],
+    "/config/issue/post": [("config.ConfigIssueHtml",), ("configIssuePost",)],
+    "/config/issue": [("config.ConfigIssueHtml",), ("configIssue",)],
+}
 
 def urls(environ):
     template = os.path.join(environ['DOCUMENT_ROOT'], 'wsgi/config/template')
-    if re.match(r"/config/read", environ['PATH_INFO']):
-        return config.ConfigData(environ, template).read()
-    elif re.match(r"/config/update", environ['PATH_INFO']):
-        return config.ConfigData(environ, template).update()
-    elif re.match(r"/config/delete", environ["PATH_INFO"]):
-        return config.ConfigData(environ, template).delete()
-    elif re.match(r"/config/history", environ["PATH_INFO"]):
-        return config.ConfigData(environ, template).history()
-    elif re.match(r"/config/node/create", environ["PATH_INFO"]):
-        return config.NodeData(environ, template).create()
-    elif re.match(r"/config/node/update", environ["PATH_INFO"]):
-        return config.NodeData(environ, template).update()
-    elif re.match(r"/config/node/add$", environ["PATH_INFO"]):
-        return config.NodeData(environ, template).add()
-    elif re.match(r"/config/node/read$", environ["PATH_INFO"]):
-        return config.NodeData(environ, template).read()
-    elif re.match(r"/config/node/history", environ["PATH_INFO"]):
-        return config.NodeData(environ, template).history()
-    elif re.match(r"/config/node/rename", environ["PATH_INFO"]):
-        return config.NodeData(environ, template).rename()
-    elif re.match(r"/config/node/addnodes", environ["PATH_INFO"]):
-        return config.NodeData(environ, template).addnodes()
-    elif re.match(r"/config/node/readnodes", environ["PATH_INFO"]):
-        return config.NodeData(environ, template).readnodes()
-    elif re.match(r"/config/group/create", environ["PATH_INFO"]):
-        return config.ConfigGroup(environ, template).create()
-    elif re.match(r"/config/group/add", environ["PATH_INFO"]):
-        return config.ConfigGroup(environ, template).add()
-    elif re.match(r"/config/group/update", environ["PATH_INFO"]):
-        return config.ConfigGroup(environ, template).update()
-    elif re.match(r"/config/group/rename", environ["PATH_INFO"]):
-        return config.ConfigGroup(environ, template).rename()
-    elif re.match(r"/config/group/read", environ["PATH_INFO"]):
-        return config.ConfigGroup(environ, template).read()
-    elif re.match(r"/config/group/history", environ["PATH_INFO"]):
-        return config.ConfigGroup(environ, template).history()
-    elif re.match(r"/config/publish/add", environ["PATH_INFO"]):
-        return config.ConfigPublish(environ, template).add()
-    elif re.match(r"/config/publish/update", environ["PATH_INFO"]):
-        return config.ConfigPublish(environ, template).update()
-    elif re.match(r"/config/edit$", environ["PATH_INFO"]):
-        return config.ConfigHtml(environ, template).configEdit()
-    elif re.match(r"/config/edit/post", environ["PATH_INFO"]):
-        return config.ConfigHtml(environ, template).configEditPost()
-    elif re.match(r"/config/list", environ["PATH_INFO"]):
-        return config.ConfigHtml(environ, template).configList()
-    elif re.match(r"/config/version", environ["PATH_INFO"]):
-        return config.ConfigHtml(environ, template).configVersion()
-    elif re.match(r"/config/pub$", environ["PATH_INFO"]):
-        return config.ConfigPubHtml(environ, template).configPub()
-    elif re.match(r"/config/pub/get", environ["PATH_INFO"]):
-        return config.ConfigPubHtml(environ, template).configPubGet()
-    elif re.match(r"/config/pub/post", environ["PATH_INFO"]):
-        return config.ConfigPubHtml(environ, template).configPubPost()
-    elif re.match(r"/config/pub/update", environ["PATH_INFO"]):
-        return config.ConfigPubHtml(environ, template).configPubUpdate()
-    elif re.match(r"/config/queue/post", environ["PATH_INFO"]):
-        return config.ConfigQueue(environ, template).configQueuePost()
-    elif re.match(r"/config/issue/post", environ["PATH_INFO"]):
-        return config.ConfigIssueHtml(environ, template).configIssuePost()
-    elif re.match(r"/config/issue", environ["PATH_INFO"]):
-        return config.ConfigIssueHtml(environ, template).configIssue()
-    else:
-        return config.ConfigPubHtml(environ, template).configPub()
+    path =  environ["PATH_INFO"]
+    if path not in route.keys():
+        path = 'default'
+    category = route[path][0][0]
+    category_args = "environ, template, " + ", ".join(route[path][0][1:])
+    function = route[path][1][0]
+    function_args = ", ".join(route[path][1][1:])
+    exec('import %s' % category.split('.')[0])
+    return eval('%s(%s).%s(%s)' % (category, category_args, function, function_args))
