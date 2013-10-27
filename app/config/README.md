@@ -82,6 +82,24 @@ delete a node
 
 add nodes to a node
 
+#### readnodes
+
+	curl 10.13.32.36/config/node/readnodes -d '{"name": "node", "current": "dpool"}' -H "Host: api.dpool.cluster.sina.com.cn" | python -m json.tool
+
+	[
+	    "10.13.32.237", 
+	    "10.73.48.210", 
+	    "10.13.32.236"
+	]
+
+read nodes from a node
+
+#### deletenodes
+
+	curl 10.13.32.36/config/node/deletenodes -d '{"name": "node", "nodes": ["10.13.32.23", "10.13.32.26"]}' -H "Host: api.dpool.cluster.sina.com.cn"
+
+delete nodes
+
 #### read
 
 	curl 10.13.32.236/config/node/read  -d '{"name": "node", "parent": "web3", "current": "nginx"}' -H 'Host: api.dpool.cluster.sina.com.cn'

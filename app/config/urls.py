@@ -17,6 +17,7 @@ route = {
     "/config/node/rename": [("config.NodeData",), ("rename",)],
     "/config/node/addnodes": [("config.NodeData",), ("addnodes",)],
     "/config/node/readnodes": [("config.NodeData",), ("readnodes",)],
+    "/config/node/deletenodes": [("config.NodeData",), ("deletenodes",)],
     "/config/group/create": [("config.ConfigGroup",), ("create",)],
     "/config/group/add": [("config.ConfigGroup",), ("add",)],
     "/config/group/update": [("config.ConfigGroup",), ("update",)],

@@ -173,10 +173,12 @@ class NodeData(ConfigData):
     def dictNodes(self, d):
         if isinstance(d, dict):
             for k, v in d.iteritems():
-                if v.has_key("nodes"):
+                if k == "nodes":
+                    self.N.extend(v)
+                elif v.has_key("nodes"):
                     self.N.extend(v["nodes"])
                 else:
-                    self.dictNodes(d)
+                    self.dictNodes(v)
 
     def readnodes(self):
         ctype = "appliction/json"
@@ -191,7 +193,39 @@ class NodeData(ConfigData):
         self.dictSearch(node["data"], current, [])
         self.dictNodes(self.V)
         return (ctype, json.JSONEncoder().encode(self.N))
-        
+       
+    def dictParent(self, d, node, ks=[]):
+        if isinstance(d, dict):
+            for k, v in d.iteritems():
+                if k == "nodes":
+                    continue
+                elif v.has_key("nodes") and node in v["nodes"]:
+                    ks.append(k)
+                    self.K = ks[:]
+                    self.V = v.copy()
+                else:
+                    ks.append(k)
+                    self.dictParent(v, node, ks)
+                    ks.remove(k)
+
+    def deletenodes(self):
+        ctype = "text/plain"
+        self.Collection()
+        nodes = self.fileData["nodes"]
+        node = self.collection.find(fields={"_id": False}, sort=[("version", -1)], limit=1).next()
+        node['mtime'] = int(time.time())
+        node['version'] = int(node['version']) + 1
+        for n in nodes:
+            self.dictParent(node["data"], n, [])
+            self.V["nodes"].remove(n)
+            s = 'node["data"]'
+            for key in self.K:
+                s += '["%s"]' % key
+            s += '=self.V'
+            exec(s)
+        self.collection.insert(node)
+        return (ctype, "0") 
+            
 
 class ConfigGroup(ConfigData):
     def __init__(self, environ, template):
