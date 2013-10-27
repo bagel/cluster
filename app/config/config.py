@@ -73,6 +73,7 @@ class NodeData(ConfigData):
         self.K = []
         self.V = {}
         self.N = []
+        self.P = []
 
     def dictSearch(self, d, key, ks=[]):
         if isinstance(d, dict):
@@ -175,8 +176,8 @@ class NodeData(ConfigData):
             for k, v in d.iteritems():
                 if k == "nodes":
                     self.N.extend(v)
-                elif v.has_key("nodes"):
-                    self.N.extend(v["nodes"])
+                #elif v.has_key("nodes"):
+                #    self.N.extend(v["nodes"])
                 else:
                     self.dictNodes(v)
 
@@ -197,12 +198,12 @@ class NodeData(ConfigData):
     def dictParent(self, d, node, ks=[]):
         if isinstance(d, dict):
             for k, v in d.iteritems():
-                if k == "nodes":
-                    continue
-                elif v.has_key("nodes") and node in v["nodes"]:
+                if k == "nodes" and node in v:
+                #    continue
+                #elif v.has_key("nodes") and node in v["nodes"]:
                     ks.append(k)
-                    self.K = ks[:]
-                    self.V = v.copy()
+                    self.P.append((ks[:], v[:]))
+                    ks.remove(k)
                 else:
                     ks.append(k)
                     self.dictParent(v, node, ks)
@@ -216,13 +217,15 @@ class NodeData(ConfigData):
         node['mtime'] = int(time.time())
         node['version'] = int(node['version']) + 1
         for n in nodes:
+            self.P = [] 
             self.dictParent(node["data"], n, [])
-            self.V["nodes"].remove(n)
-            s = 'node["data"]'
-            for key in self.K:
-                s += '["%s"]' % key
-            s += '=self.V'
-            exec(s)
+            for k, v in self.P:
+                v.remove(n)
+                s = 'node["data"]'
+                for key in k:
+                    s += '["%s"]' % key
+                s += '=v'
+                exec(s)
         self.collection.insert(node)
         return (ctype, "0") 
             
@@ -450,6 +453,14 @@ class ConfigIssueHtml(ConfigIssue):
     def configIssuePost(self):
         return self.update()
 
+class ConfigNodeHtml(NodeData):
+    def __init__(self, environ, template):
+        NodeData.__init__(self, environ, template)
+
+    def configNode(self):
+        ctype = "text/html"
+        response_body = script.response(os.path.join(self.template, "node.html"), {})
+        return (ctype, response_body)
 
 
 def main():
