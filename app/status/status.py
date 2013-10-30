@@ -173,7 +173,8 @@ class Status:
             "idc": self.idc, 
             "mod": self.mod,
             "times": times,
-            "domains": list(self.domain)
+            "domains": list(self.domain),
+            "user": self.environ["USER"],
         }
         return (self.ctype, script.response(os.path.join(self.template, "status.html"), tdict))
 

@@ -2,6 +2,7 @@
 
 import sys
 import os
+import login
 
 route = {
     "default": "default",
@@ -21,6 +22,18 @@ route = {
 def urls(environ):
     ctype = "text/plain; charset=utf-8"
     path =  environ["PATH_INFO"].split('/')[1]
+    if path == "logout":
+        return login.logout()
+    check, user = login.auth(environ)
+    header = ()
+    if check == 0:
+        environ["USER"] = user
+    elif check == 1:
+        return user
+    else:
+        environ["USER"] = user[0]
+        header = user[1]
+
     if path not in route.keys():
         path = "default"
 
@@ -41,4 +54,8 @@ def urls(environ):
         return tools.online(environ)
 
     exec('import %s' % route[path])
-    return eval('%s.urls(environ)' % route[path])
+    if not header:
+        return eval('%s.urls(environ)' % route[path])
+    else:
+        ctype, response_body = eval('%s.urls(environ)' % route[path])
+        return (ctype, response_body, header)

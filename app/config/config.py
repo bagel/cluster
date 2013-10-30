@@ -340,13 +340,14 @@ class ConfigHtml(ConfigData):
             if len(collection.find_one()) == 12:
                 tdict[conf] = collection.find(fields={"_id": False, "name": True, "path": True, "group": True, "author": True, "mtime": True}, limit=1, sort=[("version", -1)]).next()
                 tdict[conf]["mtime"] = time.strftime("%Y/%m/%d %H:%M:%S", time.localtime(tdict[conf]["mtime"]))
+        tdict["user"] = self.environ["USER"]
         response_body = script.response(os.path.join(self.template, "list.html"), tdict)
         return (ctype, response_body)
 
     def configVersion(self):
         ctype = "text/html"
         self.data = dict(urlparse.parse_qsl(self.environ['QUERY_STRING']))
-        response_body = script.response(os.path.join(self.template, "version.html"), {"history": json.loads(self.history()[-1]), "name": self.data["name"]})
+        response_body = script.response(os.path.join(self.template, "version.html"), {"history": json.loads(self.history()[-1]), "name": self.data["name"], "user": self.environ["USER"]})
         return (ctype, response_body)
 
     def configEdit(self):
@@ -364,6 +365,7 @@ class ConfigHtml(ConfigData):
         else:
             disabled = ""
         tdict["disabled"] = disabled
+        tdict["user"] = self.environ["USER"]
         response_body = script.response(os.path.join(self.template, "edit.html"), tdict)
         return (ctype, response_body)
 
@@ -392,7 +394,7 @@ class ConfigPubHtml(ConfigPublish):
             pageMax = count / 12 + 1
         pubData = [ d for d in self.collection.find(fields={"_id": False}, sort=[("stime", -1)]) ]
         pubData = pubData[((page - 1) * 12):(page * 12)]
-        response_body = script.response(os.path.join(self.template, "publish.html"), {"pubData": pubData, "page": page, "pageMax": pageMax})
+        response_body = script.response(os.path.join(self.template, "publish.html"), {"pubData": pubData, "page": page, "pageMax": pageMax, "user": self.environ["USER"]})
         return (ctype, response_body)
 
     def configPubGet(self):
@@ -447,7 +449,7 @@ class ConfigIssueHtml(ConfigIssue):
             issueData.append(d)
         issueData = issueData[((page - 1) * 12):(page * 12)]
         print issueData
-        response_body = script.response(os.path.join(self.template, "issue.html"), {"issueData": issueData, "page": page, "pageMax": pageMax})
+        response_body = script.response(os.path.join(self.template, "issue.html"), {"issueData": issueData, "page": page, "pageMax": pageMax, "user": self.environ["USER"]})
         return (ctype, response_body)
 
     def configIssuePost(self):
@@ -459,7 +461,7 @@ class ConfigNodeHtml(NodeData):
 
     def configNode(self):
         ctype = "text/html"
-        response_body = script.response(os.path.join(self.template, "node.html"), {})
+        response_body = script.response(os.path.join(self.template, "node.html"), {"user": self.environ["USER"]})
         return (ctype, response_body)
 
 

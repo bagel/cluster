@@ -37,6 +37,7 @@ route = {
     "/config/queue/post": [("config.ConfigQueue",), ("configQueuePost",)],
     "/config/issue/post": [("config.ConfigIssueHtml",), ("configIssuePost",)],
     "/config/issue": [("config.ConfigIssueHtml",), ("configIssue",)],
+    "/config/node": [("config.ConfigNodeHtml",), ("configNode",)],
 }
 
 def urls(environ):

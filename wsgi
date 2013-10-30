@@ -23,9 +23,10 @@ libs = [
 def application(environ, start_response):
     environ.update(os.environ)
     import app
-    ctype, response_body = app.urls(environ)
+    response = app.urls(environ)
 
-    response_headers = [('Content-Type', ctype), ('Content-Length', str(len(response_body)))]
+    response_headers = [('Content-Type', response[0]), ('Content-Length', str(len(response[1]))) ]
+    [ response_headers.append(response_header) for response_header in response[2:] if response_header ]
     status = '200 OK'
     start_response(status, response_headers)
-    return [response_body]
+    return [response[1]]
