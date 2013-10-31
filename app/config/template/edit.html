@@ -11,28 +11,17 @@
         var cmd0 = window.btoa(document.getElementById("cmd0").value);
         var cmd1 = window.btoa(document.getElementById("cmd1").value);
         var textData = window.btoa(document.getElementById("data").value);
-        var author = document.getElementById("author").value;
-        alert(cmd0);
-        $.ajax({
-            type: "POST",
-            url: "/config/edit/post",
-            data: JSON.stringify({"name": name, "path": path, "owner": owner, "perm": perm, "group": group,"cmd0": cmd0, "cmd1": cmd1, "data": textData, "author": author}),
-            dataType: "json",
-            contentType: "application/json"
-        });
+        var author = "{$ user $}";
+        var url = "/config/edit/post";
+        var data = JSON.stringify({"name": name, "path": path, "owner": owner, "perm": perm, "group": group,"cmd0": cmd0, "cmd1": cmd1, "data": textData, "author": author});
+        postJSON(url, data);
     }
 
     function pub(name, version) {
-        alert(name);
-        $.ajax({
-            async: false,
-            type: "POST",
-            url: "/config/pub/post",
-            data: JSON.stringify({"name": "publish", "sauthor": "caoyu2", "file": name, "fileversion": parseInt(version)}),
-            dataType: "json",
-            contentType: "application/json"
-        });
-        window.location.href="/config/pub"
+        var url = "/config/pub/post";
+        var data = JSON.stringify({"name": "publish", "sauthor": "caoyu2", "file": name, "fileversion": parseInt(version)});
+        postJSON(url, data);
+        window.location.href="/config/pub";
     }
 
 </script>
@@ -69,8 +58,6 @@
 </script>
     </div>
     <div class="control-group">
-        <span>修改者:</span>
-        <input type="text" class="input-small" id="author" name="author" value="{$ author $}">
         <span class="pull-right">
 <script type="text/python">
         #if not Tdict["disabled"]:

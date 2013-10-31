@@ -10,6 +10,8 @@ import base64
 
 def auth(environ):
     ctype = "text/html"
+    if "Mozilla" not in environ["HTTP_USER_AGENT"]:
+        return (0, "default")
     query = urlparse.parse_qs(environ['QUERY_STRING'])
     cookies = environ['HTTP_COOKIE'].split('; ')
     token = ""

@@ -3,127 +3,54 @@
 {% config %}
 <script>
     function audit(version) {
-        //alert(version);
-        //if (window.confirm("确认")){
-        $.ajax({
-            async: false,
-            type: "POST",
-            url: "/config/pub/update",
-            data: JSON.stringify({"name": "publish", "sauthor": "caoyu2", "cauthor": "caoyu2", "confirm": 1, "version": parseInt(version)}),
-            dataType: "json",
-            //success: function(){alert("send success");},
-            contentType: "application/json"
-        });
-        window.location.reload()
-        //}
-        //window.setTimeout(window.location.reload(), 1000);
+        var url = "/config/pub/update";
+        var data = JSON.stringify({"name": "publish", "cauthor": "{$ user $}", "confirm": 1, "version": parseInt(version)});
+        postJSON(url, data);
+        window.location.reload();
     }
 
     function deny(version) {
-        //alert(version);
-        //if (window.confirm("确认")){
-        $.ajax({
-            async: false,
-            type: "POST",
-            url: "/config/pub/update",
-            //data: '{"name":"publish", "sauthor": "caoyu2", "cauthor": "caoyu2", "confirm": -1, "version":' + version + '}',
-            data: JSON.stringify({"name":"publish", "sauthor": "caoyu2", "cauthor": "caoyu2", "confirm": -1, "version": parseInt(version)}),
-            dataType: "json",
-            //success: function(){alert("send success");},
-            contentType: "application/json"
-        });
-        window.location.reload()
-        //}
-        //window.setTimeout(window.location.reload(), 1000);
+        var url = "/config/pub/update";
+        var data = JSON.stringify({"name": "publish", "cauthor": "{$ user $}", "confirm": -1, "version": parseInt(version)});
+        postJSON(url, data);
+        window.location.reload();
     }
 
     function retry(version) {
-        //alert(version);
-        //if (window.confirm("确认")){
-        $.ajax({
-            async: false,
-            type: "POST",
-            url: "/config/pub/update",
-            data: JSON.stringify({"name":"publish", "sauthor": "caoyu2", "cauthor": "caoyu2", "confirm": 0, "version": parseInt(version)}),
-            dataType: "json",
-            //success: function(){alert("send success");},
-            contentType: "application/json"
-        });
-        window.location.reload()
-        //}
-        //window.setTimeout(window.location.reload(), 1000);
+        var url = "/config/pub/update";
+        var data = JSON.stringify({"name": "publish", "confirm": 0, "version": parseInt(version)});
+        postJSON(url, data);
+        window.location.reload();
     }
 
     function cancel(version) {
-        //alert(version);
-        //if (window.confirm("确认")){
-        $.ajax({
-            async: false,
-            type: "POST",
-            url: "/config/pub/update",
-            data: JSON.stringify({"name":"publish", "sauthor": "caoyu2", "cauthor": "caoyu2", "confirm": -2, "version": parseInt(version)}),
-            dataType: "json",
-            //success: function(){alert("send success");},
-            contentType: "application/json"
-        });
-        window.location.reload()
-        //}
-        //window.setTimeout(window.location.reload(), 1000);
+        var url = "/config/pub/update";
+        var data = JSON.stringify({"name":"publish", "confirm": -2, "version": parseInt(version)});
+        postJSON(url, data);
+        window.location.reload();
     }
 
     function reopen(version) {
-        //alert(version);
-        //if (window.confirm("确认")){
-        $.ajax({
-            async: false,
-            type: "POST",
-            url: "/config/pub/update",
-            data: JSON.stringify({"name":"publish", "sauthor": "caoyu2", "cauthor": "caoyu2", "confirm": 0, "version": parseInt(version)}),
-            dataType: "json",
-            //success: function(){alert("send success");},
-            contentType: "application/json"
-        });
-        window.location.reload()
-        //}
-        //window.setTimeout(window.location.reload(), 1000);
+        var url = "/config/pub/update";
+        var data = JSON.stringify({"name":"publish", "confirm": 0, "version": parseInt(version)});
+        postJSON(url, data);
+        window.location.reload();
     }
 
     function issue(version) {
-        //alert(version);
-        //if (window.confirm("确认")){
-        $.ajax({
-            async: false,
-            type: "POST",
-            url: "/config/pub/update",
-            data: JSON.stringify({"name":"publish", "sauthor": "caoyu2", "pauthor": "caoyu2", "confirm": 2, "version": parseInt(version)}),
-            dataType: "json",
-            //success: function(){alert("send success");},
-            contentType: "application/json"
-        });
+        var url = "/config/pub/update";
+        var data = JSON.stringify({"name": "publish", "pauthor": "{$ user $}", "confirm": 2, "version": parseInt(version)});
+        postJSON(url, data);
 
-        $.ajax({
-            async: false,
-            type: "POST",
-            url: "/config/queue/post",
-            data: JSON.stringify({"name":"queue", "status": 0, "pubversion": parseInt(version)}),
-            dataType: "json",
-            //success: function(){alert("send success");},
-            contentType: "application/json"
-        });
+        var url = "/config/queue/post";
+        var data = JSON.stringify({"name":"queue", "status": 0, "pubversion": parseInt(version)});
+        postJSON(url, data);
 
-        $.ajax({
-            async: false,
-            type: "POST",
-            url: "/config/issue/post",
-            data: JSON.stringify({"name":"issue", "data": [], "pubversion": parseInt(version)}),
-            dataType: "json",
-            //success: function(){alert("send success");},
-            contentType: "application/json"
-        });
+        var url = "/config/issue/post";
+        var data = JSON.stringify({"name":"issue", "data": [], "pubversion": parseInt(version)});
+        postJSON(url, data);
 
-        window.location.reload()
-        //}
-        //window.setTimeout(window.location.reload(), 1000);
+        window.location.reload();
     }
 
     var page = $("#page").text();
@@ -203,10 +130,10 @@
         echo '''<li><a href="/config/pub?page=%s">前一页</a></li>\n''' % (Tdict["page"] - 1)
 
     if Tdict["pageMax"] > 1:
-        echo '''<li class="disabled" id="page"><a href="">%s</a></li>\n''' % Tdict["page"]
+        echo '''<li class="disabled" id="page"><a href="#">%s</a></li>\n''' % Tdict["page"]
 
     if Tdict["pageMax"] > 1 and Tdict["page"] != Tdict["pageMax"]:
-        echo '''<li class="disabled"><a href="">...</a></li>
+        echo '''<li class="disabled"><a href="#">...</a></li>
 <li><a href="/config/pub?page=%s">%s</a></li>
 <li><a href="/config/pub?page=%s">后一页</a></li>
 ''' % (Tdict["pageMax"], Tdict["pageMax"], Tdict["page"] + 1)

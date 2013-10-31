@@ -353,14 +353,14 @@ class ConfigHtml(ConfigData):
     def configEdit(self):
         ctype = "text/html"
         self.data = dict(urlparse.parse_qsl(self.environ['QUERY_STRING']))
-        if not self.data.has_key("version"):
+        if not self.data.has_key("version") and self.data["name"] != "add":
             self.data['version'] = self.db["publish"].find(spec={"file":{"$in": [self.data['name']]}}, fields={"_id": False, "fileversion": True}, limit=1, sort=[("version", -1)]).next()["fileversion"]
         if self.data["name"] != "add":
             tdict = json.loads(self.read()[-1])
             tdict['mtime'] = time.strftime('%Y/%m/%d %H:%M:%S', time.localtime(tdict['mtime']))
         else:
-            tdict = {"name": "", "path": "", "owner": "", "perm": "", "group": "", "cmd0": "", "cmd1": "", "data": "", "author": "", "mtime": ""}
-        if self.db["publish"].find(spec={"$and": [{"file":{"$in": [tdict['name']]}}, {"confirm":{"$in": [0, 1]}}]}).count() >= 1:
+            tdict = {"name": "", "path": "", "owner": "", "perm": "", "group": "", "cmd0": "", "cmd1": "", "data": "", "author": "", "mtime": "", "version": ""}
+        if self.data["name"] !="add" and self.db["publish"].find(spec={"$and": [{"file":{"$in": [tdict['name']]}}, {"confirm":{"$in": [0, 1]}}]}).count() >= 1:
             disabled = "disabled"
         else:
             disabled = ""
@@ -458,10 +458,38 @@ class ConfigIssueHtml(ConfigIssue):
 class ConfigNodeHtml(NodeData):
     def __init__(self, environ, template):
         NodeData.__init__(self, environ, template)
+        self.html = ''
+
+    def nodeHtml(self, d, p):
+        if isinstance(d, dict):
+            for k, v in d.iteritems():
+                if k == "nodes":
+                    continue
+                else:
+                    self.html += '''
+<div class="accordion" id="%s">
+    <div class="accordion-group">
+        <div class="accordion-heading">
+              <a class="accordion-toggle" data-toggle="collapse" data-parent="#%s" href="#%s">%s</a>
+        </div>
+        <div id="%s" class="accordion-body collapse">
+            <div class="accordion-inner">
+                action...
+''' % (p, p, k, k, k)
+                    self.nodeHtml(v, k)
+                    self.html += '''
+            </div>
+        </div>
+    </div>
+</div>
+'''
 
     def configNode(self):
         ctype = "text/html"
-        response_body = script.response(os.path.join(self.template, "node.html"), {"user": self.environ["USER"]})
+        self.data = {"name": "node"}
+        nodeData = json.loads(self.read()[-1])["data"]
+        self.nodeHtml(nodeData, "node")
+        response_body = script.response(os.path.join(self.template, "node.html"), {"user": self.environ["USER"], "node": nodeData, "html": self.html})
         return (ctype, response_body)
 
 

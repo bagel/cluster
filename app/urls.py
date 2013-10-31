@@ -11,7 +11,7 @@ route = {
     "config": "config",
     "status": "status",
     "mon": "mon",
-    "home": "status",
+    "home": "config",
     "info": "info",
     "test": "test",
     "purge": "purge",

@@ -21,5 +21,17 @@
 {% end %}
 
 {% content %}
+<script>
+    function postJSON(postUrl, postData) {
+        $.ajax({
+            async: false,
+            type: "POST",
+            url: postUrl,
+            data: postData,
+            dataType: "json",
+            contentType: "application/json"
+        });
+    }
+</script>
 {+ config +}
 {% end %}

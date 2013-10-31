@@ -37,10 +37,10 @@
         echo '''<li><a href="/config/issue?page=%s">前一页</a></li>\n''' % (Tdict["page"] - 1)
 
     if Tdict["pageMax"] > 1:
-        echo '''<li class="disabled" id="page"><a href="">%s</a></li>\n''' % Tdict["page"]
+        echo '''<li class="disabled" id="page"><a href="#">%s</a></li>\n''' % Tdict["page"]
 
     if Tdict["pageMax"] > 1 and Tdict["page"] != Tdict["pageMax"]:
-        echo '''<li class="disabled"><a href="">...</a></li>
+        echo '''<li class="disabled"><a href="#">...</a></li>
 <li><a href="/config/issue?page=%s">%s</a></li>
 <li><a href="/config/issue?page=%s">后一页</a></li>
 ''' % (Tdict["pageMax"], Tdict["pageMax"], Tdict["page"] + 1)

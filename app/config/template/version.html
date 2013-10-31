@@ -3,16 +3,10 @@
 {% config %}
 <script>
     function pub(name, version) {
-        alert(name);
-        $.ajax({
-            async: false,
-            type: "POST",
-            url: "/config/pub/post",
-            data: JSON.stringify({"name": "publish", "sauthor": "caoyu2", "file": name, "fileversion": parseInt(version)}),
-            dataType: "json",
-            contentType: "application/json"
-        });
-        window.location.href="/config/pub"
+        var url = "/config/pub/post";
+        var data = JSON.stringify({"name": "publish", "sauthor": "{$ user $}", "file": name, "fileversion": parseInt(version)});
+        postJSON(url, data);
+        window.location.href="/config/pub";
     }
 </script>
 <legend>文件名: {$ name $}<a href="/config/edit?name=add"><button class="btn btn-success pull-right">添加</button></a></legend>
