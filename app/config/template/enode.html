@@ -50,7 +50,7 @@
         //window.location.href="/config/node";
     }
 </script>
-<legend>节点编辑</legend>
+<legend>分支: {$ name $}</legend>
 <div class="tabbable">
     <ul class="nav nav-tabs">
         <li><a href="#1" data-toggle="tab">添加分支</a></li>
@@ -118,6 +118,7 @@
                     <tr>
                     <th>节点</th>
                     <th>机房</th>
+                    <th>分支</th>
                     <th>操作</th>
                     </tr>
                 </thead>
@@ -127,8 +128,9 @@
         echo '''
 <tr><td>%s</td>
 <td>%s</td>
+<td>%s</td>
 <td><button class="btn btn-danger" onclick='delnode("{$ name $}", "%s")'>删除</button></td></tr>
-''' % (node[0].encode('utf-8'), node[1].encode('utf-8'), node[0].encode('utf-8'))
+''' % (node[0].encode('utf-8'), node[1].encode('utf-8'), node[2].encode('utf-8'), node[0].encode('utf-8'))
 </script>
                 </tbody>
             </table>

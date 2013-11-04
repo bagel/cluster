@@ -172,15 +172,19 @@ class NodeData(ConfigData):
         self.collection.insert(node)
         return (ctype, "0")
 
-    def dictNodes(self, d):
+    def dictNodes(self, d, p):
         if isinstance(d, dict):
             for k, v in d.iteritems():
                 if k == "nodes":
+                    for n in v:
+                        n.append(p)
                     self.N.extend(v)
                 #elif v.has_key("nodes"):
                 #    self.N.extend(v["nodes"])
                 else:
-                    self.dictNodes(v)
+                    p = k
+                    self.dictNodes(v, p)
+                    p = ""
 
     def readnodes(self):
         ctype = "appliction/json"
@@ -193,7 +197,7 @@ class NodeData(ConfigData):
             collection = self.db[self.data["name"]]
         node = collection.find(fields={"_id": False}, sort=[("version", -1)], limit=1).next()
         self.dictSearch(node["data"], current, [])
-        self.dictNodes(self.V)
+        self.dictNodes(self.V, "")
         return (ctype, json.JSONEncoder().encode(self.N))
        
     def dictParent(self, d, node, ks=[]):
@@ -504,6 +508,7 @@ class ConfigNodeHtml(NodeData):
         nodes = self.V.get("nodes", [])
         self.data = {"name": "node", "current": current}
         nodesAll = json.loads(self.readnodes()[-1])
+        print nodesAll
         response_body = script.response(os.path.join(self.template, "enode.html"), {"user": self.environ["USER"], "name": current, "nodes": nodes, "nodesAll": nodesAll})
         return response_body
 
