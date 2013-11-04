@@ -1,0 +1,138 @@
+{# config.html #}
+
+{% config %}
+<script>
+    function add(parent) {
+        var current = document.getElementById("add").value;
+        var url = "/config/node/add";
+        var data = JSON.stringify({"name": "node", "parent": parent, "current": current});
+        postJSON(url, data);
+        //window.location.href="/config/node";
+    }
+
+    function del(current) {
+        var url = "/config/node/update";
+        var data = JSON.stringify({"name": "node", "delete": current});
+        postJSON(url, data);
+        //window.location.href="/config/node";
+    }
+
+    function addnodes(current) {
+        var n1 = document.getElementById("an1").value;
+        var n2 = document.getElementById("an2").value;
+        var n3 = document.getElementById("an3").value;
+        var n4 = document.getElementById("an4").value;
+        var idc = document.getElementById("an5").value;
+        nodes = [[n1 + '.' + n2 + '.' + n3 + '.' + n4, idc]];
+        var url = "/config/node/addnodes";
+        var data = JSON.stringify({"name": "node", "current": current, "nodes": nodes});
+        postJSON(url, data);
+        //window.location.href="/config/node";
+    }
+
+    function delnodes(current) {
+        var n1 = document.getElementById("dn1").value;
+        var n2 = document.getElementById("dn2").value;
+        var n3 = document.getElementById("dn3").value;
+        var n4 = document.getElementById("dn4").value;
+        nodes = [n1 + '.' + n2 + '.' + n3 + '.' + n4];
+        var url = "/config/node/deletenodes";
+        var data = JSON.stringify({"name": "node", "current": current, "nodes": nodes});
+        postJSON(url, data);
+        //window.location.href="/config/node";
+    }
+
+    function delnode(current, node) {
+        var url = "/config/node/deletenodes";
+        var data = JSON.stringify({"name": "node", "current": "current", "nodes": [node]});
+        postJSON(url, data);
+        window.location.reload();
+        //window.location.href="/config/node";
+    }
+</script>
+<legend>节点编辑</legend>
+<div class="tabbable">
+    <ul class="nav nav-tabs">
+        <li><a href="#1" data-toggle="tab">添加分支</a></li>
+        <li><a href="#2" data-toggle="tab">删除分支</a></li>
+        <li><a href="#3" data-toggle="tab">添加节点</a></li>
+        <li><a href="#4" data-toggle="tab">删除节点</a></li>
+        <li><a href="#5" data-toggle="tab">分支节点</a></li>
+        <li class="active"><a href="#6" data-toggle="tab">全部节点</a></li>
+    </ul>
+    <div class="tab-content">
+        <div class="tab-pane" id="1">
+            <div class="control-group">
+                <div>
+                <input type="text" class="span2" id="add">
+                </div>
+                <button class="btn btn-primary" onclick='add("{$ name $}")'>添加</button>
+            </div>
+        </div>
+        <div class="tab-pane" id="2">
+            <button class="btn btn-danger" onclick='del("{$ name $}")'>删除</button>
+        </div>
+        <div class="tab-pane" id="3">
+            <div>
+            <input type="text" class="span1" id="an1"> .
+            <input type="text" class="span1" id="an2"> .
+            <input type="text" class="span1" id="an3"> .
+            <input type="text" class="span1" id="an4">
+            <input type="text" class="span1" id="an5" placeholder="机房">
+            </div>
+            <button class="btn btn-primary" onclick='addnodes("{$ name $}")'>添加</button>
+        </div>
+        <div class="tab-pane" id="4">
+            <div>
+            <input type="text" class="span1" id="dn1"> .
+            <input type="text" class="span1" id="dn2"> .
+            <input type="text" class="span1" id="dn3"> .
+            <input type="text" class="span1" id="dn4">
+            </div>
+            <button class="btn btn-danger" onclick='delnodes("{$ name $}")'>删除</button>
+        </div>
+        <div class="tab-pane" id="5">
+            <table class="table table-striped table-bordered">
+                <thead>
+                    <tr>        
+                    <th>节点</th>
+                    <th>机房</th>
+                    <th>操作</th>
+                    </tr>        
+                </thead>
+                <tbody>
+<script type="text/python">
+    for node in Tdict["nodes"]:
+        echo '''
+<tr><td>%s</td>
+<td>%s</td>
+<td><button class="btn btn-danger" onclick='delnode("{$ name $}", "%s")'>删除</button></td></tr>
+''' % (node[0].encode('utf-8'), node[1].encode('utf-8'), node[0].encode('utf-8'))
+</script>
+                </tbody>
+            </table>
+        </div>
+        <div class="tab-pane active" id="6">
+            <table class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                    <th>节点</th>
+                    <th>机房</th>
+                    <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+<script type="text/python">
+    for node in Tdict["nodesAll"]:
+        echo '''
+<tr><td>%s</td>
+<td>%s</td>
+<td><button class="btn btn-danger" onclick='delnode("{$ name $}", "%s")'>删除</button></td></tr>
+''' % (node[0].encode('utf-8'), node[1].encode('utf-8'), node[0].encode('utf-8'))
+</script>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% end %}

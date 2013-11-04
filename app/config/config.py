@@ -168,6 +168,7 @@ class NodeData(ConfigData):
         #s += '={"nodes": %s}' % nodes
         print s
         exec(s)
+        print node
         self.collection.insert(node)
         return (ctype, "0")
 
@@ -198,7 +199,7 @@ class NodeData(ConfigData):
     def dictParent(self, d, node, ks=[]):
         if isinstance(d, dict):
             for k, v in d.iteritems():
-                if k == "nodes" and node in v:
+                if k == "nodes" and node in [ m[0] for m in v ]:
                 #    continue
                 #elif v.has_key("nodes") and node in v["nodes"]:
                     ks.append(k)
@@ -220,7 +221,10 @@ class NodeData(ConfigData):
             self.P = [] 
             self.dictParent(node["data"], n, [])
             for k, v in self.P:
-                v.remove(n)
+                #v.remove(n)
+                for e in v:
+                    if e[0] == n:
+                        v.remove(e)
                 s = 'node["data"]'
                 for key in k:
                     s += '["%s"]' % key
@@ -228,7 +232,7 @@ class NodeData(ConfigData):
                 exec(s)
         self.collection.insert(node)
         return (ctype, "0") 
-            
+           
 
 class ConfigGroup(ConfigData):
     def __init__(self, environ, template):
@@ -474,8 +478,8 @@ class ConfigNodeHtml(NodeData):
         </div>
         <div id="%s" class="accordion-body collapse">
             <div class="accordion-inner">
-                action...
-''' % (p, p, k, k, k)
+                <a href="/config/node?name=%s"><i class="icon-edit"></i></a>
+''' % (p, p, k, k, k, k)
                     self.nodeHtml(v, k)
                     self.html += '''
             </div>
@@ -488,9 +492,20 @@ class ConfigNodeHtml(NodeData):
         ctype = "text/html"
         self.data = {"name": "node"}
         nodeData = json.loads(self.read()[-1])["data"]
+        if self.environ['QUERY_STRING']:
+            return (ctype, self.configNodeEdit(nodeData))
         self.nodeHtml(nodeData, "node")
         response_body = script.response(os.path.join(self.template, "node.html"), {"user": self.environ["USER"], "node": nodeData, "html": self.html})
         return (ctype, response_body)
+
+    def configNodeEdit(self, nodeData):
+        current = urlparse.parse_qs(self.environ["QUERY_STRING"])["name"][0]
+        self.dictSearch(nodeData, current, [])
+        nodes = self.V.get("nodes", [])
+        self.data = {"name": "node", "current": current}
+        nodesAll = json.loads(self.readnodes()[-1])
+        response_body = script.response(os.path.join(self.template, "enode.html"), {"user": self.environ["USER"], "name": current, "nodes": nodes, "nodesAll": nodesAll})
+        return response_body
 
 
 def main():
