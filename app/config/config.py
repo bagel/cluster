@@ -177,7 +177,7 @@ class NodeData(ConfigData):
             for k, v in d.iteritems():
                 if k == "nodes":
                     for n in v:
-                        n.append(p)
+                        n[1].update({"parent": p})
                     self.N.extend(v)
                 #elif v.has_key("nodes"):
                 #    self.N.extend(v["nodes"])
@@ -508,8 +508,9 @@ class ConfigNodeHtml(NodeData):
         nodes = self.V.get("nodes", [])
         self.data = {"name": "node", "current": current}
         nodesAll = json.loads(self.readnodes()[-1])
-        print nodesAll
-        response_body = script.response(os.path.join(self.template, "enode.html"), {"user": self.environ["USER"], "name": current, "nodes": nodes, "nodesAll": nodesAll})
+        idcs = self.db["idc"].find(fields={"_id": False}).next()
+        print idcs
+        response_body = script.response(os.path.join(self.template, "enode.html"), {"user": self.environ["USER"], "name": current, "nodes": nodes, "nodesAll": nodesAll, "idcs": idcs})
         return response_body
 
 

@@ -23,11 +23,11 @@
         var n3 = document.getElementById("an3").value;
         var n4 = document.getElementById("an4").value;
         var idc = document.getElementById("an5").value;
-        nodes = [[n1 + '.' + n2 + '.' + n3 + '.' + n4, idc]];
+        nodes = [[n1 + '.' + n2 + '.' + n3 + '.' + n4, {"idc": idc}]];
         var url = "/config/node/addnodes";
         var data = JSON.stringify({"name": "node", "current": current, "nodes": nodes});
         postJSON(url, data);
-        //window.location.href="/config/node";
+        window.location.href="/config/node?name={$ name $}";
     }
 
     function delnodes(current) {
@@ -39,7 +39,7 @@
         var url = "/config/node/deletenodes";
         var data = JSON.stringify({"name": "node", "current": current, "nodes": nodes});
         postJSON(url, data);
-        //window.location.href="/config/node";
+        window.location.href="/config/node?name={$ name $}";
     }
 
     function delnode(current, node) {
@@ -107,7 +107,7 @@
 <tr><td>%s</td>
 <td>%s</td>
 <td><button class="btn btn-danger" onclick='delnode("{$ name $}", "%s")'>删除</button></td></tr>
-''' % (node[0].encode('utf-8'), node[1].encode('utf-8'), node[0].encode('utf-8'))
+''' % (node[0].encode('utf-8'), Tdict["idcs"][node[1]["idc"]].encode('utf-8'), node[0].encode('utf-8'))
 </script>
                 </tbody>
             </table>
@@ -125,12 +125,14 @@
                 <tbody>
 <script type="text/python">
     for node in Tdict["nodesAll"]:
+        if not node[1]["parent"]:
+            node[1]["parent"] = Tdict["name"]
         echo '''
 <tr><td>%s</td>
 <td>%s</td>
 <td>%s</td>
 <td><button class="btn btn-danger" onclick='delnode("{$ name $}", "%s")'>删除</button></td></tr>
-''' % (node[0].encode('utf-8'), node[1].encode('utf-8'), node[2].encode('utf-8'), node[0].encode('utf-8'))
+''' % (node[0].encode('utf-8'), Tdict["idcs"][node[1]["idc"]].encode('utf-8'), node[1]["parent"].encode('utf-8'), node[0].encode('utf-8'))
 </script>
                 </tbody>
             </table>

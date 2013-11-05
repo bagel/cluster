@@ -78,7 +78,7 @@ delete a node
 
 #### addnodes
 
-	curl 10.13.32.236/config/node/addnodes  -d '{"name": "node", "nodes": [["10.73.48.210", "bx"]], "current": "nginx"}' -H 'Host: api.dpool.cluster.sina.com.cn'
+	curl 10.13.32.236/config/node/addnodes  -d '{"name": "node", "nodes": [["10.73.48.210", {"idc": "bx"}]], "current": "nginx"}' -H 'Host: api.dpool.cluster.sina.com.cn'
 
 add nodes to a node
 
@@ -88,12 +88,18 @@ add nodes to a node
 
 	[
 	    [
-	        "10.73.48.210",
-	        "tc"
+	        "10.13.32.235",
+	        {
+	            "idc": "bx",
+	            "parent": "nginx"
+	        }
 	    ],
 	    [
-	        "10.13.32.235",
-	        "bx"
+	        "10.73.48.210",
+	        {
+	            "idc": "tc",
+	            "parent": ""
+	        }
 	    ]
 	]
 
