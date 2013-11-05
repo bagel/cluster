@@ -78,7 +78,13 @@
             <input type="text" class="span1" id="an2"> .
             <input type="text" class="span1" id="an3"> .
             <input type="text" class="span1" id="an4">
-            <input type="text" class="span1" id="an5" placeholder="机房">
+            <select class="input-small" id="an5">
+                <option value="">机房</option>
+<script type="text/python">
+    for k, v in Tdict["idcs"].iteritems():
+        echo '<option value="%s">%s</option>' % (k.encode('utf-8'), v.encode('utf-8'))
+</script>
+            </select>
             </div>
             <button class="btn btn-primary" onclick='addnodes("{$ name $}")'>添加</button>
         </div>
