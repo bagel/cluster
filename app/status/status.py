@@ -20,7 +20,7 @@ class Status:
         self.environ = environ
         self.template = template
         self.query = urlparse.parse_qs(self.environ["QUERY_STRING"])
-        self.r=redis.StrictRedis(host='10.13.32.21', port=6379)
+        self.r=redis.StrictRedis(host=self.environ["REDIS_HOST"], port=int(self.environ["REDIS_PORT"]))
         self.node = eval(self.r.get("node"))
         self.idc = eval(self.r.get("idc"))
         self.mod = eval(self.r.get("mod"))
@@ -122,12 +122,36 @@ class Status:
             t += offset
         print "5:", time.time() -  t1
 
+        #sum hits
+        if qtime == "30min"  or qtime == "hour" or qtime == "4hour":
+            sum_hits = sum(values)
+        elif qtime == "day":
+            sum_hits = sum(values) * 4
+        elif qtime == "week":
+            sum_hits = sum(values) * 7 * 4
+        else:
+            sum_hits = self.r.hgetall(qtime.replace("-", ""))[domain]
+        if sum_hits > 100000000:
+            sum_hits = u"%0.2f\u4ebf" % (int(sum_hits)/100000000.0)
+        elif sum_hits > 10000:
+            sum_hits = u"%0.2f\u4e07" % (int(sum_hits)/10000.0)
+        else:
+            sum_hits = str(sum_hits)
+
+        #max hits
         max_hits = max(values)
+        if (max_hits/60) > 100000000:
+            max_hits_s = u"%0.2f\u4ebf" % (int(max_hits/60)/100000000.0)
+        elif (max_hits/60) > 10000:
+            max_hits_s = u"%0.2f\u4e07" % (int(max_hits/60)/10000.0)
+        else:
+            max_hits_s = str(max_hits / 60)
+
         if xname == "week":
             max_time = time.strftime("%m/%d %H:%M", time.localtime(t - (30 * m + 1 - values.index(max_hits)) * offset))
         else:
             max_time = time.strftime("%H:%M", time.localtime(t - (30 * m + 1 - values.index(max_hits)) * offset))
-        caption = " ".join([caption, max_time, str(max_hits / 60)])
+        caption = " ".join([caption, max_time, max_hits_s, sum_hits])
 
         chartdata = {
             "chart": {
