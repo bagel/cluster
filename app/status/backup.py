@@ -44,6 +44,14 @@ while t > t3 - 3600:
             p.hincrby(hour, d, h)
             p.hincrby(day, d, h)
 
-t4 = time.time()
+t = t4 = t0 - 86400 * 7
+while t > t4 - 86400:
+    for key in r.keys("%s*" % time.strftime("%Y%m%d", time.localtime(t))):
+        print key
+        p.delete(key)
+
+    t -= 86400
+
+t5 = time.time()
 p.execute()
-print t0, time.time() - t4
+print t0, time.time() - t5

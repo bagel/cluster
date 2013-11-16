@@ -33,17 +33,21 @@ class Status:
         mod = self.query.get("mod", [""])[0]
         if idc and not mod:
             caption = idc
-            ims = [ "-".join([idc, m]) for m in mods ]
+            #ims = [ "-".join([idc, m]) for m in mods ]
+            im = idc
         elif not idc and mod:
             caption = mod
-            ims = [ "-".join([i, mod]) for i in idcs ]
+            #ims = [ "-".join([i, mod]) for i in idcs ]
+            im = mod
         elif not idc and not mod:
             caption = ""
-            ims = [ "-".join([i, m]) for i in idcs for m in mods ]
+            #ims = [ "-".join([i, m]) for i in idcs for m in mods ]
+            im = "sum"
         else:
             caption = " ".join([idc, mod])
-            ims = [ "-".join([idc, mod]) ]
-        return (ims, caption) 
+            #ims = [ "-".join([idc, mod]) ]
+            im = "-".join([idc, mod])
+        return (im, caption) 
 
     def data(self):
         t = int(time.time())
@@ -78,19 +82,21 @@ class Status:
         t = t - t % offset - 30 * m * offset
         data = []
         print "1:", time.time() -  t1
-        ims, caption = self.idcMod()
+        im, caption = self.idcMod()
         print "2:", time.time() -  t1
         pipe = self.r.pipeline()
         domain = self.query.get("domain", ["sum"])[0]
         print "2.1:", time.time() - t1
-        keys = [ pipe.hget('-'.join([str(t + (i * offset)), im]), domain) for i in xrange(30 * m + 1) for im in ims ]
+        #keys = [ pipe.hget('-'.join([str(t + (i * offset)), im]), domain) for i in xrange(30 * m + 1) for im in ims ]
+        keys = [ pipe.hget('-'.join([str(t + (i * offset)), im]), domain) for i in xrange(30 * m + 1) ]
         print "2.2:", time.time() - t1
         values = pipe.execute()
+        print values
         caption = " ".join([caption, domain])
         print "3:", time.time() -  t1
 
         #sum ims values
-        p = len(ims)
+        #p = len(im)
         v = len(values)
         print v
         for k in xrange(v):
@@ -98,8 +104,8 @@ class Status:
                 values[k] = 0
             else:
                 values[k] = int(values[k])
-        if p > 1:
-            values = [ sum(values[q:q+p]) for q in xrange(0, v, p) ]
+        #if p > 1:
+        #    values = [ sum(values[q:q+p]) for q in xrange(0, v, p) ]
         print "4:", time.time() -  t1
         
         j = 0
@@ -125,12 +131,10 @@ class Status:
         #sum hits
         if qtime == "30min"  or qtime == "hour" or qtime == "4hour":
             sum_hits = sum(values)
-        elif qtime == "day":
-            sum_hits = sum(values) * 4
         elif qtime == "week":
             sum_hits = sum(values) * 7 * 4
         else:
-            sum_hits = self.r.hgetall(qtime.replace("-", ""))[domain]
+            sum_hits = sum(values) * 4
         if sum_hits > 100000000:
             sum_hits = u"%0.2f\u4ebf" % (int(sum_hits)/100000000.0)
         elif sum_hits > 10000:
