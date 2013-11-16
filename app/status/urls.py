@@ -19,5 +19,9 @@ def urls(environ):
         return ("text/plain", "domain update ok")
     elif re.match(r"/status/sum", environ['PATH_INFO']):
         return status.Status(environ, template).sum()
+    elif re.match(r"/status/high$", environ['PATH_INFO']):
+        return status.StatusHigh(environ, template).response()
+    elif re.match(r"/status/high/data", environ['PATH_INFO']):
+        return status.StatusHigh(environ, template).data()
     else:
         return status.Status(environ, template).response()

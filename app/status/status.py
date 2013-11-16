@@ -107,7 +107,8 @@ class Status:
         #if p > 1:
         #    values = [ sum(values[q:q+p]) for q in xrange(0, v, p) ]
         print "4:", time.time() -  t1
-        
+       
+        #chart data 
         j = 0
         while j <= (30 * m):
             n = values[j]
@@ -185,7 +186,7 @@ class Status:
         print time.time() - t
         return ("application/json", json.JSONEncoder().encode(sum))
 
-    def response(self):
+    def responseHtml(self, html):
         times = ["30min", "hour", "4hour", "day", "week"]
         t = time.time()
         for i in xrange(1, 7):
@@ -204,8 +205,34 @@ class Status:
             "domains": list(self.domain),
             "user": self.environ["USER"],
         }
-        return (self.ctype, script.response(os.path.join(self.template, "status.html"), tdict))
+        return (self.ctype, script.response(os.path.join(self.template, html), tdict))
 
+    def response(self):
+        return self.responseHtml("status.html")
+
+class StatusHigh(Status):
+    def __init__(self, environ, template):
+        Status.__init__(self, environ, template)
+
+    def data(self):
+        ctype = "application/json"
+        chartData = [{
+                "name": "hit",
+                "data": [1, 3, 2, 5]
+            }, 
+            {
+                "name": "code",
+                "data": [10, 4, 8, 9]
+            }, 
+            {
+                "name": "slow",
+                "data": [20, 3, 6, 15]
+        }]
+        response_body = json.JSONEncoder().encode(chartData)
+        return (ctype, response_body)
+
+    def response(self):
+        return self.responseHtml("high.html")
 
 if __name__ == "__main__":
     data()
