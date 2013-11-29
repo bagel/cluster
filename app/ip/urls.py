@@ -2,9 +2,9 @@
 
 import sys
 import os
+import ip
 
 
 def urls(environ):
     if environ['PATH_INFO'] == '/ip':
-        import ip
-        return ip.IPList().Summary(environ)
+        return ip.IP(environ).response()

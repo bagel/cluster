@@ -1,164 +1,88 @@
 #!/usr/bin/env python
-# coding: utf-8
 
 import sys
 import os
-import time
-import urllib2
-import memcache
+import redis
 import json
 
-sys.path.append('/data1/www/htdocs/api.dpool.cluster.sina.com.cn/libs/')
-import shortcut
-import mc
 
-class IPList:
-    def __init__(self):
-        self.idc = {'xd': '西单', 'ja': '静安', 'gd': '广东', 'sh': '上海', 'yf': '永丰', 'tc': '土城', 'edu': '教育网', 'bx': '北显'}
+class IP:
+    def __init__(self, environ):
+        self.ctype = "application/json"
+        r = redis.StrictRedis("10.13.32.21")
+        self.node = eval(r.get("node"))
+        self.snat = eval(r.get("snat"))
+        self.vip = eval(r.get("vip"))
+        self.query = environ['QUERY_STRING']
 
-    def getVip(self, domain):
-        vip = set()
-        [ vip.add(v[2]) for v in shortcut.dns(domain) ]
-        return list(vip)
+    def Web(self):
+        data = {}
+        data["vip"] = self.vip
+        data["snat"] = self.snat
+        data["node"] = {}
+        for k, v in self.node.iteritems():
+            if "dpool2_web" not in v.keys() and "dpool3_web" not in v.keys():
+                continue
+            data["node"][k] = {}
+            for m, ips in v.iteritems():
+                if m != "dpool2_web" and m != "dpool3_web":
+                    continue
+                data["node"][k][m] = ips
+        return (self.ctype, json.JSONEncoder().encode(data))
 
-    def getMember(self, vip):
-        member = []
-        net = []
-        check_url = 'http://api.dpool.cluster.sina.com.cn/online?ip='
-        for m in shortcut.load(vip):
-           m = shortcut.intip(m)
-           if m == 1:
-               continue
-           if '.'.join(m.split('.')[:3]) not in net and urllib2.urlopen(url=check_url+m).read().strip() == "1101":
-               net.append('.'.join(m.split('.')[:3]))
-               member.append(m)
-        return member
+    def Web2(self):
+        data = {}
+        data["vip"] = {}
+        for k, v in self.vip.iteritems():
+            if "dpool2_web" not in v.keys():
+                continue
+            data["vip"][k] = v["dpool2_web"]
 
-    def getMemberAll(self, vip):
-        member = []
-        for m in shortcut.load(vip):
-            m = shortcut.intip(m)
-            if m != 1:
-                member.append(str(m))
-        return member
+        data["snat"] = {}
+        for k1, v1 in self.snat.iteritems():
+            if "dpool2_web" not in v1.keys():
+                continue
+            data["snat"][k1] = v1["dpool2_web"]
 
-    def getSnat(self, vip, ex=0):
-        snat = mc.get('snat')
-        if not snat:
-            if ex == 1:
-                snat = 0
-            else:
-                snat = mc.get("snat_b")
-        if not snat:
-            snat = {}
-            for v in vip:
-                print v
-                s = set()
-                for m in shortcut.load(v):
-                    t = shortcut.snat(shortcut.intip(m)).strip()
-                    if t != "1" and t:
-                        s.add(t)
-                snat.update({v: list(s)})
-                print snat
-            mc.set('snat', snat, 3600)
-            mc.set('snat_b', snat, 5400)
-        return snat
+        data["node"] = {}
+        for k, v in self.node.iteritems():
+            if "dpool2_web" not in v.keys():
+                continue
+            data["node"][k] = v["dpool2_web"]
+        return (self.ctype, json.JSONEncoder().encode(data))
 
-    def getIdc(self, ip):
-        net = int(ip.split('.')[1])
-        if net == 55:
-            return self.idc['xd']
-        elif net == 69:
-            return self.idc['ja']
-        elif net == 71:
-            return self.idc['gd']
-        elif net == 73:
-            return self.idc['tc']
-        elif net == 79:
-            return self.idc['yf']
-        elif net == 6:
-            return self.idc['edu']
-        elif net == 53:
-            return self.idc['sh']
+    def Web3(self):
+        data = {}
+        data["vip"] = {}
+        for k, v in self.vip.iteritems():
+            if "dpool3_web" not in v.keys():
+                continue
+            data["vip"][k] = v["dpool3_web"]
+
+        data["snat"] = {}
+        for k1, v1 in self.snat.iteritems():
+            if "dpool3_web" not in v1.keys():
+                continue
+            data["snat"][k1] = v1["dpool3_web"]
+
+        data["node"] = {}
+        for k, v in self.node.iteritems():
+            if "dpool3_web" not in v.keys():
+                continue
+            data["node"][k] = v["dpool3_web"]
+        return (self.ctype, json.JSONEncoder().encode(data))
+
+    def Node(self):
+        pass
+
+    def response(self):
+        if self.query == "web2":
+            return self.Web2()
+        elif self.query == "web3":
+            return self.Web3()
         else:
-            return 'Unkown'
+            return self.Web()
 
-    def Summary(self, environ, ex=0):
-        vip = list(set(self.getVip('common7.dpool.sina.com.cn') + self.getVip('common6.dpool.sina.com.cn')))
-        print vip
-        snat = self.getSnat(vip, ex)
-        print snat
-        sum = mc.get('sum')
-        mems = mc.get('mems')
-        if not sum:
-            if ex == 1:
-                sum = 0
-            else:
-                sum = mc.get('sum_b')
-        if not sum: 
-            sum = {}
-            for v in vip:
-                member = self.getMember(v)
-                sum.update({v: {"member": member, "snat": snat[v]}})
-            mc.set('sum', sum, 3600)
-            mc.set('sum_b', sum, 5400)
-        print sum
-        if not mems:
-            if ex == 1:
-                mems = 0
-            else:
-                mems = mc.get('mems_b')
-        if not mems:
-            mems = {}
-            for v in vip:
-                mem = self.getMemberAll(v)
-                mems.update({self.getIdc(mem[0]): mem})
-            mc.set('mems', mems, 3600)
-            mc.set('mems_b', mems, 5400)
-        print mems 
-        ctype = 'text/plain; charset=utf-8'
-        response_body = ''
-        snat = []
-        member = []
-        sum_n = {}
-        for ivip, val in sum.items():
-            snat += val['snat']
-            member += val['member']
-            idc = self.getIdc(val['member'][0])
-            response_body += "%s\nVIP:%s\nSNAT:%s\nmember:%s\n\n" % (idc, str(ivip), ', '.join(val['snat']), ', '.join([ str(m) for m in val['member'] ]))
-            sum_n.update({idc: {"vip": ivip, "snat": val['snat'], "member": val['member']}})
-        response_body += "\nSNAT:%s\n" % ', '.join(snat)
-        response_body += "\nNET:%s\n" % ', '.join([ '.'.join(str(m).split('.')[:3]) + '.0/24' for m in member ])
-        if environ['QUERY_STRING'] == 'snat':
-            response_body = '\n'.join(snat) + '\n'
-        elif environ['QUERY_STRING'] == 'all':
-            memlist = []
-            for m in mems.values():
-                memlist += m
-            response_body = '\n'.join(memlist) + '\n'
-        elif environ['QUERY_STRING'] in self.idc.keys():
-            print self.idc[environ['QUERY_STRING']]
-            response_body = '\n'.join(mems[self.idc[environ['QUERY_STRING']]]) + '\n'
-        elif environ['QUERY_STRING'] == 'vip':
-            print vip
-            response_body = '\n'.join([ str(v) for v in vip ]) + '\n'
-        elif environ['QUERY_STRING'] == 'net':
-            response_body = '\n'.join([ '.'.join(str(m).split('.')[:3]) + '.0/24' for m in member ]) + '\n'
-        elif environ['QUERY_STRING'] == 'json':
-            ctype = "application/json; charset=utf-8"
-            response_body = json.JSONEncoder().encode(sum_n)
-        print sum_n
-        return (ctype, response_body)
-        
 
 if __name__ == "__main__":
-    #print IPList().getVip()
-    #print IPList().getMember('218.30.115.176')
-    #print IPList().getSnat('10.69.6.90')
-    environ = {}
-    environ['SINASRV_MEMCACHED_SERVERS'] = "10.13.32.22:7601"
-    environ['QUERY_STRING'] = ""
-    os.environ['MEMCACHE_SERVERS'] = "10.13.32.22:7601"
-    os.environ['SINASRV_MEMCACHED_SERVERS'] = "10.13.32.22:7601"
-    print IPList().Summary(environ, 1)
-#test2
+    print IP()
