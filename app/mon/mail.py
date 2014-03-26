@@ -44,6 +44,7 @@ class AutoMail:
         for key in keys:
             code = key.split('_')[-1]
             count = self.r.get(key)
+            self.r.delete(key)
             code_msg.append('%s错共%s次' % (code, count))
         msg += ', '.join(code_msg)
         msg += '<br><br>访问日志'
@@ -57,7 +58,8 @@ class AutoMail:
             line[0] = time.strftime('%Y/%m/%d %H:%M:%S', time.localtime(int(line[0])))
             msg += ' '.join(line)
         if len(msg) == lens:
-            return 0
+            n = 1
+            msg += '<br>null'
         msg += '<br><br>'
         msg += '错误日志'
         lens = len(msg)
@@ -70,6 +72,8 @@ class AutoMail:
             line[0] = time.strftime('%Y/%m/%d %H:%M:%S', time.localtime(int(line[0])))
             msg += ' '.join(line)
         if len(msg) == lens:
+            if n == 1:
+                return 0
             msg += '<br>null'
         msg += '<br><br>更多日志及实时监控请访问 <a href="http://admin.dpool.cluster.sina.com.cn/mon?channel=%s">http://admin.dpool.cluster.sina.com.cn/mon?channel=%s</a>' % (domain, domain)
         self.mail(subject, msg, to, cc)
@@ -84,10 +88,13 @@ class AutoMail:
         domains = set()
         for key in keys:
             if int(self.r.get(key)) < 10:
+                self.r.delete(key)
                 continue
             domains.add(key.split('_')[0])
         for domain in domains:
             if not users.has_key(domain):
+                for key in self.r.keys('_'.join([domain, '*'])):
+                    self.r.delete(key)
                 continue
             to = eval(users[domain])
             self.domainMail(domain, fmin, to, cc)
