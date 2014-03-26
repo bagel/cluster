@@ -16,7 +16,7 @@ import script
 
 
 def getip(environ, mc):
-    cfg = os.path.join(environ['DOCUMENT_ROOT'], 'wsgi/purge/VarnishIP.cfg')
+    cfg = os.path.join(environ['DOCUMENT_ROOT'], 'app/purge/VarnishIP.cfg')
     servers = mc.get('servers')
     if not servers:
         servers = VarnishIP.serverlist()
@@ -58,7 +58,7 @@ def purge(environ):
     response_body = ''
     request_uri = environ['REQUEST_URI']
     if not re.match("/purge\?url=.*", request_uri):
-        response_body = script.response(os.path.join(environ['DOCUMENT_ROOT'], 'wsgi/purge/README'), {'host': environ['HTTP_HOST']})
+        response_body = script.response(os.path.join(environ['DOCUMENT_ROOT'], 'app/purge/README'), {'host': environ['HTTP_HOST']})
         return (ctype, response_body)
     url = request_uri.split('/purge?url=')[1]
     mc = memcache.Client(environ['SINASRV_MEMCACHED_SERVERS'].split(' '))

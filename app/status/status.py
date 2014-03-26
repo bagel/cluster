@@ -12,6 +12,8 @@ import shortcut
 import time
 import urlparse
 import redis
+import collections
+import re
 
 
 class Status:
@@ -80,7 +82,6 @@ class Status:
             xname = qtime
 
         t = t - t % offset - 30 * m * offset
-        data = []
         print "1:", time.time() -  t1
         im, caption = self.idcMod()
         print "2:", time.time() -  t1
@@ -107,27 +108,6 @@ class Status:
         #if p > 1:
         #    values = [ sum(values[q:q+p]) for q in xrange(0, v, p) ]
         print "4:", time.time() -  t1
-       
-        #chart data 
-        j = 0
-        while j <= (30 * m):
-            n = values[j]
-            if not n:
-                n = 0
-            if j % (3 * m) == 0:
-                data.append({"vline": "true", "lineposition": "1", "color": "dddddd", "thickness": "1.5"})
-                if xname == "week":
-                    data.append({"label": time.strftime("%m/%d %H:%M", time.localtime(t)), "value": str(int(n)/60), "tooltext": "%s, %s" % (time.strftime("%m/%d %H:%M", time.localtime(t)), str(int(n)/60))})
-                else:
-                    data.append({"label": time.strftime("%H:%M", time.localtime(t)), "value": str(int(n)/60), "tooltext": "%s, %s" % (time.strftime("%H:%M", time.localtime(t)), str(int(n)/60))})
-            else:
-                if xname == "week":
-                    data.append({"value": str(int(n)/60), "tooltext": "%s, %s" % (time.strftime("%m/%d %H:%M", time.localtime(t)), str(int(n)/60))})
-                else:
-                    data.append({"value": str(int(n)/60), "tooltext": "%s, %s" % (time.strftime("%H:%M", time.localtime(t)), str(int(n)/60))})
-            j += 1
-            t += offset
-        print "5:", time.time() -  t1
 
         #sum hits
         if qtime == "30min"  or qtime == "hour" or qtime == "4hour":
@@ -152,11 +132,40 @@ class Status:
         else:
             max_hits_s = str(max_hits / 60)
 
+        #max time
         if xname == "week":
             max_time = time.strftime("%m/%d %H:%M", time.localtime(t - (30 * m + 1 - values.index(max_hits)) * offset))
         else:
             max_time = time.strftime("%H:%M", time.localtime(t - (30 * m + 1 - values.index(max_hits)) * offset))
+
         caption = " ".join([caption, max_time, max_hits_s, sum_hits])
+        return (values, m, t, xname, offset, caption)
+
+    def chartData(self):
+        values, m, t, xname, offset, caption = self.data()
+
+        #chart data 
+        data = []
+        j = 0
+        while j <= (30 * m):
+            n = values[j]
+            if not n:
+                n = 0
+            if j % (3 * m) == 0:
+                data.append({"vline": "true", "lineposition": "1", "color": "dddddd", "thickness": "1.5"})
+                if xname == "week":
+                    data.append({"label": time.strftime("%m/%d %H:%M", time.localtime(t)), "value": str(int(n)/60), "tooltext": "%s, %s" % (time.strftime("%m/%d %H:%M", time.localtime(t)), str(int(n)/60))})
+                else:
+                    data.append({"label": time.strftime("%H:%M", time.localtime(t)), "value": str(int(n)/60), "tooltext": "%s, %s" % (time.strftime("%H:%M", time.localtime(t)), str(int(n)/60))})
+            else:
+                if xname == "week":
+                    data.append({"value": str(int(n)/60), "tooltext": "%s, %s" % (time.strftime("%m/%d %H:%M", time.localtime(t)), str(int(n)/60))})
+                else:
+                    data.append({"value": str(int(n)/60), "tooltext": "%s, %s" % (time.strftime("%H:%M", time.localtime(t)), str(int(n)/60))})
+            j += 1
+            t += offset
+        #print "5:", time.time() -  t1
+
 
         chartdata = {
             "chart": {
@@ -184,9 +193,17 @@ class Status:
         else:
             sum = {}
         print time.time() - t
+        badkeys = set()
+        for k, v in sum.iteritems():
+            if not re.match('[\w\d\_\-\.]+$', k):
+                badkeys.add(k)
+            if int(v) < 1000:
+                badkeys.add(k)
+        for key in badkeys:
+            sum.pop(key)
         return ("application/json", json.JSONEncoder().encode(sum))
 
-    def responseHtml(self, html):
+    def dictHtml(self):
         times = ["30min", "hour", "4hour", "day", "week"]
         t = time.time()
         for i in xrange(1, 7):
@@ -205,34 +222,155 @@ class Status:
             "domains": list(self.domain),
             "user": self.environ["USER"],
         }
+        return tdict
+
+    def responseHtml(self, html, tdict):
         return (self.ctype, script.response(os.path.join(self.template, html), tdict))
 
     def response(self):
-        return self.responseHtml("status.html")
+        tdict = self.dictHtml()
+        return self.responseHtml("status.html", tdict)
 
 class StatusHigh(Status):
     def __init__(self, environ, template):
         Status.__init__(self, environ, template)
 
-    def data(self):
+    def chartData(self):
         ctype = "application/json"
-        chartData = [{
-                "name": "hit",
-                "data": [1, 3, 2, 5]
-            }, 
-            {
-                "name": "code",
-                "data": [10, 4, 8, 9]
-            }, 
-            {
-                "name": "slow",
-                "data": [20, 3, 6, 15]
-        }]
-        response_body = json.JSONEncoder().encode(chartData)
+        t = time.time()
+        data = self.r.hget("%d-sum" % (t - t % 60), "sum")
+        if not data:
+            data = 0
+        chartdata = {
+            "data": int(data)
+        }
+        response_body = json.JSONEncoder().encode(chartdata)
         return (ctype, response_body)
 
     def response(self):
-        return self.responseHtml("high.html")
+        tdict = self.dictHtml()
+        return self.responseHtml("high.html", tdict)
+
+class StatusMap(Status):
+    def __init__(self, environ, template):
+        Status.__init__(self, environ, template)
+
+    def mapData(self):
+        ctype = "application/json"
+        day = time.strftime('s%Y%m%d')
+
+        province = {
+            u'\u5b89\u5fbd': 'AH',
+            u'\u798f\u5efa': 'FJ',
+            u'\u7518\u8083': 'GS',
+            u'\u5e7f\u4e1c': 'GD',
+            u'\u8d35\u5dde': 'GZ',
+            u'\u6d77\u5357': 'HA',
+            u'\u6cb3\u5317': 'HB',
+            u'\u9ed1\u9f99\u6c5f': 'HL',
+            u'\u6cb3\u5357': 'HE',
+            u'\u6e56\u5317': 'HU',
+            u'\u6e56\u5357': 'HN',
+            u'\u6c5f\u82cf': 'JS',
+            u'\u6c5f\u897f': 'JX',
+            u'\u5409\u6797': 'JL',
+            u'\u8fbd\u5b81': 'LN',
+            u'\u9752\u6d77': 'QH',
+            u'\u9655\u897f': 'SA',
+            u'\u5c71\u4e1c': 'SD',
+            u'\u5c71\u897f': 'SX',
+            u'\u56db\u5ddd': 'SC',
+            u'\u4e91\u5357': 'YN',
+            u'\u6d59\u6c5f': 'ZJ',
+            u'\u897f\u85cf': 'XZ',
+            u'\u5185\u8499\u53e4': 'NM',
+            u'\u65b0\u7586': 'XJ',
+            u'\u5e7f\u897f': 'GX',
+            u'\u5b81\u590f': 'NX',
+            u'\u5317\u4eac': 'BJ',
+            u'\u91cd\u5e86': 'CQ',
+            u'\u4e0a\u6d77': 'SH',
+            u'\u5929\u6d25': 'TJ',
+            u'\u6fb3\u95e8': 'MA',
+            u'\u9999\u6e2f': 'HK',
+            u'\u53f0\u6e7e': 'TA',
+        }
+
+        isp = {
+            u'\u7535\u4fe1': 'CT',
+            u'\u8054\u901a': 'CNC',
+            u'\u79fb\u52a8': 'CM',
+            u'\u94c1\u901a': 'CM',
+            u'\u79fb\u901a': 'CM',
+        }
+
+        country = {
+            u'\u4e2d\u56fd': 'CN',
+        }
+
+        dayData = self.r.hgetall(day)
+        daySums = sum([ int(n) for n in dayData.values() ])
+
+        provData = collections.Counter()
+        ispData = collections.Counter()
+        for k, v in dayData.iteritems():
+            provData['.'.join(k.split('.')[:2])] += int(v)
+            if re.match(r'\w+\.\w+.\w+', k):
+                ispData[k.split('.')[2]] += int(v)
+            else:
+                ispData["RM"] += int(v)
+
+        data = []
+        for prov, sname  in province.iteritems():
+            data.append({
+                "id": "CN.%s" % sname,
+                "displayValue": prov,
+                "toolText": u"%s:%0.1f%%, \u7535\u4fe1:%0.1f%%, \u8054\u901a:%0.1f%%, \u79fb\u52a8:%0.1f%%" % (prov, float(provData.get("CN.%s" % sname, 0)) / daySums * 100, float(dayData.get("CN.%s.CT" % sname, 0)) / daySums * 100, float(dayData.get("CN.%s.CNC" % sname, 0)) / daySums * 100, float(dayData.get("CN.%s.CM" % sname, 0)) / daySums * 100),
+                "value": provData.get("CN.%s" % sname, 0),
+            })
+
+        mapdata = {
+            "caption": u"\u5168\u56fd:%d\u4e07 \u7535\u4fe1:%0.1f%% \u8054\u901a:%0.1f%% \u79fb\u52a8:%0.1f%% \u5176\u4ed6:%0.1f%% %s" % (daySums / 10000, float(ispData.get("CT", 0)) / daySums * 100, float(ispData.get("CNC", 0)) / daySums * 100, float(ispData.get("CM", 0)) / daySums * 100, float(ispData.get("RM", 0)) / daySums * 100, time.strftime("%Y/%m/%d")),
+            "map": {
+                "bordercolor": "005879",
+                "fillcolor": "D7F4FF",
+                "numbersuffix": "",
+                "includevalueinlabels": "1",
+                "labelsepchar": ":",
+                "basefontsize": "9",
+            },
+            "colorRange": {
+                "color": [
+                    {
+                        "minvalue": "0",
+                        "maxvalue": "10000",
+                        "code": "FFF8DC",
+                    },
+                    {
+                        "minvalue": "10000",
+                        "maxvalue": "1000000",
+                        "code": "B8860B",
+                    },
+                    {
+                        "minvalue": "1000000",
+                        "maxvalue": "10000000",
+                        "code": "008000",
+                    },
+                    {
+                        "minvalue": "10000000",
+                        "maxvalue": "100000000",
+                        "code": "CD5C5C",
+                    },
+                ]
+            },
+            "data": data
+        }
+        response_body = json.JSONEncoder().encode(mapdata)
+        return (ctype, response_body)
+
+    def response(self):
+        tdict = self.dictHtml()
+        return self.responseHtml("map.html", tdict)
 
 if __name__ == "__main__":
     data()

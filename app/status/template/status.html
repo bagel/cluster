@@ -25,6 +25,16 @@
         chartReference.setJSONUrl("/status/data?&time=".concat(t) + "&{$ query_string $}");
     };
 
+    function autoUpdate() {
+        update("30min");
+    }
+
+    function auto() {
+        window.setInterval(autoUpdate, 10000);
+    };
+
+    //window.onload = auto;
+
     $(function(){
         $('#domain').typeahead({
             source: {$ domains $},
@@ -42,8 +52,10 @@
 {% end %}
 
 {% content %}
-<form class="well form-inline" action="/status" method="get">
-    <select class="span2" name="idc">
+<form class="well" role="form" action="/status" method="get">
+    <div class="row">
+    <div class="col-md-2">
+    <select class="form-control" name="idc">
         <option value="">机房</option>
 <script type="text/python">
     for idc, idc_cn in Tdict["idc"].iteritems():
@@ -53,7 +65,9 @@
             echo '<option value="%s">%s</option>' % (idc.encode("utf-8"), idc_cn.encode("utf-8"))
 </script>
     </select>
-    <select class="span2" name="mod">
+    </div>
+    <div class="col-xs-2">
+    <select class="form-control" name="mod">
         <option value="">模块</option>
 <script type="text/python">
     for mod, mod_cn in Tdict["mod"].iteritems():
@@ -63,7 +77,9 @@
             echo '<option value="%s">%s</option>' % (mod.encode("utf-8"), mod_cn.encode("utf-8"))
 </script>
     </select>
-    <select class="span2" name="time">
+    </div>
+    <div class="col-xs-2">
+    <select class="form-control" name="time">
         <option value="">时间</option>
 <script type="text/python">
     for t in Tdict["times"]:
@@ -73,9 +89,13 @@
             echo '<option value="%s">%s</option>' % (t, t)
 </script>
     </select>
-    <input id="domain" type="text" autocomplete="off" name="domain" placeholder="域名" style="margin: 0 auto;" data-provide="typeahead" value="{$ qdomain $}">
+    </div>
+    <div class="col-xs-3">
+    <input class="form-control" id="domain" type="text" autocomplete="off" name="domain" placeholder="域名" style="margin: 0 auto;" data-provide="typeahead" value="{$ qdomain $}">
+    </div>
     <button type="submit" class="btn btn-primary">查看</button>
-    <a href="/status/high"><button type="button" class="btn btn-info">更多</button></a>
+    <a href="/status/map"><button type="button" class="btn btn-info">地图</button></a>
+    </div>
 </form>
 
 <div class="well">

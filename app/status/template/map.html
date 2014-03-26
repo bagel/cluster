@@ -1,0 +1,28 @@
+{# base.html #}
+
+{% head %}
+<script type="text/javascript" src="/static/fusionmaps/FusionCharts.js"></script>
+<script type="text/javascript" src="/static/fusionmaps/FusionCharts.jqueryplugin.js"></script>
+<script>
+    var srcUrl = "/status/map/data";
+    var fileUrl = "/static/fusionmaps/Maps/FCMap_China2.swf";
+
+    $(function(){
+        $("#mapContainer").insertFusionCharts({ 
+            swfUrl: fileUrl,
+            renderer : 'JavaScript',
+            width: "100%",
+            height: "800",
+            id: "myMapId",
+            dataFormat: "jsonurl",
+            dataSource: srcUrl,
+            //  debugMode: "1",
+        });
+    });
+
+</script>
+{% end %}
+
+{% content %}
+<div id="mapContainer"></div>
+{% end %}

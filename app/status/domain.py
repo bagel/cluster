@@ -18,12 +18,11 @@ def domainWeb2():
 
 def domainWeb3():
     d = []
-    for line in domainConf('nginx.conf.vhost'):
+    for line in domainConf('nginx.conf.vhost_fpm'):
         if re.match(r'\s+server_name', line):
-            if "var=get_servername" in line:
-                d.extend([ m for m in re.sub(r'\s+server_name\s+\[\-.*\-\]\s+(.*)\s*;', r'\1', line).rstrip(';').strip().split(' ') if m ])
-            else:
-                d.extend([ m for m in re.sub(r'\s+server_name\s+(.*)\s*;', r'\1', line).rstrip(';').strip().split(' ') if m ])
+            #if "var=get_servername" in line:
+            #    d.extend([ m for m in re.sub(r'\s+server_name\s+\[\-.*\-\]\s+(.*)\s*;', r'\1', line).rstrip(';').strip().split(' ') if m ])
+            d.extend([ m for m in re.sub(r'\s+server_name\s+@@.*@@\s+(.*)\s*;', r'\1', line).rstrip(';').strip().split(' ') if m ])
     return d
 
 def update():

@@ -5,18 +5,43 @@
 <script>
 $(function () {
     $(document).ready(function() {
-        var options = {
-            chart: {
-                renderTo: "chartContainer",
-                type: "spline"
-            },
-            series: [{}]
-        };
- 
         var url = "/status/high/data?{$ query_string $}";
-        $.getJSON(url, function(data) {
-            options.series = data;
-            var chart = new Highcharts.Chart(options);
+        var chart;
+        $("#chartContainer").highcharts({
+            chart: {
+                type: "spline",
+                events: {
+                    load: function() {
+                        var series = this.series[0];
+                        setInterval(function() {
+                            var x = (new Date()).getTime();
+                            $.getJSON(url, function(jsonData){
+                                y = jsonData["data"];
+                            });
+                            series.addPoint([x, y], true, true);
+                        }, 1000);
+                    }
+                }
+            },
+            xAxis: {
+                type: "datetime",
+            },
+            series: [{
+                name: "hit",
+                data: (function() {
+                    var data = [],
+                        time = (new Date()).getTime(),
+                        i;
+    
+                    for (i = -19; i <= 0; i++) {
+                        data.push({
+                            x: time + i * 1000,
+                            y: null
+                        });
+                    }
+                    return data;
+                })()
+            }]
         });
     });
 });
@@ -57,6 +82,7 @@ $(function () {
     </select>
     <input id="domain" type="text" autocomplete="off" name="domain" placeholder="域名" style="margin: 0 auto;" data-provide="typeahead" value="{$ qdomain $}">
     <button type="submit" class="btn btn-primary">查看</button>
+    <a href="/status"><button type="button" class="btn btn-info">返回</button></a>
 </form>
 
 <div id="chartContainer"></div>

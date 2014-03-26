@@ -72,14 +72,20 @@ class IP:
             data["node"][k] = v["dpool3_web"]
         return (self.ctype, json.JSONEncoder().encode(data))
 
-    def Node(self):
-        pass
+    def Snat(self):
+        snat = []
+        for k, v in self.snat.iteritems():
+            for k1, v1 in v.iteritems():
+                snat.extend(v1)
+        return ("text/plain", '\n'.join(snat))
 
     def response(self):
         if self.query == "web2":
             return self.Web2()
         elif self.query == "web3":
             return self.Web3()
+        elif self.query == "snat":
+            return self.Snat()
         else:
             return self.Web()
 

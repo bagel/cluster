@@ -14,7 +14,7 @@ t0 = t0 - t0 % 60
 
 p = r.pipeline()
 t = t1 = t0 - 86400 - 3600
-while t > t1 - 3600 - 1200:
+while t > t1 - 3600 - 1200 - 86400 * 7:
     print t
 
     if t % 240 != 0:
@@ -24,7 +24,7 @@ while t > t1 - 3600 - 1200:
     t -= 60
 
 t = t2 = t0 - 86400 * 7 - 3600
-while t > t2 - 3600 - 1200:
+while t > t2 - 3600 - 1200 - 86400 * 7:
     print t
     if t % 240 == 0:
         for key in r.keys("%s-*" % t):
@@ -38,14 +38,14 @@ day = time.strftime('%Y%m%d', time.localtime(t0 - 3600))
 while t > t3 - 3600:
     t -= 60
     print t
-    for key in r.keys("%s-*" % t):
+    for key in r.keys("%s-sum" % t):
         print key
         for d, h in r.hgetall(key).items():
             p.hincrby(hour, d, h)
             p.hincrby(day, d, h)
 
 t = t4 = t0 - 86400 * 7
-while t > t4 - 86400:
+while t > t4 - 86400 * 7:
     for key in r.keys("%s*" % time.strftime("%Y%m%d", time.localtime(t))):
         print key
         p.delete(key)

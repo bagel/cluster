@@ -11,12 +11,13 @@ route = {
     "config": "config",
     "status": "status",
     "mon": "mon",
-    "home": "config",
+    "home": "status",
     "info": "info",
     "test": "test",
     "purge": "purge",
     "ip": "ip",
     "online": "online",
+    "tools": "tools",
 }
 
 def urls(environ):
@@ -33,6 +34,10 @@ def urls(environ):
     else:
         environ["USER"] = user[0]
         header = user[1]
+
+    if environ["PATH_INFO"] == "/ws" or environ["PATH_INFO"] == "/foobar/":
+        import test
+        return test.urls(environ)
 
     if path not in route.keys():
         path = "default"
@@ -52,6 +57,7 @@ def urls(environ):
     elif route[path] == 'online':
         import tools
         return tools.online(environ)
+    
 
     exec('import %s' % route[path])
     if not header:

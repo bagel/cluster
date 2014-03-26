@@ -31,7 +31,7 @@ def load(vip):
 
 def snat(server):
     print server
-    cmd = 'curl http://180.149.136.250/iplookup/get_client_ip.php?format=rip -H "Host: int.dpool.sina.com.cn" -s'
+    cmd = 'curl http://180.149.136.250/iplookup/get_client_ip.php?format=rip -H "Host: int.dpool.sina.com.cn" -s --connect-timeout 3'
     return ssh(server, cmd)
 
 def intip(ip):

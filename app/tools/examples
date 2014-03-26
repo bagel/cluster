@@ -1,0 +1,1 @@
+curl http://admin.dpool.cluster.sina.com.cn/tools/plot -d '{"x": {"data": ["20:00", "20:05", "20:10", "20:15"], "label": "time"}, "y": [{"data": [10, 8, 15, 7], "label": "hit1"}, {"data": [6, 15, 20, 3], "label": "hit2"}]}'

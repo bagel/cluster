@@ -2,20 +2,21 @@
 
 import sys
 import os
-import info
-import re
+import time
+
+route = {
+    "default": [("info.Info",), ("response",)],
+    "/info/data": [("info.InfoData",), ("response",)],
+}
 
 def urls(environ):
     template = os.path.join(environ['DOCUMENT_ROOT'], 'app/info/template')
-    if re.match(r"/status/data", environ['PATH_INFO']):
-        return status.Status(environ, template).data()
-    elif re.match(r"/status/node", environ['PATH_INFO']):
-        import node
-        node.update()
-        return ("text/plain", "node update ok")
-    elif re.match(r"/status/domain", environ["PATH_INFO"]):
-        import domain
-        domain.update()
-        return ("text/plain", "domain update ok")
-    else:
-        return info.Info(environ, template).response()
+    path =  environ["PATH_INFO"]
+    if path not in route.keys():
+        path = 'default'
+    category = route[path][0][0]
+    category_args = "environ, template, " + ", ".join(route[path][0][1:])
+    function = route[path][1][0]
+    function_args = ", ".join(route[path][1][1:])
+    exec('import %s' % category.split('.')[0])
+    return eval('%s(%s).%s(%s)' % (category, category_args, function, function_args))
