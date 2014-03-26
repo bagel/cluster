@@ -1,6 +1,6 @@
 web admin
 ========
-api.dpool.cluster.sina.com.cn
+admin.dpool.cluster.sina.com.cn
 
 #Nginx
 
