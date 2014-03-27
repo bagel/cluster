@@ -20,7 +20,7 @@ class Mon:
         self.ctype = "text/html"
         self.environ = environ
         self.template = template
-        self.r=redis.StrictRedis(host=self.environ["REDIS_HOST"], port=6380)
+        self.r=redis.StrictRedis(host=self.environ["REDIS_HOST"], port=6380, socket_timeout=5)
         self.channel = urlparse.parse_qs(self.environ['QUERY_STRING']).get('channel', ['sum'])[0]
         self.num = int(urlparse.parse_qs(self.environ['QUERY_STRING']).get('num', [50])[0])
         self.start = int(urlparse.parse_qs(self.environ['QUERY_STRING']).get('start', [0])[0])
@@ -68,14 +68,44 @@ class Mon:
             time.sleep(2)
 
     def wsSubData(self):
+        """Websocket subscribe redis pubsub"""
         uwsgi.websocket_handshake(self.environ['HTTP_SEC_WEBSOCKET_KEY'], self.environ.get('HTTP_ORIGIN', ''))
-        ps = self.r.pubsub()
-        ln = ps.listen()
-        ps.subscribe(self.channel)
-        ln.next()
+        channel = self.r.pubsub()
+        channel.subscribe(self.channel)
+        channel.parse_response()
         while True:
-            wsdata = ln.next()["data"]
+            try:
+                wsdata = channel.parse_response()[2]
+            except:
+                time.sleep(1)
+                wsdata = ''
+                channel.subscribe(self.channel)
+                channel.parse_response()
             uwsgi.websocket_send(wsdata)
+
+    def wsSubData_nb(self):
+        """Websocket subscribe redis pubsub nonbolocking.
+           Keepalive websocket connection with client."""
+        uwsgi.websocket_handshake(self.environ['HTTP_SEC_WEBSOCKET_KEY'], self.environ.get('HTTP_ORIGIN', ''))
+        channel = self.r.pubsub()
+        channel.subscribe(self.channel)
+        channel.parse_response()
+        websocket_fd = uwsgi.connection_fd()
+        redis_fd = channel.connection._sock.fileno()
+        while True:
+            uwsgi.wait_fd_read(websocket_fd, 3)
+            uwsgi.wait_fd_read(redis_fd)
+            uwsgi.suspend()
+            fd = uwsgi.ready_fd()
+            if fd > -1:
+                if fd == websocket_fd:
+                    uwsgi.websocket_recv_nb()
+                elif fd == redis_fd:
+                    wsdata = channel.parse_response()[2]
+                    uwsgi.websocket_send(wsdata)
+            else:
+                uwsgi.websocket_recv_nb()
+                time.sleep(1)
 
     def LogAccess(self):
         return ("application/json", json.JSONEncoder().encode(self.r.zrevrangebyscore(self.channel, "+inf", 0, start=self.start, num=self.num)))

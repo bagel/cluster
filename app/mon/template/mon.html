@@ -7,6 +7,9 @@ $(function () {
     var codes = [];
     var ws = new WebSocket("ws://" + location.hostname + "/mon/ws/data?channel={$ channel $}");
     ws.onmessage = function(e) {
+        if (!e.data) {
+            return;
+        }
         var jsonData = JSON.parse(e.data);
         var chart = $("#chartContainer").highcharts();
         var x = (new Date()).getTime();

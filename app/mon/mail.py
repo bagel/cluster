@@ -83,7 +83,7 @@ class AutoMail:
         fmin = t - t % 300 - 300
         keys = self.r.keys('*_%s_*' % str(fmin))
         to = ["caoyu2@staff.sina.com.cn"]
-        cc = ["caoyu2@staff.sina.com.cn"]
+        cc = ["caoyu2@staff.sina.com.cn", "zhigang6@staff.sina.com.cn"]
         users = self.r_info.hgetall('info_user')
         domains = set()
         for key in keys:
