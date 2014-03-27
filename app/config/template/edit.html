@@ -25,43 +25,57 @@
     }
 
 </script>
-<form class="form-inline" role="form">
-    <div class="row">
-        <span>名称:</span>
+<div class="row">
+    <div class="col-lg-3">
+        <label for="name"><span>名称:</span></label>
         <input type="text" class="form-control" id="name" name="name" value="{$ name $}">
-        <span>路径:</span>
-        <input type="text" class="form-control" id="path" name="path" value="{$ path $}">
-        <span>所有者:</span>
-        <input type="text" class="form-control span1" id="owner" name="owner" value="{$ owner $}">
-        <span>权限:</span>
-        <input type="text" class="form-control span1" id="perm" name="perm" value="{$ perm $}">
-        <span>分组:</span>
-        <input type="text" class="form-control input-big" id="group" name="group" value="{$ group $}">
     </div>
-</form>
-<form class="form-inline" role="form">
-    <div class="row">
-        <span>下发前命令:</span>
+    <div class="col-lg-3">
+        <label for="path"><span>路径:</span></label>
+        <input type="text" class="form-control" id="path" name="path" value="{$ path $}">
+    </div>
+    <div class="col-lg-2">
+        <label for="owner"><span>所有者:</span></label>
+        <input type="text" class="form-control" id="owner" name="owner" value="{$ owner $}">
+    </div>
+    <div class="col-lg-2">
+        <label for="perm"><span>权限:</span></label>
+        <input type="text" class="form-control" id="perm" name="perm" value="{$ perm $}">
+    </div>
+    <div class="col-lg-2">
+        <label for="group"><span>分组:</span></label>
+        <input type="text" class="form-control" id="group" name="group" value="{$ group $}">
+    </div>
+</div>
+<br>
+<div class="row">
+    <div class="col-lg-6">
+        <label for="cmd0"><span>下发前命令:</span></label>
 <script>
     var cmd0 = window.atob("{$ cmd0 $}");
-    document.write('<textarea class="form-control span4" rows="1" id="cmd0" name="cmd0">' + cmd0 + '</textarea>');
+    document.write('<textarea class="form-control" rows="1" id="cmd0" name="cmd0">' + cmd0 + '</textarea>');
 </script>
-        <span>下发后命令:</span>
+    </div>
+    <div class="col-lg-6">
+        <label for="cmd1"><span>下发后命令:</span></label>
 <script>
     var cmd1 = window.atob("{$ cmd1 $}");
-    document.write('<textarea class="form-control span4" rows="1" id="cmd1" name="cmd1">' + cmd1 + '</textarea>');
+    document.write('<textarea class="form-control" rows="1" id="cmd1" name="cmd1">' + cmd1 + '</textarea>');
 </script>
     </div>
-</form>
-    <div class="control-group">
-        <span>最近修改: {$ author $} 于 {$ mtime $}</span>
+</div>
+<br>
+<div class="row">
+    <div class="col-lg-12">
+    <label for="data"><span>最近修改: {$ author $} 于 {$ mtime $}</span></label>
 <script>
     var data = window.atob("{$ data $}");
-    document.write('<textarea class="span12" rows="20" id="data" name="data">' + data + '</textarea>');
+    document.write('<textarea class="form-control" rows="20" id="data" name="data">' + data + '</textarea>');
 </script>
     </div>
-    <div class="control-group">
-        <span class="pull-right">
+</div>
+<br>
+<div class="pull-right">
 <script type="text/python">
         #if not Tdict["disabled"]:
         echo '''<button type="submit" class="btn btn-success" onclick="save()">保存</button>'''
@@ -69,7 +83,6 @@
         #    echo '''<button type="submit" class="btn btn-success disabled" id="denysave">保存</button>'''
 </script>
             <button type="submit" class="btn btn-primary" onclick='pub("{$ name $}", "{$ version $}")'>分发</button>
-        </span>
-    </div>
+</div>
 <!--</form>-->
 {% end %}
