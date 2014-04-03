@@ -15,7 +15,7 @@ def auth(environ):
     if environ["HTTP_HOST"] == "api.dpool.cluster.sina.com.cn" or "Mozilla" not in environ["HTTP_USER_AGENT"]:
         return (0, "default")
     query = urlparse.parse_qs(environ['QUERY_STRING'])
-    cookies = environ['HTTP_COOKIE'].split('; ')
+    cookies = environ.get('HTTP_COOKIE', []).split('; ')
     token = ""
     for c in cookies:
         if "DP_token" in c:
@@ -55,7 +55,7 @@ def user(environ):
     if not user:
         return err
     user = eval(user)[0]
-    hash = hashlib.md5(user.replace("staff.sina.com.cn", "dpooluser")).hexdigest()
+    hash = hashlib.md5('@'.join([user.split('@')[0], "dpooluser"])).hexdigest()
     if key == hash:
         return 1
     else:

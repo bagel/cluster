@@ -12,4 +12,4 @@ t = int(time.time())
 for key in keys:
     if len(key.split('_')) == 3:
         continue
-    r.zremrangebyscore(key, '-inf', t - 5*86400)
+    r.zremrangebyscore(key, '-inf', t - 3*86400)

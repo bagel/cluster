@@ -41,6 +41,7 @@ class AutoMail:
         keys = self.r.keys('%s_%s_*' % (domain, str(fmin)))
         msg = '%s<br><br>在最近5分钟内 ' % title
         code_msg = []
+        n = 0
         for key in keys:
             code = key.split('_')[-1]
             count = self.r.get(key)

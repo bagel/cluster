@@ -37,6 +37,7 @@ class Mon:
         return (ctype, response_body)
 
     def wsData(self):
+        """Websocket redis hget"""
         uwsgi.websocket_handshake(self.environ['HTTP_SEC_WEBSOCKET_KEY'], self.environ.get('HTTP_ORIGIN', ''))
         codes = []
         while True:
