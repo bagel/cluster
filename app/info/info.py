@@ -11,7 +11,6 @@ import ConfigParser
 import re
 import socket
 import time
-import login
 
 
 class Info:
@@ -84,9 +83,6 @@ class InfoData(Info):
 
     def response(self):
         t = time.time()
-        auth = login.user(self.environ)
-        if auth != 1:
-            return auth
         domain = self.query['domain'][0]
         servername = self.r.hget("info_domainalias", domain)
         data = {}

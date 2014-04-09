@@ -11,21 +11,22 @@ route = {
     "config": "config",
     "status": "status",
     "mon": "mon",
-    "home": "status",
+    "home": "mon",
     "info": "info",
     "test": "test",
     "purge": "purge",
     "ip": "ip",
     "online": "online",
     "tools": "tools",
+    "util": "util",
 }
 
 def urls(environ):
     ctype = "text/plain; charset=utf-8"
     path =  environ["PATH_INFO"].split('/')[1]
     if path == "logout":
-        return login.logout()
-    check, user = login.auth(environ)
+        return login.Login(environ).logout()
+    check, user = login.Login(environ).auth()
     header = ()
     if check == 0:
         environ["USER"] = user

@@ -5,7 +5,7 @@
 <script>
 $(function () {
     var codes = [];
-    var ws = new WebSocket("ws://" + location.hostname + "/mon/ws/data?channel={$ channel $}");
+    var ws = new WebSocket("ws://" + location.hostname + "/mon/ws/data?domain={$ channel $}");
     ws.onmessage = function(e) {
         if (!e.data) {
             return;
@@ -235,7 +235,7 @@ function dateFormat(t) {
 }
 
 function accesspage(s) {
-    var url = "/mon/accesscount?channel={$ channel $}";
+    var url = "/mon/accesscount?domain={$ channel $}";
     $.getJSON(url, function(jsonData) {
         var pagehtml = "";
         count = jsonData["count"];
@@ -279,7 +279,7 @@ function accesslog(s) {
         s = 1;
     }
     var st = (s - 1) * 50;
-    var url = "/mon/accesslog?channel={$ channel $}" + '&start=' + st;
+    var url = "/mon/accesslog?domain={$ channel $}" + '&start=' + st;
     $.getJSON(url, function(jsonData) {
         var accesshtml = "";
         for (var j=0; j<jsonData.length; j++) {
@@ -307,7 +307,7 @@ function accesslog(s) {
 }
 
 function errorpage(s) {
-    var url = "/mon/errorcount?channel={$ channel $}";
+    var url = "/mon/errorcount?domain={$ channel $}";
     $.getJSON(url, function(jsonData) {
         var pagehtml = "";
         count = jsonData["count"];
@@ -351,7 +351,7 @@ function errorlog(s) {
         s = 1;
     }
     var st = (s - 1) * 50;
-    var url = "/mon/errorlog?channel={$ channel $}" + "&start" + st;
+    var url = "/mon/errorlog?domain={$ channel $}" + "&start" + st;
     $.getJSON(url, function(jsonData) {
         var errorhtml = "";
         for (var j=1; j<jsonData.length; j++) {
@@ -389,7 +389,7 @@ errorlog();
 <form role="form" action="/mon" method="get">
 <div class="row">
 <div class="col-xs-3">
-    <input class="form-control" type="text" name="channel" placeholder="项目域名">
+    <input class="form-control" type="text" name="domain" placeholder="项目域名">
 </div>
     <button type="submit" class="btn btn-primary">查看</button>
 </div>

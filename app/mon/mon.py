@@ -21,7 +21,7 @@ class Mon:
         self.environ = environ
         self.template = template
         self.r=redis.StrictRedis(host=self.environ["REDIS_HOST"], port=6380, socket_timeout=5)
-        self.channel = urlparse.parse_qs(self.environ['QUERY_STRING']).get('channel', ['sum'])[0]
+        self.channel = urlparse.parse_qs(self.environ['QUERY_STRING']).get('domain', ['sum'])[0]
         self.num = int(urlparse.parse_qs(self.environ['QUERY_STRING']).get('num', [50])[0])
         self.start = int(urlparse.parse_qs(self.environ['QUERY_STRING']).get('start', [0])[0])
 
