@@ -57,7 +57,9 @@ class Login:
         return self.authDomain(user, err_web)
 
     def auth(self):
-        """
+        """Visit api domain or not browser like curl, use api auth and query_string should contain user and key.
+           If use browser visit, redirected to intra login if get user from cookie failed, try this again after login success.
+           After browser first login response contain Set-Cookie header. If browser has the right DP_token Cookie, no need to login.
         """
         ctype = "text/html"
         if self.environ["HTTP_HOST"] == "api.dpool.cluster.sina.com.cn" or "Mozilla" not in self.environ.get("HTTP_USER_AGENT", ""):
