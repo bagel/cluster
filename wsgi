@@ -25,8 +25,11 @@ def application(environ, start_response):
     import app
     response = app.urls(environ)
 
-    response_headers = [('Content-Type', response[0]), ('Content-Length', str(len(response[1]))) ]
+    response_headers = [('Content-Type', response[0]), ('Content-Length', str(len(response[1])))]
     [ response_headers.append(response_header) for response_header in response[2:] if response_header ]
     status = '200 OK'
+    if len(response_headers) >= 3 and response_headers[2][0] == "Status":
+        status = response_headers[2][1]
+        response_headers.pop(2)
     start_response(status, response_headers)
     return [response[1]]

@@ -18,11 +18,14 @@ class Login:
         self.domain = self.query.get("domain", [""])[0]
 
     def authDomain(self, user, err):
-        """user in info_dpool_admin have all domains permission, ["caoyu2", ... ],
+        """user in info_dpool_admin and domain's adminer has domain's permission,
            if self.domain in info_domain_user user's domains list, request accept.
         """
         user_admin = self.r.get("info_dpool_admin")
         if user_admin and user in eval(user_admin):
+            return (0, user)
+        domains_admin = self.r.hget("info_domain_admin", user)
+        if domains_admin and self.domain in eval(domains_admin):
             return (0, user)
         domains = self.r.hget("info_domain_user", user)
         if not domains:
@@ -35,7 +38,7 @@ class Login:
     def authApi(self):
         """query key should match "user@dpooluser" md5sum.
         """
-        err_api = ("application/json", json.JSONEncoder().encode({"errmsg": "Permission denied"}))
+        err_api = ("application/json", json.JSONEncoder().encode({"errmsg": "Permission denied"}), ("Status", "403"))
         key = self.query.get("key", [""])[0]
         if not key:
             return (1, err_api)
@@ -50,7 +53,7 @@ class Login:
         return self.authDomain(user, err_api)
 
     def authWeb(self, user):
-        err_web = ("text/html", "Permission denied")
+        err_web = ("text/html", "Permission denied", ("Status", "403"))
         return self.authDomain(user, err_web)
 
     def auth(self):
