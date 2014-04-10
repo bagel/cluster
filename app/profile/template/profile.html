@@ -115,10 +115,14 @@ function domainstatdomain() {
 <button class="btn btn-warning" onclick="domainauthdel()">取消授权</button>
 <br>
 <br>
+<br>
+<br>
 <legend>API调用KEY</legend>
 <script type="text/python">
-    echo '<h4><strong>key: </strong><code>%s</code></h4>' % Tdict["key"]
+    echo '<h4><strong>key: </strong><code>%s</code><h4><h3><small>例: <code>http://api.dpool.cluster.sina.com.cn/info/data?domain=www.example.com&user=%s&key=%s</code></small></h3>' % (Tdict["key"], Tdict["user"], Tdict["key"])
 </script>
+<br>
+<br>
 <br>
 <legend>域名授权状态</legend>
 <div class="row">
