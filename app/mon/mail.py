@@ -50,7 +50,7 @@ class AutoMail:
         msg += ', '.join(code_msg)
         msg += '<br><br>访问日志'
         lens = len(msg)
-        logs = json.loads(urllib2.urlopen(url='http://admin.dpool.cluster.sina.com.cn/mon/accesslog?channel=%s&num=10' % domain).read())
+        logs = json.loads(urllib2.urlopen(url='http://admin.dpool.cluster.sina.com.cn/mon/accesslog?domain=%s&num=10' % domain).read())
         for line in logs:
             line = line.encode('utf-8').split(' ')[:-2]
             if int(line[0]) < fmin:
@@ -64,7 +64,7 @@ class AutoMail:
         msg += '<br><br>'
         msg += '错误日志'
         lens = len(msg)
-        logs = json.loads(urllib2.urlopen(url='http://admin.dpool.cluster.sina.com.cn/mon/errorlog?channel=%s&num=10' % domain).read())
+        logs = json.loads(urllib2.urlopen(url='http://admin.dpool.cluster.sina.com.cn/mon/errorlog?domain=%s&num=10' % domain).read())
         for line in logs:
             line = line.encode('utf-8').split(' ')[1:]
             if int(line[0]) < fmin:
@@ -76,7 +76,7 @@ class AutoMail:
             if n == 1:
                 return 0
             msg += '<br>null'
-        msg += '<br><br>更多日志及实时监控请访问 <a href="http://admin.dpool.cluster.sina.com.cn/mon?channel=%s">http://admin.dpool.cluster.sina.com.cn/mon?channel=%s</a>' % (domain, domain)
+        msg += '<br><br>更多日志及实时监控请访问 <a href="http://admin.dpool.cluster.sina.com.cn/mon?channel=%s">http://admin.dpool.cluster.sina.com.cn/mon?domain=%s</a>' % (domain, domain)
         self.mail(subject, msg, to, cc)
 
     def codeMail(self):

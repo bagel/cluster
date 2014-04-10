@@ -19,6 +19,7 @@ route = {
     "online": "online",
     "tools": "tools",
     "util": "util",
+    "profile": "profile",
 }
 
 def urls(environ):

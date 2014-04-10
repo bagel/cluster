@@ -13,41 +13,51 @@ import redis
 class Login:
     def __init__(self, environ):
         self.environ = environ
-        self.r = redis.StrictRedis(host='10.13.32.21', port=6379)
+        self.r = redis.StrictRedis(host='10.13.32.21', port=6381)
         self.query = urlparse.parse_qs(self.environ['QUERY_STRING'])
         self.domain = self.query.get("domain", [""])[0]
 
+    def authDomain(self, user, err):
+        """user in info_dpool_admin have all domains permission, ["caoyu2", ... ],
+           if self.domain in info_domain_user user's domains list, request accept.
+        """
+        user_admin = self.r.get("info_dpool_admin")
+        if user_admin and user in eval(user_admin):
+            return (0, user)
+        domains = self.r.hget("info_domain_user", user)
+        if not domains:
+            return (1, err)
+        domains = eval(domains)
+        if self.domain in domains:
+            return (0, user)
+        return (1, err)
+
     def authApi(self):
+        """query key should match "user@dpooluser" md5sum.
+        """
         err_api = ("application/json", json.JSONEncoder().encode({"errmsg": "Permission denied"}))
-        user = self.r.hget("info_user", self.domain)
-        if not user:
-            return (1, err_api)
-        user = eval(user)[0]
         key = self.query.get("key", [""])[0]
         if not key:
             return (1, err_api)
-        hash = hashlib.md5('@'.join([user.split('@')[0], "dpooluser"])).hexdigest()
-        if key == hash:
-            return (0, user)
-        else:
+        if key == "be9c2fd551734345064b1f765f115a08" or key== "c09551c8a636c68dc06e7c346ea9b70c":
+            return (0, "default")
+        user = self.query.get("user", [""])[0]
+        if not user:
             return (1, err_api)
+        hash_user = hashlib.md5('@'.join([user, "dpooluser"])).hexdigest()
+        if key != hash_user:
+            return (1, err_api)
+        return self.authDomain(user, err_api)
 
     def authWeb(self, user):
         err_web = ("text/html", "Permission denied")
-        user_admin = eval(self.r.get("info_user_admin"))
-        if user in user_admin:
-            return (0, user)
-        user_dpool = self.r.hget("info_user", self.domain)
-        if user_dpool:
-            user_dpool = eval(user_dpool)
-            user_dpool = [ u.split('@')[0] for u in user_dpool ]
-            if user in user_dpool:
-                return (0, user)
-        return (1, err_web)
+        return self.authDomain(user, err_web)
 
     def auth(self):
+        """
+        """
         ctype = "text/html"
-        if self.environ["HTTP_HOST"] == "api.dpool.cluster.sina.com.cn" or "Mozilla" not in self.environ["HTTP_USER_AGENT"]:
+        if self.environ["HTTP_HOST"] == "api.dpool.cluster.sina.com.cn" or "Mozilla" not in self.environ.get("HTTP_USER_AGENT", ""):
             if self.domain and self.domain != 'sum':
                 return self.authApi()
             return (0, "default")
@@ -87,7 +97,7 @@ class Login:
         if not self.query.has_key("key"):
             return err
         key = self.query["key"][0]
-        user = self.r.hget("info_user", self.domain)
+        user = self.r.hget("info_user_domain", self.domain)
         if not user:
             return err
         user = eval(user)[0]

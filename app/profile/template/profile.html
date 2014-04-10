@@ -1,0 +1,145 @@
+{# base.html #}
+
+{% content %}
+<script>
+function postJSON(postUrl, postData) {
+    $.ajax({
+        async: false,
+        type: "POST",
+        url: postUrl,
+        data: postData,
+        dataType: "json",
+        contentType: "application/json",
+        success: function() { alert("完成"); domainstat(); }
+    });
+}
+
+function domainauth(url) {
+    var domains = document.getElementById("domains").value;
+    var users = document.getElementById("users").value;
+    var data = JSON.stringify({"domains": domains, "users": users});
+    postJSON(url, data);
+}
+
+function domainauthadd() {
+    var url = "/profile/domainauthadd";
+    domainauth(url);
+}
+
+function domainauthdel() {
+    var url = "/profile/domainauthdel";
+    domainauth(url);
+}
+
+function statpage(s) {
+    var url = "/profile/domainstat";
+    $.getJSON(url, function(jsonData) {
+        var pagehtml = "";
+        count = jsonData["count"];
+        if ( count % 20 != 0 ) {
+            var pageMax = Math.floor(count / 20 + 1);
+        } else {
+            var pageMax = count / 20;
+        }
+        if (!s) {
+            s = 1;
+        }
+        if (s == 1) {
+            pagehtml += '<li class="disabled"><a>1</a></li>';
+        } else {
+            pagehtml += '<li><a onclick=domainstat(' + (s - 1) + ')>&laquo;</a></li>';
+            pagehtml += '<li><a onclick=domainstat(1)>1</a></li>';
+            if ( s != 2 ) {
+                pagehtml += '<li class="disabled"><a>...</a></li>';
+            }
+        }
+        if ( s != 1 && s != pageMax) {
+            pagehtml += '<li class="disabled"><a>' + s + '</a></li>';
+        }
+        if ( pageMax > 1) {
+            if ( s == pageMax ) {
+                pagehtml += '<li class="disabled"><a>' + pageMax + '</a></li>';
+            } else {
+                if ( s != (pageMax - 1) ) {
+                    pagehtml += '<li class="disabled"><a>...</a></li>';
+                }
+                pagehtml += '<li><a onclick=domainstat(' + pageMax + ')>' + pageMax + '</a></li>';
+                pagehtml += '<li><a onclick=domainstat(' + (s + 1) + ')>&raquo;</a></li>';
+            }
+        }
+        document.getElementById("statpage").innerHTML = pagehtml;
+    });
+}
+
+function domainstat(s) {
+    if(!s) {
+        s = 1;
+    }
+    var st = (s - 1) * 10;
+    var url = "/profile/domainstat?num=20&start=" + st;
+    $.getJSON(url, function(jsonData) {
+        var stathtml = "";
+        for (k in jsonData) {
+            stathtml += "<tr><td>" + k + "</td><td>" + jsonData[k] + "</td></tr>";
+        }
+        document.getElementById("domainstat").innerHTML = stathtml;
+    });
+    statpage(s);
+}
+
+domainstat();
+
+function domainstatdomain() {
+    var domain = document.getElementById("domainstatdomain").value;
+    var url = "/profile/domainstatdomain?domain=" + domain;
+    $.getJSON(url, function(jsonData) {
+        domainhtml = "<tr><td>" + domain + "</td><td>" + jsonData[domain] + "</td></tr>";
+        document.getElementById("domainstat").innerHTML = domainhtml;
+        document.getElementById("statpage").innerHTML = "";
+    });
+}
+</script>
+<legend>授权域名</legend>
+<div class="row">
+    <div class="col-lg-4">
+        <label for="domains"><span>管理域名</span></label>
+        <textarea type="text" class="form-control" rows="1" id="domains" name="domains" placeholder="以逗号隔开,all代表所有域名,主域名会自动授权别名"></textarea>
+    </div>
+    <div class="col-lg-4">
+        <label for="users"><span>授权用户</span></label>
+        <textarea type="text" class="form-control" rows="1" id="users" name="users" placeholder="以逗号隔开,使用邮箱全称"></textarea>
+    </div>
+</div>
+<br>
+<button class="btn btn-success" onclick="domainauthadd()">确认授权</button>
+<button class="btn btn-warning" onclick="domainauthdel()">取消授权</button>
+<br>
+<br>
+<legend>API调用KEY</legend>
+<script type="text/python">
+    echo '<h4><strong>key: </strong><code>%s</code></h4>' % Tdict["key"]
+</script>
+<br>
+<legend>域名授权状态</legend>
+<div class="row">
+    <div class="col-lg-3">
+        <input type="text" class="form-control" id="domainstatdomain" placeholder="域名">
+    </div>
+    <button class="btn btn-primary" onclick="domainstatdomain()">查看</button>
+</div>
+<br>
+<div id="stat">
+<table class="table table-striped table-bordered">
+    <thead>
+        <tr>
+            <th>域名</th>
+            <th>授权用户</th>
+        </tr>
+    </thead>
+    <tbody id="domainstat">
+    </tbody>
+</table>
+<ul class="pagination" id="statpage">
+</ul>
+</div>
+{% end %}
