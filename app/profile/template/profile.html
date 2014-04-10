@@ -45,7 +45,9 @@ function statpage(s) {
             s = 1;
         }
         if (s == 1) {
-            pagehtml += '<li class="disabled"><a>1</a></li>';
+            if ( pageMax != 0 ) {
+                pagehtml += '<li class="disabled"><a>1</a></li>';
+            }
         } else {
             pagehtml += '<li><a onclick=domainstat(' + (s - 1) + ')>&laquo;</a></li>';
             pagehtml += '<li><a onclick=domainstat(1)>1</a></li>';
