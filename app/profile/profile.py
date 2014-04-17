@@ -24,14 +24,20 @@ class Profile:
         """
         postData = json.loads(self.environ['wsgi.input'].read(int(self.environ['CONTENT_LENGTH'])))
         domains = postData["domains"].strip().split(',')
+        domains_admin = self.r.hget(self.key_admin, self.user)
+        if domains_admin:
+            domains_admin = eval(domains_admin)
+        else:
+            domains_admin = []
         domains_new = set()
         for domain in domains:
             domain = domain.strip()
+            if domain not in domains_admin:
+                continue
             domain_server = self.r.hget("info_domainserver", domain)
             if domain == "all":
-                domain_admin = self.r.hget(self.key_admin, self.user)
                 if domain_admin:
-                    domains_new.update(eval(domain_admin))
+                    domains_new.update(domains_admin)
             elif domain_server and eval(domain_server):
                 domains_new.update(eval(domain_server))
                 domains_new.update([domain])
