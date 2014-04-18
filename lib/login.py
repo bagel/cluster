@@ -77,16 +77,18 @@ class Login:
             if self.domain and self.domain != 'sum':
                 return self.authWeb(user)
             return (0, user)
-        if not query.has_key("token"):
+        if not self.query.has_key("token"):
             response_body = "login...."
             header = ("Refresh", "0; url=http://auth.intra.sina.com.cn/login?url=http://admin.dpool.cluster.sina.com.cn/home")
             return (1, (ctype, response_body, header))
         else:
-            user = json.loads(urllib2.urlopen(url="http://auth.intra.sina.com.cn/interface/loginCheck?token=" + query['token'][0]).read())["data"]["name"]
+            user = json.loads(urllib2.urlopen(url="http://auth.intra.sina.com.cn/interface/loginCheck?token=" + self.query['token'][0]).read())["data"]["name"]
             header = ("Set-Cookie", "DP_token=%s; path=/; expires=Thu, 01 Jan %d 00:00:00 GMT" % (base64.b64encode("%s.%d" % (user, int(time.time()))), int(time.strftime("%Y")) + 1))
             return (2, (user.encode('utf-8'), header))
     
     def logout(self):
+        """header1 delete DP_token Cookie, header2 redirect to login screen.
+        """
         ctype = "text/html"
         response_body = "logout...."
         header1 = ("Set-Cookie", "DP_token=delete; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT")
