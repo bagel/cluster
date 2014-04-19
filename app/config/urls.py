@@ -2,52 +2,45 @@
 
 import sys
 import os
+import web
 
 route = {
-    "default": [("config.ConfigPubHtml",), ("configPub",)],
-    "/config/read": [("config.ConfigData",), ("read",)],
-    "/config/update": [("config.ConfigData",), ("update",)],
-    "/config/delete": [("config.ConfigData",), ("delete",)],
-    "/config/history": [("config.ConfigData",), ("history",)],
-    "/config/node/create": [("config.NodeData",), ("create",)],
-    "/config/node/update": [("config.NodeData",), ("update",)],
-    "/config/node/add": [("config.NodeData",), ("add",)],
-    "/config/node/read": [("config.NodeData",), ("read",)],
-    "/config/node/history": [("config.NodeData",), ("history",)],
-    "/config/node/rename": [("config.NodeData",), ("rename",)],
-    "/config/node/addnodes": [("config.NodeData",), ("addnodes",)],
-    "/config/node/readnodes": [("config.NodeData",), ("readnodes",)],
-    "/config/node/deletenodes": [("config.NodeData",), ("deletenodes",)],
-    "/config/group/create": [("config.ConfigGroup",), ("create",)],
-    "/config/group/add": [("config.ConfigGroup",), ("add",)],
-    "/config/group/update": [("config.ConfigGroup",), ("update",)],
-    "/config/group/rename": [("config.ConfigGroup",), ("rename",)],
-    "/config/group/read": [("config.ConfigGroup",), ("read",)],
-    "/config/group/history": [("config.ConfigGroup",), ("history",)],
-    "/config/publish/add": [("config.ConfigGroup",), ("add",)],
-    "/config/publish/update": [("config.ConfigGroup",), ("update",)],
-    "/config/edit": [("config.ConfigHtml",), ("configEdit",)],
-    "/config/edit/post": [("config.ConfigHtml",), ("configEditPost",)],
-    "/config/list": [("config.ConfigHtml",), ("configList",)],
-    "/config/version": [("config.ConfigHtml",), ("configVersion",)],
-    "/config/pub": [("config.ConfigPubHtml",), ("configPub",)],
-    "/config/pub/get": [("config.ConfigPubHtml",), ("configPubGet",)],
-    "/config/pub/post": [("config.ConfigPubHtml",), ("configPubPost",)],
-    "/config/pub/update": [("config.ConfigPubHtml",), ("configPubUpdate",)],
-    "/config/queue/post": [("config.ConfigQueue",), ("configQueuePost",)],
-    "/config/issue/post": [("config.ConfigIssueHtml",), ("configIssuePost",)],
-    "/config/issue": [("config.ConfigIssueHtml",), ("configIssue",)],
-    "/config/node": [("config.ConfigNodeHtml",), ("configNode",)],
+    "default": ("app/config/configMain", "ConfigPubHtml.configPub"),
+    "/config/read": ("app/config/configMain", "ConfigData.read"),
+    "/config/update": ("app/config/configMain", "ConfigData.update"),
+    "/config/delete": ("app/config/configMain", "ConfigData.delete"),
+    "/config/history": ("app/config/configMain", "ConfigData.history"),
+    "/config/node/create": ("app/config/configMain", "NodeData.create"),
+    "/config/node/update": ("app/config/configMain", "NodeData.update"),
+    "/config/node/add": ("app/config/configMain", "NodeData.add"),
+    "/config/node/read": ("app/config/configMain", "NodeData.read"),
+    "/config/node/history": ("app/config/configMain", "NodeData.history"),
+    "/config/node/rename": ("app/config/configMain", "NodeData.rename"),
+    "/config/node/addnodes": ("app/config/configMain", "NodeData.addnodes"),
+    "/config/node/readnodes": ("app/config/configMain", "NodeData.readnodes"),
+    "/config/node/deletenodes": ("app/config/configMain", "NodeData.deletenodes"),
+    "/config/group/create": ("app/config/configMain", "ConfigGroup.create"),
+    "/config/group/add": ("app/config/configMain", "ConfigGroup.add"),
+    "/config/group/update": ("app/config/configMain", "ConfigGroup.update"),
+    "/config/group/rename": ("app/config/configMain", "ConfigGroup.rename"),
+    "/config/group/read": ("app/config/configMain", "ConfigGroup.read"),
+    "/config/group/history": ("app/config/configMain", "ConfigGroup.history"),
+    "/config/publish/add": ("app/config/configMain", "ConfigGroup.add"),
+    "/config/publish/update": ("app/config/configMain", "ConfigGroup.update"),
+    "/config/edit": ("app/config/configMain", "ConfigHtml.configEdit"),
+    "/config/edit/post": ("app/config/configMain", "ConfigHtml.configEditPost"),
+    "/config/list": ("app/config/configMain", "ConfigHtml.configList"),
+    "/config/version": ("app/config/configMain", "ConfigHtml.configVersion"),
+    "/config/pub": ("app/config/configMain", "ConfigPubHtml.configPub"),
+    "/config/pub/get": ("app/config/configMain", "ConfigPubHtml.configPubGet"),
+    "/config/pub/post": ("app/config/configMain", "ConfigPubHtml.configPubPost"),
+    "/config/pub/update": ("app/config/configMain", "ConfigPubHtml.configPubUpdate"),
+    "/config/queue/post": ("app/config/configMain", "ConfigQueue.configQueuePost"),
+    "/config/issue/post": ("app/config/configMain", "ConfigIssueHtml.configIssuePost"),
+    "/config/issue": ("app/config/configMain", "ConfigIssueHtml.configIssue"),
+    "/config/node": ("app/config/configMain", "ConfigNodeHtml.configNode"),
 }
 
 def urls(environ):
     template = os.path.join(environ['DOCUMENT_ROOT'], 'app/config/template')
-    path =  environ["PATH_INFO"]
-    if path not in route.keys():
-        path = 'default'
-    category = route[path][0][0]
-    category_args = "environ, template, " + ", ".join(route[path][0][1:])
-    function = route[path][1][0]
-    function_args = ", ".join(route[path][1][1:])
-    exec('import %s' % category.split('.')[0])
-    return eval('%s(%s).%s(%s)' % (category, category_args, function, function_args))
+    return web.execute(environ, route, template)

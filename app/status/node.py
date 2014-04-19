@@ -34,7 +34,7 @@ def cn_name(type, name):
     url = "http://dpadmin.grid.sina.com.cn/api/serverlist2.php?cn%s=" % type
     return json.loads(urllib2.urlopen(url=url+name).read())["list"][0]["cn_name"]
 
-def update():
+def update(e, t):
     mods = ["dpool2_web", "dpool3_web", "ssoweb", "sso_wireless_web", "varnish", "blog_web"]
     node, idc, mod = node_info(mods)
     import redis
@@ -42,6 +42,7 @@ def update():
     r.set("node", node)
     r.set("idc", idc)
     r.set("mod", mod)
+    return ("text/html", "node update ok")
 
 
 if __name__ == "__main__":

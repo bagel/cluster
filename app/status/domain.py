@@ -25,7 +25,7 @@ def domainWeb3():
             d.extend([ m for m in re.sub(r'\s+server_name\s+@@.*@@\s+(.*)\s*;', r'\1', line).rstrip(';').strip().split(' ') if m ])
     return d
 
-def update():
+def update(e, t):
     import redis
     r = redis.StrictRedis("10.13.32.21")
     d = set()
@@ -33,6 +33,7 @@ def update():
     for m in dm:
         d.add(m)
     r.set("domain", d)
+    return ("text/html", "domain update ok")
 
 
 if __name__ == "__main__":
