@@ -5,13 +5,13 @@ import os
 import web
 
 route = {
-    "default": ("app/mon/main", "Mon.response"),
-    "/mon/data": ("app/mon/main", "Mon.chartData"),
-    "/mon/ws/data": ("app/mon/main", "Mon.wsSubData"),
-    "/mon/accesslog": ("app/mon/main", "Mon.LogAccess"),
-    "/mon/errorlog": ("app/mon/main", "Mon.LogError"),
-    "/mon/accesscount": ("app/mon/main", "Mon.LogAccessCount"),
-    "/mon/errorcount": ("app/mon/main", "Mon.LogErrorCount"),
+    "default": ("app/mon/monMain", "Mon.response"),
+    "/mon/data": ("app/mon/monMain", "Mon.chartData"),
+    "/mon/ws/data": ("app/mon/monMain", "Mon.wsSubData"),
+    "/mon/accesslog": ("app/mon/monMain", "Mon.LogAccess"),
+    "/mon/errorlog": ("app/mon/monMain", "Mon.LogError"),
+    "/mon/accesscount": ("app/mon/monMain", "Mon.LogAccessCount"),
+    "/mon/errorcount": ("app/mon/monMain", "Mon.LogErrorCount"),
 }
 
 def urls(environ):

@@ -5,7 +5,7 @@ import os
 import web
 
 route = {
-    "^/online": ("app/tools/main", "Tools.online"),
+    "^/online": ("app/tools/toolsMain", "Tools.online"),
     "^/plot": ("app/tools/plot", "Plot.response"),
 }
 

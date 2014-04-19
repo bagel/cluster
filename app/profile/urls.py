@@ -5,11 +5,11 @@ import os
 import web
 
 route = {
-    "default": ("app/profile/main", "Profile.response"),
-    "/profile/domainstat": ("app/profile/main", "Profile.responseStat"),
-    "/profile/domainstatdomain": ("app/profile/main", "Profile.responseStatDomain"),
-    "/profile/domainauthadd": ("app/profile/main", "Profile.domainAuthAdd"),
-    "/profile/domainauthdel": ("app/profile/main", "Profile.domainAuthDel"),
+    "default": ("app/profile/profileMain", "Profile.response"),
+    "/profile/domainstat": ("app/profile/profileMain", "Profile.responseStat"),
+    "/profile/domainstatdomain": ("app/profile/profileMain", "Profile.responseStatDomain"),
+    "/profile/domainauthadd": ("app/profile/profileMain", "Profile.domainAuthAdd"),
+    "/profile/domainauthdel": ("app/profile/profileMain", "Profile.domainAuthDel"),
 }
 
 def urls(environ):
