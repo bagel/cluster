@@ -9,7 +9,6 @@
     <link rel="stylesheet" type="text/css" href="/static/css/cluster.css">
     <script src="/static/js/jquery.min.js"></script>
     <script src="/static/bootstrap-3.1.0/js/bootstrap.min.js"></script>
-{+ head +}
 </head>
 <body>
 <nav class="navbar navbar-default" role="navigation">
@@ -22,11 +21,10 @@
                 <li><a href="/config">配置管理</a></li>
                 <li><a href="/status">访问统计</a></li>
                 <li><a href="/mon">实时监控</a></li>
-                <li class="active"><a href="/util">附加功能</a></li>
+                <li><a href="/util">附加功能</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">{$ user $}</a>
                     <ul class="dropdown-menu">
                         <li><a href="/profile">设置</a></li>
                         <li><a href="/logout">退出</a></li>
@@ -36,14 +34,20 @@
         </div>
     </div>
 </nav>
-<div class="container-fluid">
-<div class="row">
-<div class="col-md-1">
-{+ side +}
+<div class="container">
+<form role="form" method="POST" action="/loginauth">
+<div class="col-lg-offset-4 col-lg-3" style="padding-top: 100px;">
+    <div class="input-group">
+        <span class="input-group-addon"><span class="glyphicon glyphicon-user"></span></span>
+        <input type="text" class="form-control" name="mail" placeholder="邮箱">
+    </div>
+    <div class="input-group" style="padding-top: 10px; padding-bottom: 10px;">
+        <span class="input-group-addon"><span class="glyphicon glyphicon-lock"></span></span>
+        <input type="password" class="form-control" name="password" placeholder="密码">
+    </div>
+    <button type="submit" class="btn btn-default">登录</button>
 </div>
-<div class="col-md-10">
-{+ content +}
-</div>
+</form>
 </div>
 </div>
 </body>

@@ -50,7 +50,7 @@ class AutoMail:
         msg += ', '.join(code_msg)
         msg += '<br><br>访问日志'
         lens = len(msg)
-        logs = json.loads(urllib2.urlopen(url='http://admin.dpool.cluster.sina.com.cn/mon/accesslog?domain=%s&num=10' % domain).read())
+        logs = json.loads(urllib2.urlopen(url='http://admin.dpool.cluster.sina.com.cn/mon/accesslog?domain=%s&num=10&user=caoyu2&key=49eff4f43a196f69108504030222fdad' % domain).read())
         for line in logs:
             line = line.encode('utf-8').split(' ')[:-2]
             if int(line[0]) < fmin:
@@ -64,7 +64,7 @@ class AutoMail:
         msg += '<br><br>'
         msg += '错误日志'
         lens = len(msg)
-        logs = json.loads(urllib2.urlopen(url='http://admin.dpool.cluster.sina.com.cn/mon/errorlog?domain=%s&num=10' % domain).read())
+        logs = json.loads(urllib2.urlopen(url='http://admin.dpool.cluster.sina.com.cn/mon/errorlog?domain=%s&num=10&user=caoyu2&key=49eff4f43a196f69108504030222fdad' % domain).read())
         for line in logs:
             line = line.encode('utf-8').split(' ')[1:]
             if int(line[0]) < fmin:

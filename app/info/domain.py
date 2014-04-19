@@ -15,6 +15,7 @@ def domainCmdb(domain):
 
 def domainUserSet():
     r = redis.StrictRedis('10.13.32.21', 6379)
+    r1 = redis.StrictRedis('10.13.32.21', 6381)
     domains = eval(r.get('domain'))
     domain_admin = {}
     for domain in domains:
@@ -26,7 +27,7 @@ def domainUserSet():
             domain_admin[admin0] = []
         domain_admin[admin0].append(domain)
         print domain_admin
-    r.hmset("info_domain_admin", domain_admin)
+    r1.hmset("info_domain_admin", domain_admin)
 
 
 if __name__ == "__main__":

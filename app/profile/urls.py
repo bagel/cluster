@@ -2,24 +2,16 @@
 
 import sys
 import os
-import time
+import web
 
 route = {
-    "default": [("profile.Profile",), ("response",)],
-    "/profile/domainstat": [("profile.Profile",), ("responseStat",)],
-    "/profile/domainstatdomain": [("profile.Profile",), ("responseStatDomain",)],
-    "/profile/domainauthadd": [("profile.Profile",), ("domainAuthAdd",)],
-    "/profile/domainauthdel": [("profile.Profile",), ("domainAuthDel",)],
+    "default": ("app/profile/main", "Profile.response"),
+    "/profile/domainstat": ("app/profile/main", "Profile.responseStat"),
+    "/profile/domainstatdomain": ("app/profile/main", "Profile.responseStatDomain"),
+    "/profile/domainauthadd": ("app/profile/main", "Profile.domainAuthAdd"),
+    "/profile/domainauthdel": ("app/profile/main", "Profile.domainAuthDel"),
 }
 
 def urls(environ):
     template = os.path.join(environ['DOCUMENT_ROOT'], 'app/profile/template')
-    path =  environ["PATH_INFO"]
-    if path not in route.keys():
-        path = 'default'
-    category = route[path][0][0]
-    category_args = "environ, template, " + ", ".join(route[path][0][1:])
-    function = route[path][1][0]
-    function_args = ", ".join(route[path][1][1:])
-    exec('import %s' % category.split('.')[0])
-    return eval('%s(%s).%s(%s)' % (category, category_args, function, function_args))
+    return web.execute(environ, route, template)
