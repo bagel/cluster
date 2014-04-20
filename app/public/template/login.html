@@ -1,0 +1,21 @@
+{# base.html #}
+
+{% content %}
+<form role="form" method="POST" action="/login">
+<div class="col-lg-offset-4 col-lg-3" style="padding-top: 100px;">
+<script type="text/python">
+    if Tdict.has_key("errmsg"):
+        echo '<div class="alert alert-danger">%s</div>' % Tdict["errmsg"].encode('utf-8')
+</script>
+    <div class="input-group">
+        <span class="input-group-addon"><span class="glyphicon glyphicon-user"></span></span>
+        <input type="text" class="form-control" name="mail" placeholder="邮箱">
+    </div>
+    <div class="input-group" style="padding-top: 10px; padding-bottom: 10px;">
+        <span class="input-group-addon"><span class="glyphicon glyphicon-lock"></span></span>
+        <input type="password" class="form-control" name="password" placeholder="密码">
+    </div>
+    <button type="submit" class="btn btn-default">登录</button>
+</div>
+</form>
+{% end %}

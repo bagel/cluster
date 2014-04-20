@@ -7,21 +7,16 @@ import login
 import web
 
 route = {
-    "default": ("app/mon/",),
+    "default": ("app/public/",),
     "^/config": ("app/config/",),
     "^/status": ("app/status/",),
     "^/mon": ("app/mon/",),
-    "^/home": ("app/mon/",),
     "^/info": ("app/info/",),
     "^/purge": ("app/purge/",),
-    "^/online": ("app/tools/",),
-    "^/util": ("app/util/",),
-    "^/profile": ("app/profile/",),
-    "^/plot": ("app/tools/",),
+    "^/(home|profile|util|plot|online)": ("app/public/",),
 }
 
 def urls(environ):
-    ctype = "text/plain; charset=utf-8"
     path =  environ["PATH_INFO"].split('/')[1]
     if path == "logout":
         return login.Login(environ).logout()

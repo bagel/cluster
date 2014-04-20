@@ -11,8 +11,9 @@ import json
 
 
 class Plot:
-    def __init__(self, environ):
+    def __init__(self, environ, template):
         self.environ = environ
+        self.template = template
 
     def plotPic(self):
         picdir = 'static/plot'
