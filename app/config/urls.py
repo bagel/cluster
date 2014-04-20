@@ -27,20 +27,19 @@ route = {
     "/config/group/history": ("app/config/configMain", "ConfigGroup.history"),
     "/config/publish/add": ("app/config/configMain", "ConfigGroup.add"),
     "/config/publish/update": ("app/config/configMain", "ConfigGroup.update"),
-    "/config/edit": ("app/config/configMain", "ConfigHtml.configEdit"),
+    "/config/edit/?$": ("app/config/configMain", "ConfigHtml.configEdit"),
     "/config/edit/post": ("app/config/configMain", "ConfigHtml.configEditPost"),
     "/config/list": ("app/config/configMain", "ConfigHtml.configList"),
     "/config/version": ("app/config/configMain", "ConfigHtml.configVersion"),
-    "/config/pub": ("app/config/configMain", "ConfigPubHtml.configPub"),
+    "/config/pub/?$": ("app/config/configMain", "ConfigPubHtml.configPub"),
     "/config/pub/get": ("app/config/configMain", "ConfigPubHtml.configPubGet"),
     "/config/pub/post": ("app/config/configMain", "ConfigPubHtml.configPubPost"),
     "/config/pub/update": ("app/config/configMain", "ConfigPubHtml.configPubUpdate"),
     "/config/queue/post": ("app/config/configMain", "ConfigQueue.configQueuePost"),
     "/config/issue/post": ("app/config/configMain", "ConfigIssueHtml.configIssuePost"),
-    "/config/issue": ("app/config/configMain", "ConfigIssueHtml.configIssue"),
-    "/config/node": ("app/config/configMain", "ConfigNodeHtml.configNode"),
+    "/config/issue/?$": ("app/config/configMain", "ConfigIssueHtml.configIssue"),
+    "/config/node/?$": ("app/config/configMain", "ConfigNodeHtml.configNode"),
 }
 
 def urls(environ):
-    template = os.path.join(environ['DOCUMENT_ROOT'], 'app/config/template')
-    return web.execute(environ, route, template)
+    return web.execute(environ, route)

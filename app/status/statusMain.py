@@ -3,24 +3,22 @@
 
 import sys
 import os
-import script
 import urllib2
 import urllib
 import mc
 import json
-import shortcut
 import time
 import urlparse
 import redis
 import collections
 import re
+import web
 
 
 class Status:
-    def __init__(self, environ, template):
+    def __init__(self, environ):
         self.ctype = "text/html"
         self.environ = environ
-        self.template = template
         self.query = urlparse.parse_qs(self.environ["QUERY_STRING"])
         self.r=redis.StrictRedis(host=self.environ["REDIS_HOST"], port=int(self.environ["REDIS_PORT"]))
         self.node = eval(self.r.get("node"))
@@ -225,15 +223,15 @@ class Status:
         return tdict
 
     def responseHtml(self, html, tdict):
-        return (self.ctype, script.response(os.path.join(self.template, html), tdict))
+        return (self.ctype, web.template(self.environ, html, tdict))
 
     def response(self):
         tdict = self.dictHtml()
         return self.responseHtml("status.html", tdict)
 
 class StatusHigh(Status):
-    def __init__(self, environ, template):
-        Status.__init__(self, environ, template)
+    def __init__(self, environ):
+        Status.__init__(self, environ)
 
     def chartData(self):
         ctype = "application/json"
@@ -252,8 +250,8 @@ class StatusHigh(Status):
         return self.responseHtml("high.html", tdict)
 
 class StatusMap(Status):
-    def __init__(self, environ, template):
-        Status.__init__(self, environ, template)
+    def __init__(self, environ):
+        Status.__init__(self, environ)
 
     def mapData(self):
         ctype = "application/json"

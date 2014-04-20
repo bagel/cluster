@@ -11,11 +11,10 @@ route = {
     "/status/domain": ("app/status/domain", "update"),
     "/status/sum": ("app/status/statusMain", "Status.sum"),
     "/status/high$": ("app/status/statusMain", "StatusHigh.response"),
-    "/status/high/data": ("app/status/statusMain", "statusHigh.chartData"),
-    "/status/map$": ("app/status/statusMain", "statusMap.response"),
-    "/status/map/data": ("app/status/statusMain", "statusMap.mapData"),
+    "/status/high/data": ("app/status/statusMain", "StatusHigh.chartData"),
+    "/status/map$": ("app/status/statusMain", "StatusMap.response"),
+    "/status/map/data": ("app/status/statusMain", "StatusMap.mapData"),
 }
 
 def urls(environ):
-    template = os.path.join(environ['DOCUMENT_ROOT'], 'app/status/template')
-    return web.execute(environ, route, template)
+    return web.execute(environ, route)

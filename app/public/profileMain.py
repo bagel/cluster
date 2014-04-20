@@ -1,16 +1,15 @@
 import sys
 import os
-import script
 import redis
 import hashlib
 import urlparse
 import json
 import time
+import web
 
 class Profile:
-    def __init__(self, environ, template):
+    def __init__(self, environ):
         self.environ = environ
-        self.template = template
         self.user = self.environ["USER"]
         self.r = redis.StrictRedis('10.13.32.21', 6381)
         self.query = urlparse.parse_qs(self.environ["QUERY_STRING"])
@@ -149,4 +148,4 @@ class Profile:
 
     def response(self):
         key = hashlib.md5('@'.join([self.user, 'dpooluser'])).hexdigest()
-        return ("text/html", script.response(os.path.join(self.template, "profile.html"), {"user": self.environ["USER"], "key": key, "domainStat": self.domainStat()}))
+        return ("text/html", web.template(self.environ, "profile.html", {"key": key, "domainStat": self.domainStat()}))

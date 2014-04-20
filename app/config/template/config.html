@@ -1,6 +1,22 @@
 {# base.html #}
 
-{% side %}
+{% head %}
+<script>
+    function postJSON(postUrl, postData) {
+        $.ajax({
+            async: false,
+            type: "POST",
+            url: postUrl,
+            data: postData,
+            dataType: "json",
+            contentType: "application/json"
+        });
+    }
+</script>
+{% end %}
+
+{% content %}
+<div class="col-lg-2">
 <div class="side-nav">
 <legend>配置管理</legend>
 <ul class="nav nav-pills nav-stacked">
@@ -18,20 +34,9 @@
     </li>
 </ul>
 </div>
-{% end %}
+</div>
 
-{% content %}
-<script>
-    function postJSON(postUrl, postData) {
-        $.ajax({
-            async: false,
-            type: "POST",
-            url: postUrl,
-            data: postData,
-            dataType: "json",
-            contentType: "application/json"
-        });
-    }
-</script>
+<div class="col-lg-10">
 {+ config +}
+</div>
 {% end %}

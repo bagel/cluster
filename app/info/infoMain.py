@@ -25,7 +25,7 @@ class Info:
         #self.domain = eval(self.r.get("domain"))
 
     def response(self):
-        return (self.ctype, web.template(self.environ, "info.html", {"user": self.environ["USER"]}))
+        return (self.ctype, web.template(self.environ, "info.html"))
 
 class InfoData(Info):
     def __init__(self, environ):

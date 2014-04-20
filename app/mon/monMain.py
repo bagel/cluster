@@ -3,23 +3,21 @@
 
 import sys
 import os
-import script
 import urllib2
 import mc
 import json
-import shortcut
 import time
 import urlparse
 import redis
 import uwsgi
 import urlparse
+import web
 
 
 class Mon:
-    def __init__(self, environ, template):
+    def __init__(self, environ):
         self.ctype = "text/html"
         self.environ = environ
-        self.template = template
         self.r=redis.StrictRedis(host=self.environ["REDIS_HOST"], port=6380, socket_timeout=5)
         self.channel = urlparse.parse_qs(self.environ['QUERY_STRING']).get('domain', ['sum'])[0]
         self.num = int(urlparse.parse_qs(self.environ['QUERY_STRING']).get('num', [50])[0])
@@ -125,5 +123,5 @@ class Mon:
             title = ""
         else:
             title = self.channel
-        return (self.ctype, script.response(os.path.join(self.template, "mon.html"), {"user": self.environ["USER"], "channel": self.channel, "title": title}))
+        return (self.ctype, web.template(self.environ, "mon.html", {"channel": self.channel, "title": title}))
  

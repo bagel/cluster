@@ -6,15 +6,14 @@ import pymongo
 import redis
 import time
 import json
-import script
 import urlparse
 import hashlib
+import web
 
 
 class ConfigData:
-    def __init__(self, environ, template):
+    def __init__(self, environ):
         self.environ = environ
-        self.template = template
         self.db = pymongo.MongoClient(environ["MONGO_HOST"], int(environ["MONGO_PORT"]))["config"]
         self.data = {}
 
@@ -68,8 +67,8 @@ class ConfigData:
 
 
 class NodeData(ConfigData):
-    def __init__(self, environ, template):
-        ConfigData.__init__(self, environ, template)
+    def __init__(self, environ):
+        ConfigData.__init__(self, environ)
         self.K = []
         self.V = {}
         self.N = []
@@ -239,8 +238,8 @@ class NodeData(ConfigData):
            
 
 class ConfigGroup(ConfigData):
-    def __init__(self, environ, template):
-        ConfigData.__init__(self, environ, template)
+    def __init__(self, environ):
+        ConfigData.__init__(self, environ)
 
     def create(self):
         ctype = "text/plain"
@@ -301,8 +300,8 @@ class ConfigGroup(ConfigData):
         return (ctype, "0")
 
 class ConfigPublish(NodeData):
-    def __init__(self, environ, template):
-        NodeData.__init__(self, environ, template)
+    def __init__(self, environ):
+        NodeData.__init__(self, environ)
 
     def add(self):
         ctype = "text/plain"
@@ -336,8 +335,8 @@ class ConfigPublish(NodeData):
 
 
 class ConfigHtml(ConfigData):
-    def __init__(self, environ, template):
-        ConfigData.__init__(self, environ, template)
+    def __init__(self, environ):
+        ConfigData.__init__(self, environ)
 
     def configList(self):
         ctype = "text/html"
@@ -348,14 +347,13 @@ class ConfigHtml(ConfigData):
             if len(collection.find_one()) == 12:
                 tdict[conf] = collection.find(fields={"_id": False, "name": True, "path": True, "group": True, "author": True, "mtime": True}, limit=1, sort=[("version", -1)]).next()
                 tdict[conf]["mtime"] = time.strftime("%Y/%m/%d %H:%M:%S", time.localtime(tdict[conf]["mtime"]))
-        tdict["user"] = self.environ["USER"]
-        response_body = script.response(os.path.join(self.template, "list.html"), tdict)
+        response_body = web.template(self.environ, "list.html", tdict)
         return (ctype, response_body)
 
     def configVersion(self):
         ctype = "text/html"
         self.data = dict(urlparse.parse_qsl(self.environ['QUERY_STRING']))
-        response_body = script.response(os.path.join(self.template, "version.html"), {"history": json.loads(self.history()[-1]), "name": self.data["name"], "user": self.environ["USER"]})
+        response_body = web.template(self.environ, "version.html", {"history": json.loads(self.history()[-1]), "name": self.data["name"]})
         return (ctype, response_body)
 
     def configEdit(self):
@@ -373,8 +371,7 @@ class ConfigHtml(ConfigData):
         else:
             disabled = ""
         tdict["disabled"] = disabled
-        tdict["user"] = self.environ["USER"]
-        response_body = script.response(os.path.join(self.template, "edit.html"), tdict)
+        response_body = web.template(self.environ, "edit.html", tdict)
         return (ctype, response_body)
 
     def configEditPost(self):
@@ -382,8 +379,8 @@ class ConfigHtml(ConfigData):
 
 
 class ConfigPubHtml(ConfigPublish):
-    def __init__(self, environ, template):
-        ConfigPublish.__init__(self, environ, template)
+    def __init__(self, environ):
+        ConfigPublish.__init__(self, environ)
 
     def configPub(self):
         ctype = "text/html"
@@ -402,7 +399,7 @@ class ConfigPubHtml(ConfigPublish):
             pageMax = count / 12 + 1
         pubData = [ d for d in self.collection.find(fields={"_id": False}, sort=[("stime", -1)]) ]
         pubData = pubData[((page - 1) * 12):(page * 12)]
-        response_body = script.response(os.path.join(self.template, "publish.html"), {"pubData": pubData, "page": page, "pageMax": pageMax, "user": self.environ["USER"]})
+        response_body = web.template(self.environ, "publish.html", {"pubData": pubData, "page": page, "pageMax": pageMax})
         return (ctype, response_body)
 
     def configPubGet(self):
@@ -421,20 +418,20 @@ class ConfigPubHtml(ConfigPublish):
         return self.update()
 
 class ConfigQueue(ConfigData):
-    def __init__(self, environ, template):
-        ConfigData.__init__(self, environ, template)
+    def __init__(self, environ):
+        ConfigData.__init__(self, environ)
 
     def configQueuePost(self):
         return self.update()
 
 class ConfigIssue(ConfigData):
-    def __init__(self, environ, template):
-        ConfigData.__init__(self, environ, template)
+    def __init__(self, environ):
+        ConfigData.__init__(self, environ)
 
 
 class ConfigIssueHtml(ConfigIssue):
-    def __init__(self, environ, template):
-        ConfigIssue.__init__(self, environ, template)
+    def __init__(self, environ):
+        ConfigIssue.__init__(self, environ)
 
     def configIssue(self):
         ctype = "text/html"
@@ -457,15 +454,15 @@ class ConfigIssueHtml(ConfigIssue):
             issueData.append(d)
         issueData = issueData[((page - 1) * 12):(page * 12)]
         print issueData
-        response_body = script.response(os.path.join(self.template, "issue.html"), {"issueData": issueData, "page": page, "pageMax": pageMax, "user": self.environ["USER"]})
+        response_body = web.template(self.environ, "issue.html", {"issueData": issueData, "page": page, "pageMax": pageMax})
         return (ctype, response_body)
 
     def configIssuePost(self):
         return self.update()
 
 class ConfigNodeHtml(NodeData):
-    def __init__(self, environ, template):
-        NodeData.__init__(self, environ, template)
+    def __init__(self, environ):
+        NodeData.__init__(self, environ)
         self.html = ''
 
     def nodeHtml(self, d, p):
@@ -499,7 +496,7 @@ class ConfigNodeHtml(NodeData):
         if self.environ['QUERY_STRING']:
             return (ctype, self.configNodeEdit(nodeData))
         self.nodeHtml(nodeData, "node")
-        response_body = script.response(os.path.join(self.template, "node.html"), {"user": self.environ["USER"], "node": nodeData, "html": self.html})
+        response_body = web.template(self.environ, "node.html", {"node": nodeData, "html": self.html})
         return (ctype, response_body)
 
     def configNodeEdit(self, nodeData):
@@ -510,7 +507,7 @@ class ConfigNodeHtml(NodeData):
         nodesAll = json.loads(self.readnodes()[-1])
         idcs = self.db["idc"].find(fields={"_id": False}).next()
         print idcs
-        response_body = script.response(os.path.join(self.template, "enode.html"), {"user": self.environ["USER"], "name": current, "nodes": nodes, "nodesAll": nodesAll, "idcs": idcs})
+        response_body = web.template(self.environ, "enode.html", {"name": current, "nodes": nodes, "nodesAll": nodesAll, "idcs": idcs})
         return response_body
 
 

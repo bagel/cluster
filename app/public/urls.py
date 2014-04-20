@@ -16,5 +16,4 @@ route = {
 }
 
 def urls(environ):
-    template = os.path.join(environ["DOCUMENT_ROOT"], "app/public/template")
-    return web.execute(environ, route, template)
+    return web.execute(environ, route)

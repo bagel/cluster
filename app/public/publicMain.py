@@ -8,30 +8,29 @@ import login
 import web
 
 class Public(object):
-    def __init__(self, environ, template):
+    def __init__(self, environ):
         self.environ = environ
-        self.template = template
 
 
 class Home(Public):
-    def __init__(self, environ, template):
-        super(Home, self).__init__(environ, template)
+    def __init__(self, environ):
+        super(Home, self).__init__(environ)
 
     def response(self):
         return web.execute(self.environ, ("app/mon/",))
 
 
 class Util(Public):
-    def __init__(self, environ, template):
-        super(Util, self).__init__(environ, template)
+    def __init__(self, environ):
+        super(Util, self).__init__(environ)
 
     def response(self):
-        return ("text/html", script.response(os.path.join(self.template, "util.html"), {"user": self.environ["USER"]}))
+        return ("text/html", web.template(self.environ, "util.html"))
 
 
 class Online(Public):
-    def __init__(self, environ, template):
-        super(Online, self).__init__(environ, template)
+    def __init__(self, environ):
+        super(Online, self).__init__(environ)
 
     def _request(self, url, data='', headers={}):
         req = urllib2.Request(url=url)
