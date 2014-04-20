@@ -2,7 +2,6 @@
 
 import sys
 import os
-import script
 import redis
 import urlparse
 import json
@@ -11,13 +10,13 @@ import ConfigParser
 import re
 import socket
 import time
+import web
 
 
 class Info:
-    def __init__(self, environ, template):
+    def __init__(self, environ):
         self.ctype = "text/html"
         self.environ = environ
-        self.template = template
         self.query = urlparse.parse_qs(self.environ["QUERY_STRING"])
         self.r=redis.StrictRedis(host='10.13.32.21', port=6379)
         #self.node = eval(self.r.get("node"))
@@ -26,11 +25,11 @@ class Info:
         #self.domain = eval(self.r.get("domain"))
 
     def response(self):
-        return (self.ctype, script.response(os.path.join(self.template, "info.html"), {"user": self.environ["USER"]}))
+        return (self.ctype, web.template(self.environ, "info.html", {"user": self.environ["USER"]}))
 
 class InfoData(Info):
-    def __init__(self, environ, template):
-        Info.__init__(self, environ, template)
+    def __init__(self, environ):
+        Info.__init__(self, environ)
         self.ctype = "application/json"
         self.region = ['mars', 'apollo', 'atlas']
 

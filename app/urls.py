@@ -30,4 +30,5 @@ def urls(environ):
     elif check == 1:
         return res
 
+    environ["TEMP_PATH"] = [os.path.join(environ["DOCUMENT_ROOT"], "app/public/template")]
     return web.execute(environ, route)

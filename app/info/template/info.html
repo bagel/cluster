@@ -1,6 +1,9 @@
 {# base.html #}
 
 {% content %}
+<div class="col-lg-1">
+</div>
+<div class="col-lg-10">
 <legend>项目信息查询</legend>
 <form role="form" action="/info/data" method="get">
 <div class="row">
@@ -8,6 +11,7 @@
         <input type="text" class="form-control" id="domain" name="domain" placeholder="域名">
     </div>
     <button type="submit" class="btn btn-success">查看</button>
+</div>
 </div>
 </div>
 {% end %}
