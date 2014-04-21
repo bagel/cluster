@@ -1,0 +1,31 @@
+{# base.html #}
+
+{% content %}
+<div class="col-lg-1">
+</div>
+<div class="col-lg-10">
+<legend>Varnish 缓存清除</legend>
+<form role="form">
+<div class="row">
+    <div class="col-lg-3">
+        <input type="text" class="form-control" name="domain" placeholder="域名"></input>
+    </div>
+    <div class="col-lg-3">
+        <input type="text" class="form-control" name="uri" placeholder="uri"></input>
+    </div>
+    <button type="submit" class="btn btn-success">清除</button>
+</div>
+</form>
+<br>
+<script type="text/python">
+    if Tdict["status"]:
+        if Tdict["status"]["OK"]:
+            echo '<div class="alert alert-success">成功: %s</div>' % ', '.join(Tdict["status"]["OK"])
+        if Tdict["status"]["ERR"]:
+            echo '<div class="alert alert-danger">失败: %s</div>' % ', '.join(Tdict["status"]["ERR"])
+</script>
+<script type="text/python">
+    echo '<h5><strong>API调用: </strong><code>http://api.dpool.cluster.sina.com.cn/purge?domain=www.example.com&url=%%2Ftest.js&user=%s&key=%s</code></h5>' %  (Tdict["user"], Tdict["key"])
+</script>
+</div>
+{% end %}

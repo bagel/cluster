@@ -6,6 +6,12 @@ import json
 import script
 import login
 import web
+import httplib
+import dpool
+import gevent
+import util
+import socket
+import threading
 
 class Public(object):
     def __init__(self, environ):
@@ -67,3 +73,45 @@ class Online(Public):
         #response_body = '%d%d%d%d' % (admin, load, desp, port)
         return (ctype, response_body)
 
+
+class Purge(Public):
+    def __init__(self, environ):
+        super(Purge, self).__init__(environ)
+
+    def request(self, host, port, domain, uri, status):
+        conn = httplib.HTTPConnection(host, port, timeout=3)
+        try:
+            conn.request("GET", uri, headers={"Host": domain, "X-Refresh": "do"})
+            req = conn.getresponse()
+            if req.status == 200 or req.status == 404:
+                status["OK"].append(host)
+            else:
+                raise socket.timeout
+        except:
+            status["ERR"].append(host)
+
+    def purge(self, domain, uri):
+        hosts = dpool.get_serverlist("varnish")
+        status = {"OK": [], "ERR": []}
+        threads = []
+        for host in hosts:
+            host = host.encode('utf-8')
+            threads.append(threading.Thread(target=self.request, args=(host, 8899, domain, uri, status)))
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join()
+        return status
+
+    def response(self):
+        query = urlparse.parse_qs(self.environ["QUERY_STRING"])
+        domain = query.get("domain", [""])[0]
+        uri = query.get("uri", [""])[0]
+        if not domain or not uri:
+            status = ""
+        else:
+            status = self.purge(domain, uri)
+        if self.environ["HTTP_HOST"] == "api.dpool.cluster.sina.com.cn":
+            return ("application/json", json.dumps(status))
+        print status
+        return ("text/html", web.template(self.environ, "purge.html", {"status": status, "user": self.environ["USER"], "key": util.userkey(self.environ["USER"])}))
