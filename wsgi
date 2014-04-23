@@ -15,8 +15,6 @@ def application(environ, start_response):
     import web
     import app
     environ = web.setenv(environ)
-    print "env: ", environ
-    print sys.path
     status, response_headers, response_body = app.urls(environ)
     start_response(status, response_headers)
-    return [response_body]
+    return response_body
