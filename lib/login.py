@@ -6,9 +6,13 @@ import urlparse
 import urllib2
 import json
 import time
+import re
 import base64
 import hashlib
 import redis
+import ldap
+import web
+import util
 
 class Login:
     def __init__(self, environ):
@@ -16,6 +20,7 @@ class Login:
         self.r = redis.StrictRedis(host='10.13.32.21', port=6381)
         self.query = urlparse.parse_qs(self.environ['QUERY_STRING'])
         self.domain = self.query.get("domain", [""])[0]
+        self.ctype = "text/html"
 
     def authDomain(self, user, err):
         """user in info_dpool_admin and domain's adminer has domain's permission,
@@ -23,50 +28,117 @@ class Login:
         """
         user_admin = self.r.get("info_dpool_admin")
         if user_admin and user in eval(user_admin):
-            return (0, user)
+            self.environ["USER"] = user
+            return self.environ
         domains_admin = self.r.hget("info_domain_admin", user)
         if domains_admin and self.domain in eval(domains_admin):
-            return (0, user)
+            self.environ["USER"] = user
+            return self.environ
         domains = self.r.hget("info_domain_user", user)
         if not domains:
-            return (1, err)
+            return self.authResponse(err)
         domains = eval(domains)
         if self.domain in domains:
-            return (0, user)
-        return (1, err)
+            self.environ["USER"] = user
+            return self.environ
+        return self.authResponse(err)
 
     def authApi(self):
         """query key should match "user@dpooluser" md5sum.
         """
-        err_api = ("application/json", json.JSONEncoder().encode({"errmsg": "Permission denied"}), ("Status", "403"))
+        err_api = ("application/json", json.JSONEncoder().encode({"errmsg": "Permission denied"}), {"Status": "403"})
         key = self.query.get("key", [""])[0]
         if not key:
-            return (1, err_api)
+            return self.authResponse(err_api)
         if key == "be9c2fd551734345064b1f765f115a08" or key== "c09551c8a636c68dc06e7c346ea9b70c":
-            return (0, "default")
+            self.environ["USER"] = "default"
+            return self.environ
         user = self.query.get("user", [""])[0]
         if not user:
-            return (1, err_api)
-        hash_user = hashlib.md5('@'.join([user, "dpooluser"])).hexdigest()
+            return self.authResponse(err_api)
+        hash_user = util.userkey(user)
         if key != hash_user:
-            return (1, err_api)
+            return self.authResponse(err_api)
         return self.authDomain(user, err_api)
 
     def authWeb(self, user):
-        err_web = ("text/html", "Permission denied", ("Status", "403"))
+        err_web = ("text/html", "Permission denied", {"Status": "403"})
         return self.authDomain(user, err_web)
+
+    @web.response
+    def authResponse(self, err):
+        return err
+
+    def authStaff(self):
+        postData = urlparse.parse_qs(self.environ['wsgi.input'].read(int(self.environ['CONTENT_LENGTH'])))
+        mail = postData.get('mail', [''])[0]
+        password = postData.get('password', [''])[0]
+        errmsg = ""
+        if not mail or not password:
+            errmsg = u'\u63d0\u4ea4\u9519\u8bef'
+        if '@' not in mail:
+            user = mail
+            mail = '@'.join([mail, 'staff.sina.com.cn'])
+        else:
+            user = mail.split('@')[0] 
+        try:
+            l = ldap.initialize('ldap://%s:%s' % (self.environ["LDAP_HOST"], self.environ["LDAP_PORT"]))
+            l.bind('CN=adsearch,OU=sina,DC=staff,DC=sina,DC=com,DC=cn', 'q2fGed3G`yC&ax')
+            r = l.search_s('ou=sina,dc=staff,dc=sina,dc=com,dc=cn', ldap.SCOPE_SUBTREE, "(mail=%s)" % mail)
+            dn = r[0][0]
+            l.bind_s(dn, password)
+        except ldap.INVALID_CREDENTIALS:
+            errmsg = u'\u8ba4\u8bc1\u9519\u8bef'
+        except ldap.BUSY:
+            errmsg = u'\u670d\u52a1\u5668\u7e41\u5fd9'
+        except:
+            errmsg = u'\u672a\u77e5\u9519\u8bef'
+        return (user, errmsg)
+
+    def staffPost(self):
+        user, errmsg = self.authStaff()
+        if errmsg:
+            return (self.ctype, web.template(self.environ, "login.html", {"errmsg": errmsg}))
+        #response_body = "success...."
+        response_body = ""
+        headers = {}
+        headers["Status"] = "301 Moved Permanently"
+        headers["Location"] = "http://%s/home" % self.environ["HTTP_HOST"]
+        headers["Set-Cookie"] = "DP_token=%s; path=/; expires=Thu, 01 Jan %d 00:00:00 GMT" % (base64.b64encode("%s.%d" % (user, int(time.time()))), int(time.strftime("%Y")) + 10)
+        return (self.ctype, response_body, headers)
+
+    def staffGet(self):
+        return (self.ctype, web.template(self.environ, "login.html"))
+
+    @web.response
+    def staffResponse(self):
+        request_method = self.environ["REQUEST_METHOD"]
+        if request_method == "POST":
+            return self.staffPost()
+        else:
+            return self.staffGet()
+
+    @web.response
+    def staffRedirect(self):
+        #response_body = "login...."
+        response_body = ""
+        headers = {}
+        headers["Status"] = "301 Moved Permanently"
+        headers["Location"] = "http://%s/login" % self.environ["HTTP_HOST"]
+        return (self.ctype, response_body, headers)
+        
 
     def auth(self):
         """Visit api domain or not browser like curl, use api auth and query_string should contain user and key.
            If use browser visit, redirected to intra login if get user from cookie failed, try this again after login success.
            After browser first login response contain Set-Cookie header. If browser has the right DP_token Cookie, no need to login.
         """
-        ctype = "text/html"
-        if self.environ["HTTP_HOST"] == "api.dpool.cluster.sina.com.cn" or "Mozilla" not in self.environ.get("HTTP_USER_AGENT", ""):
+        if self.environ["HTTP_HOST"] == "api.dpool.cluster.sina.com.cn":
             if self.domain and self.domain != 'sum':
                 return self.authApi()
-            return (0, "default")
-        cookies = self.environ.get('HTTP_COOKIE', []).split('; ')
+            self.environ["USER"] = "default"
+            return self.environ
+        cookies = self.environ.get('HTTP_COOKIE', '').split('; ')
         token = ""
         for cookie in cookies:
             if "DP_token" in cookie:
@@ -76,41 +148,21 @@ class Login:
             user = token.split('.')[0]
             if self.domain and self.domain != 'sum':
                 return self.authWeb(user)
-            return (0, user)
-        if not self.query.has_key("token"):
-            response_body = "login...."
-            header = ("Refresh", "0; url=http://auth.intra.sina.com.cn/login?url=http://admin.dpool.cluster.sina.com.cn/home")
-            return (1, (ctype, response_body, header))
-        else:
-            user = json.loads(urllib2.urlopen(url="http://auth.intra.sina.com.cn/interface/loginCheck?token=" + self.query['token'][0]).read())["data"]["name"]
-            header = ("Set-Cookie", "DP_token=%s; path=/; expires=Thu, 01 Jan %d 00:00:00 GMT" % (base64.b64encode("%s.%d" % (user, int(time.time()))), int(time.strftime("%Y")) + 1))
-            return (2, (user.encode('utf-8'), header))
-    
+            self.environ["USER"] = user
+            return self.environ
+
+        return self.staffRedirect()
+   
+    @web.response 
     def logout(self):
         """header1 delete DP_token Cookie, header2 redirect to login screen.
         """
-        ctype = "text/html"
-        response_body = "logout...."
-        header1 = ("Set-Cookie", "DP_token=delete; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT")
-        header2 = ("Refresh", "0; url=http://auth.intra.sina.com.cn/main/logout?url=http://admin.dpool.cluster.sina.com.cn/home")
-        return (ctype, response_body, header1, header2)
-    
-    def user(self):
-        if int(self.query.get("evil", [0])[0]) == 1:
-            return 1
-        if not self.domain:
-            return 0
-        err = ("application/json", json.JSONEncoder().encode({"errmsg": "Permission denied"}))
-        if not self.query.has_key("key"):
-            return err
-        key = self.query["key"][0]
-        user = self.r.hget("info_user_domain", self.domain)
-        if not user:
-            return err
-        user = eval(user)[0]
-        hash = hashlib.md5('@'.join([user.split('@')[0], "dpooluser"])).hexdigest()
-        if key == hash:
-            return 1
-        else:
-            return err
+        #response_body = "logout...."
+        response_body = ""
+        headers = {}
+        headers["Status"] = "301 Moved Permanently"
+        headers["Set-Cookie"] = "DP_token=delete; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+        headers["Location"] = "http://%s/login" % self.environ["HTTP_HOST"]
+        return (self.ctype, response_body, headers)
+
 
