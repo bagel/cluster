@@ -20,7 +20,7 @@ class Status:
         self.ctype = "text/html"
         self.environ = environ
         self.query = urlparse.parse_qs(self.environ["QUERY_STRING"])
-        self.r=redis.StrictRedis(host=self.environ["REDIS_HOST"], port=int(self.environ["REDIS_PORT"]))
+        self.r=redis.StrictRedis(host=self.environ["REDIS_STATUS_HOST"], port=int(self.environ["REDIS_STATUS_PORT"]))
         self.node = eval(self.r.get("node"))
         self.idc = eval(self.r.get("idc"))
         self.mod = eval(self.r.get("mod"))
