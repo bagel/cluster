@@ -6,6 +6,7 @@ import urlparse
 import json
 import time
 import web
+import util
 
 class Profile:
     def __init__(self, environ):
@@ -16,6 +17,7 @@ class Profile:
         self.key_user = "info_domain_user"
         self.key_domain = "info_user_domain"
         self.key_admin = "info_domain_admin"
+        self.key_dpool = "info_dpool_admin" 
 
     def domainAuth(self):
         """post /profile/domainauth(add|del), {"domains": domains, "users": users},
@@ -28,6 +30,11 @@ class Profile:
             domains_admin = eval(domains_admin)
         else:
             domains_admin = []
+        dpool_admin = self.r.get(self.key_dpool)
+        if dpool_admin:
+            dpool_admin = eval(dpool_admin)
+        else:
+            dpool_admin = []
         domains_new = set()
         for domain in domains:
             domain = domain.strip()
@@ -36,7 +43,7 @@ class Profile:
                 if domains_admin:
                     domains_new.update(domains_admin)
                 break
-            elif domain not in domains_admin:
+            elif domain not in domains_admin and self.user not in dpool_admin:
                 continue
             elif domain_server and eval(domain_server):
                 domains_new.update(eval(domain_server))
@@ -46,12 +53,15 @@ class Profile:
         users = postData["users"].strip().split(',')
         return (domains_new, users)
 
+    @web.response
     def domainAuthAdd(self):
         """add domain to info_domain_user, {"user prefix": [domains]},
            add user to info_user_domain, {"domain": [users]}.
         """
         domains, users = self.domainAuth()
         for d in domains:
+            if not d:
+                continue
             for u in users:
                 if '@' not in u:
                     continue
@@ -72,6 +82,7 @@ class Profile:
                         self.r.hset(self.key_domain, d, us)
         return ("application/json", json.JSONEncoder().encode({"success": 0}))
 
+    @web.response
     def domainAuthDel(self):
         """remove domain from info_domain_user, user from info_user_domain.
         """
@@ -124,6 +135,7 @@ class Profile:
             domain_stat[domain] = stat
         return (domain_stat, count)
 
+    @web.response
     def responseStat(self):
         """if no query then response count of domains.
         """
@@ -134,6 +146,7 @@ class Profile:
         else:
             return ("application/json", json.JSONEncoder().encode(self.domainStat(start, num)[0]))
 
+    @web.response
     def responseStatDomain(self):
         """check one domain permit users.
         """
@@ -146,6 +159,7 @@ class Profile:
             stat = ""
         return ("application/json", json.JSONEncoder().encode({domain: stat}))
 
+    @web.response
     def response(self):
-        key = hashlib.md5('@'.join([self.user, 'dpooluser'])).hexdigest()
+        key = util.userkey(self.user)
         return ("text/html", web.template(self.environ, "profile.html", {"key": key, "domainStat": self.domainStat()}))

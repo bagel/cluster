@@ -11,6 +11,7 @@ import re
 import socket
 import time
 import web
+import util
 
 
 class Info:
@@ -24,8 +25,9 @@ class Info:
         #self.mod = eval(self.r.get("mod"))
         #self.domain = eval(self.r.get("domain"))
 
+    @web.response
     def response(self):
-        return (self.ctype, web.template(self.environ, "info.html"))
+        return (self.ctype, web.template(self.environ, "info.html", {"user": self.environ["USER"], "key": util.userkey(self.environ["USER"])}))
 
 class InfoData(Info):
     def __init__(self, environ):
@@ -80,6 +82,7 @@ class InfoData(Info):
             data[vip]["member"] = memberNew
         return (data, cache)
 
+    @web.response
     def response(self):
         t = time.time()
         domain = self.query['domain'][0]

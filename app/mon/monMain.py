@@ -23,6 +23,7 @@ class Mon:
         self.num = int(urlparse.parse_qs(self.environ['QUERY_STRING']).get('num', [50])[0])
         self.start = int(urlparse.parse_qs(self.environ['QUERY_STRING']).get('start', [0])[0])
 
+    @web.response
     def chartData(self):
         ctype = "application/json"
         data = self.r.hget("sum_500", str(int(time.time())))
@@ -106,18 +107,23 @@ class Mon:
                 uwsgi.websocket_recv_nb()
                 time.sleep(1)
 
+    @web.response
     def LogAccess(self):
         return ("application/json", json.JSONEncoder().encode(self.r.zrevrangebyscore(self.channel, "+inf", 0, start=self.start, num=self.num)))
 
+    @web.response
     def LogError(self, num=50):
         return ("application/json", json.JSONEncoder().encode(self.r.zrevrangebyscore('_'.join([self.channel, "err"]), "+inf", 0, start=self.start, num=self.num)))
 
+    @web.response
     def LogAccessCount(self):
         return ("application/json", json.JSONEncoder().encode({"count": self.r.zcount(self.channel, "-inf", "+inf")}))
 
+    @web.response
     def LogErrorCount(self):
         return ("application/json", json.JSONEncoder().encode({"count": self.r.zcount('_'.join([self.channel, "err"]), "-inf", "+inf")}))
 
+    @web.response
     def response(self):
         if self.channel == "sum":
             title = ""

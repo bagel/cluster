@@ -30,6 +30,7 @@ class ConfigData:
         print self.fileData["name"]
         self.collection = self.db[self.fileData["name"]]
 
+    @web.response
     def update(self):
         ctype = "text/plain"
         self.Collection()
@@ -41,6 +42,7 @@ class ConfigData:
         print self.collection.insert(self.fileData)
         return (ctype, "0")
 
+    @web.response
     def delete(self):
         ctype = "text/plain"
         self.Collection()
@@ -50,6 +52,7 @@ class ConfigData:
             self.collection.remove({"version": int(self.fileData["version"])})
         return (ctype, "0")
 
+    @web.response
     def read(self):
         ctype = "application/json"
         self.Collection()
@@ -59,6 +62,7 @@ class ConfigData:
             maxData = self.collection.find(spec={"version": int(self.fileData["version"])}, fields={"_id": False}).next()
         return (ctype, json.JSONEncoder().encode(maxData))
 
+    @web.response
     def history(self):
         ctype = "application/json"
         self.Collection()
@@ -91,6 +95,7 @@ class NodeData(ConfigData):
         self.dictSearch(d, "o")
         print "K: ", self.K, "V: ", self.V
 
+    @web.response
     def create(self):
         ctype = "text/plain"
         self.Collection()
@@ -101,6 +106,7 @@ class NodeData(ConfigData):
         self.collection.insert(self.fileData)
         return (ctype, "0")
 
+    @web.response
     def add(self):
         ctype = "text/plain"
         self.Collection()
@@ -118,6 +124,7 @@ class NodeData(ConfigData):
         self.collection.insert(node)
         return (ctype, "0")
  
+    @web.response
     def update(self):
         ctype = "text/plain"
         self.Collection()
@@ -134,6 +141,7 @@ class NodeData(ConfigData):
         self.collection.insert(node)
         return (ctype, "0")
 
+    @web.response
     def rename(self): 
         ctype = "text/plain"
         self.Collection()
@@ -151,6 +159,7 @@ class NodeData(ConfigData):
         self.collection.insert(node)
         return (ctype, "0")
 
+    @web.response
     def addnodes(self):
         ctype = "text/plain"
         self.Collection()
@@ -185,6 +194,7 @@ class NodeData(ConfigData):
                     self.dictNodes(v, p)
                     p = ""
 
+    @web.response
     def readnodes(self):
         ctype = "appliction/json"
         if not self.data:
@@ -213,6 +223,7 @@ class NodeData(ConfigData):
                     self.dictParent(v, node, ks)
                     ks.remove(k)
 
+    @web.response
     def deletenodes(self):
         ctype = "text/plain"
         self.Collection()
@@ -241,6 +252,7 @@ class ConfigGroup(ConfigData):
     def __init__(self, environ):
         ConfigData.__init__(self, environ)
 
+    @web.response
     def create(self):
         ctype = "text/plain"
         self.Collection()
@@ -251,6 +263,7 @@ class ConfigGroup(ConfigData):
         print self.collection.insert(self.fileData)
         return (ctype, "0")
 
+    @web.response
     def add(self):
         ctype = "text/plain"
         self.Collection()
@@ -267,6 +280,7 @@ class ConfigGroup(ConfigData):
         self.collection.insert(groupData)
         return (ctype, "0")
    
+    @web.response
     def update(self):
         ctype = "text/plain"
         self.Collection()
@@ -282,6 +296,7 @@ class ConfigGroup(ConfigData):
         self.collection.insert(groupData)
         return (ctype, "0")
 
+    @web.response
     def rename(self):
         ctype = "text/plain"
         self.Collection()
@@ -303,6 +318,7 @@ class ConfigPublish(NodeData):
     def __init__(self, environ):
         NodeData.__init__(self, environ)
 
+    @web.response
     def add(self):
         ctype = "text/plain"
         self.Collection()
@@ -320,6 +336,7 @@ class ConfigPublish(NodeData):
         self.collection.insert(self.fileData)
         return (ctype, "0")
 
+    @web.response
     def update(self):
         ctype = "text/plain"
         self.Collection()
@@ -338,6 +355,7 @@ class ConfigHtml(ConfigData):
     def __init__(self, environ):
         ConfigData.__init__(self, environ)
 
+    @web.response
     def configList(self):
         ctype = "text/html"
         conflist = self.db.collection_names(include_system_collections=False)
@@ -350,12 +368,14 @@ class ConfigHtml(ConfigData):
         response_body = web.template(self.environ, "list.html", tdict)
         return (ctype, response_body)
 
+    @web.response
     def configVersion(self):
         ctype = "text/html"
         self.data = dict(urlparse.parse_qsl(self.environ['QUERY_STRING']))
         response_body = web.template(self.environ, "version.html", {"history": json.loads(self.history()[-1]), "name": self.data["name"]})
         return (ctype, response_body)
 
+    @web.response
     def configEdit(self):
         ctype = "text/html"
         self.data = dict(urlparse.parse_qsl(self.environ['QUERY_STRING']))
@@ -382,6 +402,7 @@ class ConfigPubHtml(ConfigPublish):
     def __init__(self, environ):
         ConfigPublish.__init__(self, environ)
 
+    @web.response
     def configPub(self):
         ctype = "text/html"
         if self.environ["REQUEST_METHOD"] == "GET":
@@ -402,6 +423,7 @@ class ConfigPubHtml(ConfigPublish):
         response_body = web.template(self.environ, "publish.html", {"pubData": pubData, "page": page, "pageMax": pageMax})
         return (ctype, response_body)
 
+    @web.response
     def configPubGet(self):
         ctype = "text/html"
         self.data = dict(urlparse.parse_qsl(self.environ['QUERY_STRING']))
@@ -433,6 +455,7 @@ class ConfigIssueHtml(ConfigIssue):
     def __init__(self, environ):
         ConfigIssue.__init__(self, environ)
 
+    @web.response
     def configIssue(self):
         ctype = "text/html"
         if self.environ["REQUEST_METHOD"] == "GET":
@@ -489,6 +512,7 @@ class ConfigNodeHtml(NodeData):
 </div>
 '''
 
+    @web.response
     def configNode(self):
         ctype = "text/html"
         self.data = {"name": "node"}
@@ -499,6 +523,7 @@ class ConfigNodeHtml(NodeData):
         response_body = web.template(self.environ, "node.html", {"node": nodeData, "html": self.html})
         return (ctype, response_body)
 
+    @web.response
     def configNodeEdit(self, nodeData):
         current = urlparse.parse_qs(self.environ["QUERY_STRING"])["name"][0]
         self.dictSearch(nodeData, current, [])
@@ -508,7 +533,7 @@ class ConfigNodeHtml(NodeData):
         idcs = self.db["idc"].find(fields={"_id": False}).next()
         print idcs
         response_body = web.template(self.environ, "enode.html", {"name": current, "nodes": nodes, "nodesAll": nodesAll, "idcs": idcs})
-        return response_body
+        return (ctype, response_body)
 
 
 def main():

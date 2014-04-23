@@ -30,6 +30,7 @@ class Util(Public):
     def __init__(self, environ):
         super(Util, self).__init__(environ)
 
+    @web.response
     def response(self):
         return ("text/html", web.template(self.environ, "util.html"))
 
@@ -47,6 +48,7 @@ class Online(Public):
                 req.add_header(key, value)
         return urllib2.urlopen(req, timeout=3).read()
 
+    @web.response
     def online(self):
         ctype = 'text/plain; charset=utf-8'
         dpurl = 'http://dpadmin.grid.sina.com.cn/api/serverlist2.php?ip='
@@ -79,7 +81,7 @@ class Purge(Public):
         super(Purge, self).__init__(environ)
 
     def request(self, host, port, domain, uri, status):
-        conn = httplib.HTTPConnection(host, port, timeout=3)
+        conn = httplib.HTTPConnection(host, port, timeout=15)
         try:
             conn.request("GET", uri, headers={"Host": domain, "X-Refresh": "do"})
             req = conn.getresponse()
@@ -87,7 +89,7 @@ class Purge(Public):
                 status["OK"].append(host)
             else:
                 raise socket.timeout
-        except:
+        except socket.timeout:
             status["ERR"].append(host)
 
     def purge(self, domain, uri):
@@ -95,7 +97,6 @@ class Purge(Public):
         status = {"OK": [], "ERR": []}
         threads = []
         for host in hosts:
-            host = host.encode('utf-8')
             threads.append(threading.Thread(target=self.request, args=(host, 8899, domain, uri, status)))
         for thread in threads:
             thread.start()
@@ -103,6 +104,7 @@ class Purge(Public):
             thread.join()
         return status
 
+    @web.response
     def response(self):
         query = urlparse.parse_qs(self.environ["QUERY_STRING"])
         domain = query.get("domain", [""])[0]

@@ -4,7 +4,8 @@ import hashlib
 import redis
 
 
-def cachefunc(expire=600, miss=0):
+def cachefunc(expire=600):
+    """Cache function f return value in redis with `expire` time."""
     def _cachefunc(f):
         def __cachefunc(*args, **kwargs):
             r = redis.StrictRedis("10.13.32.21", "6381")
@@ -13,7 +14,7 @@ def cachefunc(expire=600, miss=0):
             keys.extend([ '-%s--%s' % (k, v) for k, v in kwargs.iteritems() ])
             key = ''.join(keys)
             print key
-            if not r.exists(key) or miss:
+            if not r.exists(key):
                 print "miss"
                 value = f(*args, **kwargs)
                 r.setex(key, expire, value)

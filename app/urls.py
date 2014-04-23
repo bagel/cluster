@@ -12,23 +12,19 @@ route = {
     "^/status": ("app/status/",),
     "^/mon": ("app/mon/",),
     "^/info": ("app/info/",),
-    "^/purge": ("app/purge/",),
-    "^/(home|profile|util|plot|online)": ("app/public/",),
+    "^/(home|profile|util|plot|online|purge)": ("app/public/",),
 }
 
 def urls(environ):
+    environ["TEMP_PATH"] = [os.path.join(environ["DOCUMENT_ROOT"], "app/public/template")]
+    environ["USER"] = ""
     path =  environ["PATH_INFO"].split('/')[1]
     if path == "logout":
         return login.Login(environ).logout()
-    elif path == "login" and environ["REQUEST_METHOD"] == "GET":
-        return login.Login(environ).loginStaffHtml()
-    elif path == "login" and environ["REQUEST_METHOD"] == "POST":
-        return login.Login(environ).loginStaffAuth()
-    check, res = login.Login(environ).auth()
-    if check == 0:
-        environ["USER"] = res
-    elif check == 1:
-        return res
+    elif path == "login":
+        return login.Login(environ).staffResponse()
+    environ = login.Login(environ).auth()
+    if not isinstance(environ, dict):
+        return environ
 
-    environ["TEMP_PATH"] = [os.path.join(environ["DOCUMENT_ROOT"], "app/public/template")]
     return web.execute(environ, route)

@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import time
 import hashlib
 import json
+import web
 
 
 class Plot:
@@ -38,5 +39,6 @@ class Plot:
         plt.close()
         return os.path.join("http://", self.environ['HTTP_HOST'], picdir, picname)
 
+    @web.response
     def response(self):
         return ("text/html", self.plotPic())

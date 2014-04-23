@@ -139,6 +139,7 @@ class Status:
         caption = " ".join([caption, max_time, max_hits_s, sum_hits])
         return (values, m, t, xname, offset, caption)
 
+    @web.response
     def chartData(self):
         values, m, t, xname, offset, caption = self.data()
 
@@ -183,6 +184,7 @@ class Status:
         }
         return ("application/json", json.JSONEncoder().encode(chartdata))
 
+    @web.response
     def sum(self):
         qtime = self.query.get("time", [""])[0]
         t = time.time()
@@ -222,6 +224,7 @@ class Status:
         }
         return tdict
 
+    @web.response
     def responseHtml(self, html, tdict):
         return (self.ctype, web.template(self.environ, html, tdict))
 

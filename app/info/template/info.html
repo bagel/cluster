@@ -12,6 +12,10 @@
     </div>
     <button type="submit" class="btn btn-success">查看</button>
 </div>
-</div>
+</form>
+<br>
+<script type="text/python">
+    echo '<h5><strong>API调用: </strong><code>http://api.dpool.cluster.sina.com.cn/info/data?domain=www.example.com&user=%s&key=%s</code></h5>' % (Tdict["user"], Tdict["key"])
+</script>
 </div>
 {% end %}
