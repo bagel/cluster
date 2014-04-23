@@ -17,4 +17,4 @@ def application(environ, start_response):
     environ = web.setenv(environ)
     status, response_headers, response_body = app.urls(environ)
     start_response(status, response_headers)
-    return response_body
+    return [response_body]
