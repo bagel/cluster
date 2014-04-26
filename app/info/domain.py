@@ -2,33 +2,40 @@
 
 import sys
 import os
-import redis
 import urllib2
-import json
+import re
+import util
 
+def domainConf(conf):
+    url = 'http://dpadmin.grid.sina.com.cn/api/fetch_newestfile.php?title=' + conf
+    return urllib2.urlopen(url).readlines()
 
-def domainCmdb(domain):
-    url = "http://newcmdb.intra.sina.com.cn/api?username=api4cli&auth=jBv5N1hVw1Z3dpASG507W18B&q=domain_name=="
-    req = urllib2.Request(url = url + domain)
-    req.add_header("accept", "application/json")
-    return json.loads(urllib2.urlopen(req).read())['result']
+def domainWeb2():
+    d = []
+    for line in domainConf('web2_httpd_vhost.conf'):
+        if re.match(r'\s*(ServerName|ServerAlias)', line):
+            d.append(line.strip().split(' ')[-1].strip('@@'))
+    return d
 
-def domainUserSet():
-    r = redis.StrictRedis('10.13.32.21', 6379)
-    r1 = redis.StrictRedis('10.13.32.21', 6381)
-    domains = eval(r.get('domain'))
-    domain_admin = {}
-    for domain in domains:
-        cmdb = domainCmdb(domain)
-        if not cmdb:
-            continue
-        admin0 = cmdb[0]['dns_admin0']
-        if not domain_admin.has_key(admin0):
-            domain_admin[admin0] = []
-        domain_admin[admin0].append(domain)
-        print domain_admin
-    r1.hmset("info_domain_admin", domain_admin)
+def domainWeb3():
+    d = []
+    for line in domainConf('nginx.conf.vhost_fpm'):
+        if re.match(r'\s+server_name', line):
+            #if "var=get_servername" in line:
+            #    d.extend([ m for m in re.sub(r'\s+server_name\s+\[\-.*\-\]\s+(.*)\s*;', r'\1', line).rstrip(';').strip().split(' ') if m ])
+            d.extend([ m for m in re.sub(r'\s+server_name\s+@@.*@@\s+(.*)\s*;', r'\1', line).rstrip(';').strip().split(' ') if m ])
+    return d
+
+def update():
+    import redis
+    r = redis.StrictRedis(util.localenv("REDIS_INFO_HOST"), util.localenv("REDIS_INFO_PORT"))
+    d = set()
+    dm = domainWeb2() + domainWeb3()
+    for m in dm:
+        d.add(m)
+    r.set("info_domain", d)
 
 
 if __name__ == "__main__":
-    domainUserSet()
+    #print len(domainWeb2())
+    update()

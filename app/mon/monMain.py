@@ -16,9 +16,9 @@ import web
 
 class Mon:
     def __init__(self, environ):
-        self.ctype = "text/html"
         self.environ = environ
-        self.r=redis.StrictRedis(host=self.environ["REDIS_MON_HOST"], port=int(self.environ["REDIS_MON_PORT"]), socket_timeout=5)
+        self.ctype = "text/html"
+        self.r=redis.StrictRedis(host=web.getenv("REDIS_MON_HOST"), port=int(web.getenv("REDIS_MON_PORT")), socket_timeout=5)
         self.channel = urlparse.parse_qs(self.environ['QUERY_STRING']).get('domain', ['sum'])[0]
         self.num = int(urlparse.parse_qs(self.environ['QUERY_STRING']).get('num', [50])[0])
         self.start = int(urlparse.parse_qs(self.environ['QUERY_STRING']).get('start', [0])[0])

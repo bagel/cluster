@@ -63,9 +63,9 @@
 <script type="text/python">
     for idc, idc_cn in Tdict["idc"].iteritems():
         if idc == Tdict["qidc"]:
-            echo '<option value="%s" selected="selected">%s</option>' % (idc.encode("utf-8"), idc_cn.encode("utf-8"))
+            echo '<option value="%s" selected="selected">%s</option>' % (idc, idc_cn)
         else:
-            echo '<option value="%s">%s</option>' % (idc.encode("utf-8"), idc_cn.encode("utf-8"))
+            echo '<option value="%s">%s</option>' % (idc, idc_cn)
 </script>
     </select>
     </div>
@@ -75,9 +75,9 @@
 <script type="text/python">
     for mod, mod_cn in Tdict["mod"].iteritems():
         if mod == Tdict["qmod"]:
-            echo '<option value="%s" selected="selected">%s</option>' % (mod.encode("utf-8"), mod_cn.encode("utf-8"))
+            echo '<option value="%s" selected="selected">%s</option>' % (mod, mod_cn)
         else:
-            echo '<option value="%s">%s</option>' % (mod.encode("utf-8"), mod_cn.encode("utf-8"))
+            echo '<option value="%s">%s</option>' % (mod, mod_cn)
 </script>
     </select>
     </div>

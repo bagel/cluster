@@ -64,7 +64,7 @@ class Profile:
                 continue
             for u in users:
                 if '@' not in u:
-                    continue
+                    u = '@'.join([u, "staff.sina.com.cn"])
                 u_head = u.strip().split('@')[0]
                 if not self.r.hexists(self.key_user, u_head):
                     self.r.hset(self.key_user, u_head, [d])

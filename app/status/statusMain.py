@@ -20,11 +20,12 @@ class Status:
         self.ctype = "text/html"
         self.environ = environ
         self.query = urlparse.parse_qs(self.environ["QUERY_STRING"])
-        self.r=redis.StrictRedis(host=self.environ["REDIS_STATUS_HOST"], port=int(self.environ["REDIS_STATUS_PORT"]))
-        self.node = eval(self.r.get("node"))
-        self.idc = eval(self.r.get("idc"))
-        self.mod = eval(self.r.get("mod"))
-        self.domain = eval(self.r.get("domain"))
+        self.r=redis.StrictRedis(host=web.getenv("REDIS_STATUS_HOST"), port=int(web.getenv("REDIS_STATUS_PORT")))
+        self.r_info=redis.StrictRedis(host=web.getenv("REDIS_INFO_HOST"), port=int(web.getenv("REDIS_INFO_PORT")))
+        #self.node = eval(self.r.get("node"))
+        self.idc = self.r_info.hgetall("info_idc")
+        self.mod = self.r_info.hgetall("info_mod")
+        #self.domain = eval(self.r.get("domain"))
 
     def idcMod(self):
         idcs = self.idc.keys()
@@ -63,7 +64,7 @@ class Status:
             xname = "hour"
         elif qtime == "4hour":
             offset = 60
-            m = 4
+            m = 8
             xname = "4 hours"
         elif qtime == "day":
             offset = 240
@@ -219,7 +220,7 @@ class Status:
             "idc": self.idc, 
             "mod": self.mod,
             "times": times,
-            "domains": list(self.domain),
+            "domains": {},
             "user": self.environ["USER"],
         }
         return tdict
@@ -256,6 +257,7 @@ class StatusMap(Status):
     def __init__(self, environ):
         Status.__init__(self, environ)
 
+    @web.response
     def mapData(self):
         ctype = "application/json"
         day = time.strftime('s%Y%m%d')

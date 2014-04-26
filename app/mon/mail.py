@@ -11,16 +11,17 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.header import Header
+import util
 
 
 class AutoMail:
     def __init__(self):
         self.r = redis.StrictRedis('10.13.32.21', 6380)
-        self.r_info = redis.StrictRedis('10.13.32.21', 6379)
+        self.r_info = redis.StrictRedis(util.localenv("REDIS_INFO_HOST"), util.localenv("REDIS_INFO_PORT"))
         self.dptitle = '【动态平台自动报警】'
 
     def topHits(self, day):
-        data = json.loads(urllib2.urlopen('http://admin.dpool.cluster.sina.com.cn/status/sum?time=%s' % day).read()).items()
+        data = json.loads(urllib2.urlopen('http://api.dpool.cluster.sina.com.cn/status/sum?time=%s' % day).read()).items()
         data_new = []
         for k, v in data:
             for kn, vn in data_new:
@@ -50,7 +51,7 @@ class AutoMail:
         msg += ', '.join(code_msg)
         msg += '<br><br>访问日志'
         lens = len(msg)
-        logs = json.loads(urllib2.urlopen(url='http://admin.dpool.cluster.sina.com.cn/mon/accesslog?domain=%s&num=10&user=caoyu2&key=49eff4f43a196f69108504030222fdad' % domain).read())
+        logs = json.loads(urllib2.urlopen(url='http://api.dpool.cluster.sina.com.cn/mon/accesslog?domain=%s&num=10&user=caoyu2&key=49eff4f43a196f69108504030222fdad' % domain).read())
         for line in logs:
             line = line.encode('utf-8').split(' ')[:-2]
             if int(line[0]) < fmin:
@@ -64,7 +65,7 @@ class AutoMail:
         msg += '<br><br>'
         msg += '错误日志'
         lens = len(msg)
-        logs = json.loads(urllib2.urlopen(url='http://admin.dpool.cluster.sina.com.cn/mon/errorlog?domain=%s&num=10&user=caoyu2&key=49eff4f43a196f69108504030222fdad' % domain).read())
+        logs = json.loads(urllib2.urlopen(url='http://api.dpool.cluster.sina.com.cn/mon/errorlog?domain=%s&num=10&user=caoyu2&key=49eff4f43a196f69108504030222fdad' % domain).read())
         for line in logs:
             line = line.encode('utf-8').split(' ')[1:]
             if int(line[0]) < fmin:

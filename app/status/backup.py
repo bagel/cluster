@@ -5,16 +5,19 @@ import os
 import redis
 import time
 import re
+import util
 
 
-r = redis.StrictRedis(host='10.13.32.21', port=6379)
+r = redis.StrictRedis(host=util.localenv("REDIS_STATUS_HOST"), port=int(util.localenv("REDIS_STATUS_PORT")))
 
 t0 = int(time.time())
 t0 = t0 - t0 % 60
 
 p = r.pipeline()
-t = t1 = t0 - 86400 - 3600
-while t > t1 - 3600 - 1200 - 86400 * 7:
+
+#delete more than 4 hour not 4 min
+t = t1 = t0 - 4 * 3600 - 3600
+while t > t1 - 3600 - 1200 - 4 * 3600:
     print t
 
     if t % 240 != 0:
@@ -23,6 +26,7 @@ while t > t1 - 3600 - 1200 - 86400 * 7:
 
     t -= 60
 
+#delete more than one week 4 min
 t = t2 = t0 - 86400 * 7 - 3600
 while t > t2 - 3600 - 1200 - 86400 * 7:
     print t
@@ -32,6 +36,7 @@ while t > t2 - 3600 - 1200 - 86400 * 7:
 
     t -= 60
 
+#sum 
 t = t3 = t0
 hour = time.strftime('%Y%m%d%H', time.localtime(t0 - 3600))
 day = time.strftime('%Y%m%d', time.localtime(t0 - 3600))
@@ -44,6 +49,7 @@ while t > t3 - 3600:
             p.hincrby(hour, d, h)
             p.hincrby(day, d, h)
 
+#delete more than one week everything
 t = t4 = t0 - 86400 * 7
 while t > t4 - 86400 * 7:
     for key in r.keys("%s*" % time.strftime("%Y%m%d", time.localtime(t))):

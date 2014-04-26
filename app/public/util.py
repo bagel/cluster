@@ -2,6 +2,8 @@ import sys
 import os
 import hashlib
 import redis
+import yaml
+import web
 
 
 def cachefunc(expire=600):
@@ -29,7 +31,16 @@ def cachefunc(expire=600):
         return __cachefunc
     return _cachefunc
 
-
+@web.cachefunc(expire=86400)
 def userkey(user):
     return hashlib.md5('%s@dpooluser' % user).hexdigest()
 
+
+def localenv(key):
+    conf = "/data1/www/htdocs/admin.dpool.cluster.sina.com.cn/conf/main.yaml"
+    with open(conf, "r") as fp:
+        envs = yaml.load(fp.read())
+    for k, v in envs.iteritems():
+        if k == key:
+            return v
+    return None

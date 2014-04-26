@@ -4,8 +4,9 @@ import sys
 import os
 import time
 import redis
+import util
 
-r = redis.StrictRedis(host='10.13.32.21', port=6379)
+r = redis.StrictRedis(host=util.localenv("REDIS_STATUS_HOST"), port=int(util.localenv("REDIS_STATUS_PORT")))
 
 day = time.strftime("%Y/%m/%d")
 

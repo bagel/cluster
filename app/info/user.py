@@ -3,8 +3,9 @@
 import sys
 import os
 import redis
+import util
 
-r = redis.StrictRedis("10.13.32.21")
+r = redis.StrictRedis(util.localenv("REDIS_INFO_HOST"), util.localenv("REDIS_INFO_PORT"))
 
 if len(sys.argv) < 2:
     sys.exit(0)

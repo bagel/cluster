@@ -7,6 +7,7 @@ import urllib2
 import re
 import socket
 import ConfigParser
+import util
 
 def confData(conf):
     url = 'http://dpadmin.grid.sina.com.cn/api/fetch_newestfile.php?title=' + conf
@@ -105,7 +106,7 @@ def mcData():
     return mc
 
 def vhostSet():
-    r = redis.StrictRedis("10.13.32.21")
+    r = redis.StrictRedis(util.localenv("REDIS_INFO_HOST"), util.localenv("REDIS_INFO_PORT"))
     data = {}
     mc = mcData()
     for k, v in vhostWeb3Data().iteritems():

@@ -59,6 +59,9 @@ class Login:
         hash_user = util.userkey(user)
         if key != hash_user:
             return self.authResponse(err_api)
+        if not self.domain or self.domain == "sum":
+            self.environ["USER"] = user
+            return self.environ
         return self.authDomain(user, err_api)
 
     def authWeb(self, user):
@@ -82,7 +85,7 @@ class Login:
         else:
             user = mail.split('@')[0] 
         try:
-            l = ldap.initialize('ldap://%s:%s' % (self.environ["LDAP_HOST"], self.environ["LDAP_PORT"]))
+            l = ldap.initialize('ldap://%s:%s' % (web.getenv("LDAP_HOST"), web.getenv("LDAP_PORT")))
             l.bind('CN=adsearch,OU=sina,DC=staff,DC=sina,DC=com,DC=cn', 'q2fGed3G`yC&ax')
             r = l.search_s('ou=sina,dc=staff,dc=sina,dc=com,dc=cn', ldap.SCOPE_SUBTREE, "(mail=%s)" % mail)
             dn = r[0][0]
@@ -104,7 +107,7 @@ class Login:
         headers = {}
         headers["Status"] = "301 Moved Permanently"
         headers["Location"] = "http://%s/home" % self.environ["HTTP_HOST"]
-        headers["Set-Cookie"] = "DP_token=%s; path=/; expires=Thu, 01 Jan %d 00:00:00 GMT" % (base64.b64encode("%s.%d" % (user, int(time.time()))), int(time.strftime("%Y")) + 10)
+        headers["Set-Cookie"] = "DP_token=%s; path=/; expires=Thu, 01 Jan %d 00:00:00 GMT" % (base64.b64encode("%s.%d.%s" % (user, int(time.time()), util.userkey(user)[:5])), int(time.strftime("%Y")) + 10)
         return (self.ctype, response_body, headers)
 
     def staffGet(self):
@@ -134,10 +137,7 @@ class Login:
            After browser first login response contain Set-Cookie header. If browser has the right DP_token Cookie, no need to login.
         """
         if self.environ["HTTP_HOST"] == "api.dpool.cluster.sina.com.cn":
-            if self.domain and self.domain != 'sum':
-                return self.authApi()
-            self.environ["USER"] = "default"
-            return self.environ
+            return self.authApi()
         cookies = self.environ.get('HTTP_COOKIE', '').split('; ')
         token = ""
         for cookie in cookies:
@@ -145,7 +145,10 @@ class Login:
                 token = base64.b64decode(cookie.split('DP_token=')[1])
         #if token and (time.time() - int(token.split('.')[1]) < 3600 * 3):
         if token:
-            user = token.split('.')[0]
+            tokens = token.split('.')
+            if len(tokens) < 3 or tokens[2] != util.userkey(tokens[0])[:5]:
+                return self.logout()
+            user = tokens[0]
             if self.domain and self.domain != 'sum':
                 return self.authWeb(user)
             self.environ["USER"] = user

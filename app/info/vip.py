@@ -7,6 +7,7 @@ import json
 import urllib2
 import re
 import ConfigParser
+import util
 
 def vipData(server):
     url = 'http://w5.lb.sina.com.cn/api/api.php?action=info&realserver=' + server
@@ -34,10 +35,11 @@ def getOutip(ip):
         return data[0]["ip_ex"]
 
 def vipSet(): 
-    r = redis.StrictRedis("10.13.32.21")
-    node = eval(r.get("node"))
+    r = redis.StrictRedis(util.localenv("REDIS_INFO_HOST"), util.localenv("REDIS_INFO_PORT"))
+    node = r.hgetall("info_node")
     vip = {}
     for idc, pool in node.iteritems():
+        pool = eval(pool)
         for poolname, servers in pool.iteritems():
             for server in servers:
                 print server

@@ -6,6 +6,7 @@ import redis
 import json
 import urllib2
 import re
+import util
 
 
 def confData(conf):
@@ -24,6 +25,8 @@ def aliasWeb3():
             domains.remove(servername)
             serverData[servername] = domains
             for domain in domains:
+                if not domain:
+                    continue
                 aliasData[domain] = servername
         line = f.readline()
     return (aliasData, serverData)
@@ -41,7 +44,7 @@ def aliasWeb2():
             servername = re.sub('^\s*ServerName\s+@@([\w\.\-\_]+)@@\s*\n', r'\1', line).strip()
         if re.match('\s*ServerAlias', line):
             serveralias = re.sub('^\s*ServerAlias\s+@*([\w\.\-\_]+)@*\s*\n', r'\1', line).strip()
-            if not servername:
+            if not servername or not serveralias or "ServerAlias" in serveralias:
                 line = f.readline()
                 continue
             aliasData[serveralias] = servername
@@ -49,6 +52,9 @@ def aliasWeb2():
                 serverData[servername] = []
             serverData[servername].append(serveralias)
         if re.search('</VirtualHost>', line):
+            if not servername or "ServerName" in servername:
+                line = f.readline()
+                continue
             aliasData[servername] = servername
             if not serverData.has_key(servername):
                 serverData[servername] = []
@@ -61,7 +67,7 @@ def aliasUpdate():
     alias2, server2 = aliasWeb2()
     alias.update(alias2)
     server.update(server2)
-    r = redis.StrictRedis('10.13.32.21', 6379)
+    r = redis.StrictRedis(util.localenv("REDIS_INFO_HOST"), util.localenv("REDIS_INFO_PORT"))
     r.hmset('info_domainalias', alias)
     r.hmset('info_domainserver', server)
 

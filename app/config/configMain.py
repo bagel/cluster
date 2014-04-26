@@ -14,7 +14,7 @@ import web
 class ConfigData:
     def __init__(self, environ):
         self.environ = environ
-        self.db = pymongo.MongoClient(environ["MONGO_HOST"], int(environ["MONGO_PORT"]))["config"]
+        self.db = pymongo.MongoClient(web.getenv("MONGO_HOST"), int(web.getenv("MONGO_PORT")))["config"]
         self.data = {}
 
     def Collection(self):

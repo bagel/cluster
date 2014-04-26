@@ -6,6 +6,7 @@ import redis
 import json
 import urllib2
 import re
+import util
 
 
 class Domain:
@@ -30,8 +31,8 @@ class Domain:
         print self.dnsData
 
     def domainSet(self):
-        r = redis.StrictRedis("10.13.32.21")
-        domains = eval(r.get('domain'))
+        r = redis.StrictRedis(util.localenv("REDIS_INFO_HOST"), util.localenv("REDIS_INFO_PORT"))
+        domains = eval(r.get('info_domain'))
         dns = {}
         for domain in domains:
             print domain

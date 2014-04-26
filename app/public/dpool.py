@@ -2,10 +2,10 @@ import sys
 import os
 import urllib2
 import json
-from util import cachefunc
+import web
 
 
-@cachefunc(expire=3600)
+@web.cachefunc(expire=3600)
 def get_serverlist(mod):
     url = 'http://dpadmin.grid.sina.com.cn/api/serverlist.php?mod=' + mod
     data = json.loads(urllib2.urlopen(url=url).read())["list"]
@@ -13,7 +13,7 @@ def get_serverlist(mod):
         return []
     return [ d["ip_in"].encode('utf-8') for d in data ]
 
-@cachefunc(expire=10)
+@web.cachefunc(expire=3600)
 def test():
     return (1, 2)
 

@@ -6,6 +6,7 @@ import urllib2
 import json
 import redis
 import ConfigParser
+import util
 
 
 def confData(conf):
@@ -13,7 +14,7 @@ def confData(conf):
     return urllib2.urlopen(url, timeout=3)
 
 def backSet():
-    r = redis.StrictRedis("10.13.32.21")
+    r = redis.StrictRedis(util.localenv("REDIS_INFO_HOST"), util.localenv("REDIS_INFO_PORT"))
     config = ConfigParser.ConfigParser()
     config.readfp(confData("varnish_backend.conf"))
     data = {}

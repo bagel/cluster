@@ -12,6 +12,8 @@ import gevent
 import util
 import socket
 import threading
+import auth
+import re
 
 class Public(object):
     def __init__(self, environ):
@@ -107,11 +109,17 @@ class Purge(Public):
     @web.response
     def response(self):
         query = urlparse.parse_qs(self.environ["QUERY_STRING"])
-        domain = query.get("domain", [""])[0]
-        uri = query.get("uri", [""])[0]
+        url = query.get("url", [""])[0]
+        if not re.match('http://', url):
+            url = 'http://' + url
+        domain, uri = urllib2.splithost(url.lstrip('https:'))
+        print domain, uri
         if not domain or not uri:
             status = ""
         else:
+            user = auth.authdomain(self.environ, domain)
+            if user != self.environ["USER"]:
+                return user
             status = self.purge(domain, uri)
         if self.environ["HTTP_HOST"] == "api.dpool.cluster.sina.com.cn":
             return ("application/json", json.dumps(status))

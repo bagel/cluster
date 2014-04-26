@@ -14,6 +14,7 @@ route = {
     "^/plot": ("app/public/plot", "Plot.response"),
     "^/online": ("app/public/publicMain", "Online.online"),
     "^/purge": ("app/public/publicMain", "Purge.response"),
+    "^/test": ("app/public/testMain", "test"),
 }
 
 def urls(environ):
