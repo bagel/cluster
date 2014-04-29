@@ -22,10 +22,8 @@ class Status:
         self.query = urlparse.parse_qs(self.environ["QUERY_STRING"])
         self.r=redis.StrictRedis(host=web.getenv("REDIS_STATUS_HOST"), port=int(web.getenv("REDIS_STATUS_PORT")))
         self.r_info=redis.StrictRedis(host=web.getenv("REDIS_INFO_HOST"), port=int(web.getenv("REDIS_INFO_PORT")))
-        #self.node = eval(self.r.get("node"))
         self.idc = self.r_info.hgetall("info_idc")
         self.mod = self.r_info.hgetall("info_mod")
-        #self.domain = eval(self.r.get("domain"))
 
     def idcMod(self):
         idcs = self.idc.keys()
@@ -251,6 +249,7 @@ class StatusHigh(Status):
 
     def response(self):
         tdict = self.dictHtml()
+        print tdict
         return self.responseHtml("high.html", tdict)
 
 class StatusMap(Status):

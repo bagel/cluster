@@ -5,46 +5,201 @@
 <script>
 $(function () {
     $(document).ready(function() {
-        var url = "/status/high/data?{$ query_string $}";
-        var chart;
+        Highcharts.theme = {
+           colors: ['#058DC7', '#50B432', '#ED561B', '#DDDF00', '#24CBE5', '#64E572', '#FF9655', '#FFF263', '#6AF9C4'],
+           chart: {
+              backgroundColor: {
+                 linearGradient: { x1: 0, y1: 0, x2: 1, y2: 1 },
+                 stops: [
+                    [0, 'rgb(255, 255, 255)'],
+                    [1, 'rgb(240, 240, 255)']
+                 ]
+              },
+              borderColor: '#e3e3e3',
+              borderWidth: 2,
+              plotBackgroundColor: 'rgba(255, 255, 255, .9)',
+              plotShadow: true,
+              plotBorderWidth: 1
+           },
+           title: {
+              style: {
+                 color: '#000',
+                 font: 'bold 16px "Trebuchet MS", Verdana, sans-serif'
+              }
+           },
+           subtitle: {
+              style: {
+                 color: '#666666',
+                 font: 'bold 12px "Trebuchet MS", Verdana, sans-serif'
+              }
+           },
+           xAxis: {
+              gridLineWidth: 1,
+              lineColor: '#000',
+              tickColor: '#000',
+              labels: {
+                 style: {
+                    color: '#000',
+                    font: '11px Trebuchet MS, Verdana, sans-serif'
+                 }
+              },
+              title: {
+                 style: {
+                    color: '#333',
+                    fontWeight: 'bold',
+                    fontSize: '12px',
+                    fontFamily: 'Trebuchet MS, Verdana, sans-serif'
+        
+                 }
+              }
+           },
+           yAxis: {
+              //minorTickInterval: 'auto',
+              lineColor: '#000',
+              lineWidth: 1,
+              tickWidth: 1,
+              tickColor: '#000',
+              labels: {
+                 style: {
+                    color: '#000',
+                    font: '11px Trebuchet MS, Verdana, sans-serif'
+                 }
+              },
+              title: {
+                 style: {
+                    color: '#333',
+                    fontWeight: 'bold',
+                    fontSize: '12px',
+                    fontFamily: 'Trebuchet MS, Verdana, sans-serif'
+                 }
+              }
+           },
+           legend: {
+              itemStyle: {
+                 font: '9pt Trebuchet MS, Verdana, sans-serif',
+                 color: 'black'
+        
+              },
+              itemHoverStyle: {
+                 color: '#039'
+              },
+              itemHiddenStyle: {
+                 color: 'gray'
+              }
+           },
+           labels: {
+              style: {
+                 color: '#99b'
+              }
+           },
+        
+           navigation: {
+              buttonOptions: {
+                 theme: {
+                    stroke: '#CCCCCC'
+                 }
+              }
+           }
+        };
+
+        Highcharts.setOptions({
+            global: {
+                useUTC: false
+            }
+        });
+
+        Highcharts.setOptions(Highcharts.theme);
+
         $("#chartContainer").highcharts({
             chart: {
                 type: "spline",
-                events: {
-                    load: function() {
-                        var series = this.series[0];
-                        setInterval(function() {
-                            var x = (new Date()).getTime();
-                            $.getJSON(url, function(jsonData){
-                                y = jsonData["data"];
-                            });
-                            series.addPoint([x, y], true, true);
-                        }, 1000);
-                    }
-                }
+                plotBorderWidth: 0,
+            },
+            title: {
+                text: "{$ title $}"
             },
             xAxis: {
                 type: "datetime",
+                //tickPixelInterval: 150,
+                dateTimeLabelFormats: {
+                    day: "%m/%d %H:%M",
+                }
             },
-            series: [{
-                name: "hit",
-                data: (function() {
-                    var data = [],
-                        time = (new Date()).getTime(),
-                        i;
-    
-                    for (i = -19; i <= 0; i++) {
-                        data.push({
-                            x: time + i * 1000,
-                            y: null
-                        });
+            yAxis: {
+                title: {
+                    text: "hit/s",
+                },
+                min: -2,
+                startOnTick: false
+            },
+            credits: {
+                enabled: false,
+                text: ''
+            },
+            plotOptions: {
+                spline: {
+                    /*events: {
+                        legendItemClick: function() {
+                            location.href = "http://" + location.hostname + "/status";
+                        }
+                    },*/
+                    marker: {
+                        enabled: false
+                    },
+                    states: {
+                        hover: {
+                            enabled: true
+                        }
                     }
-                    return data;
-                })()
-            }]
+                },
+                series: {
+                    cursor: "pointer",
+                    /*events: {
+                        click: function() {
+                            location.href = "http://" + location.hostname + "/mon/data";
+                        }
+                    }*/
+                },
+            },
+            tooltip: {
+                formatter: function() {
+                    return '<b>' + this.series.name + '</b><br>' + 
+                    Highcharts.dateFormat('%m/%d %H:%M', this.x) + '<br/>' + 
+                    Highcharts.numberFormat(this.y, 0);
+                }
+            },
+            series: [],
+        });
+
+        var url = "/status/high/data?{$ query_string $}";
+        $.getJSON(url, function(data) {
+            var chart = $("#chartContainer").highcharts();
+            var offset = parseInt(data[0]) * 1000,
+                start = parseInt(data[1]) * 1000
+                datas = data[2];
+            for (var k in datas ) {
+                $.each(datas[k], function(key, val) {
+                    chart.addSeries({
+                        name: key,
+                        data: (function() {
+                            var data = [],
+                                len = val.length;
+                            for (i=0; i<len; i++) {
+                                data.push({
+                                    x: start+offset*i,
+                                    y: val[i]?parseInt(val[i]):0
+                                });
+                            } 
+                            return data;
+                        })()
+                    })
+                });
+            }
+            chart.redraw();
         });
     });
 });
+
 </script>
 {% end %}
 
@@ -52,40 +207,49 @@ $(function () {
 <div class="col-lg-1">
 </div>
 <div class="col-lg-10">
-<form class="well form-inline" action="/status/high" method="get">
-    <select class="span2" name="idc">
+<form class="well" role="form" action="/status/high" method="get">
+<div class="row">
+    <div class="col-lg-2">
+    <select class="form-control" name="idc">
         <option value="">机房</option>
 <script type="text/python">
     for idc, idc_cn in Tdict["idc"].iteritems():
         if idc == Tdict["qidc"]:
-            echo '<option value="%s" selected="selected">%s</option>' % (idc.encode("utf-8"), idc_cn.encode("utf-8"))
+            echo '<option value="%s" selected="selected">%s</option>' % (idc, idc_cn)
         else:
-            echo '<option value="%s">%s</option>' % (idc.encode("utf-8"), idc_cn.encode("utf-8"))
+            echo '<option value="%s">%s</option>' % (idc, idc_cn)
 </script>
     </select>
-    <select class="span2" name="mod">
+    </div>
+    <div class="col-lg-2">
+    <select class="form-control" name="mod">
         <option value="">模块</option>
 <script type="text/python">
     for mod, mod_cn in Tdict["mod"].iteritems():
         if mod == Tdict["qmod"]:
-            echo '<option value="%s" selected="selected">%s</option>' % (mod.encode("utf-8"), mod_cn.encode("utf-8"))
+            echo '<option value="%s" selected="selected">%s</option>' % (mod, mod_cn)
         else:
-            echo '<option value="%s">%s</option>' % (mod.encode("utf-8"), mod_cn.encode("utf-8"))
+            echo '<option value="%s">%s</option>' % (mod, mod_cn)
 </script>
     </select>
-    <select class="span2" name="time">
-        <option value="">时间</option>
+    </div>
+    <div class="col-lg-2">
+    <select class="form-control" name="date">
+        <option value="">日期</option>
 <script type="text/python">
-    for t in Tdict["times"]:
-        if t == Tdict["qtime"]:
+    for t in Tdict["dates"]:
+        if t == Tdict["qdate"]:
             echo '<option value="%s" selected="selected">%s</option>' % (t, t)
         else:
             echo '<option value="%s">%s</option>' % (t, t)
 </script>
     </select>
-    <input id="domain" type="text" autocomplete="off" name="domain" placeholder="域名" style="margin: 0 auto;" data-provide="typeahead" value="{$ qdomain $}">
+    </div>
+    <div class="col-lg-3">
+    <input class="form-control" id="domain" type="text" name="domain" placeholder="域名" value="{$ qdomain $}">
+    </div>
     <button type="submit" class="btn btn-primary">查看</button>
-    <a href="/status"><button type="button" class="btn btn-info">返回</button></a>
+</div>
 </form>
 
 <div id="chartContainer"></div>

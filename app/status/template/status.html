@@ -83,7 +83,7 @@
     </div>
     <div class="col-xs-2">
     <select class="form-control" name="time">
-        <option value="">时间</option>
+        <option value="">日期</option>
 <script type="text/python">
     for t in Tdict["times"]:
         if t == Tdict["qtime"]:
@@ -94,10 +94,10 @@
     </select>
     </div>
     <div class="col-xs-3">
-    <input class="form-control" id="domain" type="text" autocomplete="off" name="domain" placeholder="域名" style="margin: 0 auto;" data-provide="typeahead" value="{$ qdomain $}">
+    <input class="form-control" id="domain" type="text" name="domain" placeholder="域名" value="{$ qdomain $}">
     </div>
     <button type="submit" class="btn btn-primary">查看</button>
-    <a href="/status/map"><button type="button" class="btn btn-info">地图</button></a>
+    <!--<a href="/status/map"><button type="button" class="btn btn-info">地图</button></a>-->
     </div>
 </form>
 
