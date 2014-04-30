@@ -18,7 +18,7 @@ class High(object):
         self.r_info = redis.StrictRedis(host=web.getenv("REDIS_INFO_HOST"), \
                                        port=int(web.getenv("REDIS_INFO_PORT")))
         self.qdomain = self.query.get("domain", ["sum"])[0]
-        self.qdate = self.query.get("date", ["30min"])[0]
+        self.qdate = self.query.get("date", ["day"])[0]
         self.qidc = self.query.get("idc", [""])[0]
         self.qmod = self.query.get("mod", [""])[0]
 

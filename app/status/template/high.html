@@ -117,9 +117,6 @@ $(function () {
             },
             title: {
                 text: "{$ title $}",
-                style: {
-                    fontSize: "10px",
-                }
             },
             xAxis: {
                 type: "datetime",
@@ -193,6 +190,8 @@ function addData(url) {
         while (chart.series.length > 0) {
             chart.series[0].remove(true);
         }
+        chart.counters.color = 0;
+        chart.counters.symbol = 0;
         for (var k in datas ) {
             $.each(datas[k], function(key, val) {
                 if (k == 0) {
@@ -224,7 +223,7 @@ function addData(url) {
             maxTime = maxDate[1] + '/' + maxDate[2] + ' ' + maxDate[3] + ':' + maxDate[4];
         }
         maxData = numberFix(maxData / 60, 2);
-        title = [title, sumData, maxTime, maxData].join(' ');
+        title = [title, maxTime, maxData, sumData].join(' ');
         chart.setTitle({"text": title});
         chart.redraw();
     });
@@ -242,7 +241,7 @@ function update(t) {
 <div class="col-lg-1">
 </div>
 <div class="col-lg-10">
-<form class="" role="form" action="/status/high" method="get">
+<form class="" role="form" action="/status" method="get">
 <div class="row">
     <div class="col-lg-2">
     <select class="form-control" name="idc">

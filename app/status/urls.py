@@ -5,9 +5,10 @@ import os
 import web
 
 route = {
-    "default": ("app/status/statusMain", "Status.response"),
+    "default": ("app/status/high", "High.response"),
     "/status/data": ("app/status/statusMain", "Status.chartData"),
     "/status/sum": ("app/status/statusMain", "Status.sum"),
+    "/status/old": ("app/status/statusMain", "Status.response"),
     "/status/high$": ("app/status/high", "High.response"),
     "/status/high/data": ("app/status/high", "High.chartData"),
     "/status/map$": ("app/status/statusMain", "StatusMap.response"),
