@@ -5,7 +5,7 @@ import os
 import redis
 import time
 import re
-import util
+import util2 as util
 
 
 r = redis.StrictRedis(host=util.localenv("REDIS_STATUS_HOST"), port=int(util.localenv("REDIS_STATUS_PORT")))
@@ -17,7 +17,7 @@ p = r.pipeline()
 
 #delete more than 4 hour not 4 min
 t = t1 = t0 - 4 * 3600 - 3600
-while t > t1 - 3600 - 1200 - 4 * 3600:
+while t > t1 - 3600 - 1200 - 4 * 3600 - 86400:
     print t
 
     if t % 240 != 0:

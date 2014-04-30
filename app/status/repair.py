@@ -4,7 +4,7 @@ import sys
 import os
 import time
 import redis
-import util
+import util2 as util
 
 r = redis.StrictRedis(host=util.localenv("REDIS_STATUS_HOST"), port=int(util.localenv("REDIS_STATUS_PORT")))
 

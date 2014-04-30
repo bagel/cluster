@@ -24,7 +24,7 @@ $(function () {
            title: {
               style: {
                  color: '#000',
-                 font: 'bold 16px "Trebuchet MS", Verdana, sans-serif'
+                 font: '14px "Trebuchet MS", Verdana, sans-serif'
               }
            },
            subtitle: {
@@ -116,11 +116,14 @@ $(function () {
                 plotBorderWidth: 0,
             },
             title: {
-                text: "{$ title $}"
+                text: "{$ title $}",
+                style: {
+                    fontSize: "10px",
+                }
             },
             xAxis: {
                 type: "datetime",
-                //tickPixelInterval: 150,
+                tickPixelInterval: 150,
                 dateTimeLabelFormats: {
                     day: "%m/%d %H:%M",
                 }
@@ -172,33 +175,65 @@ $(function () {
         });
 
         var url = "/status/high/data?{$ query_string $}";
-        $.getJSON(url, function(data) {
-            var chart = $("#chartContainer").highcharts();
-            var offset = parseInt(data[0]) * 1000,
-                start = parseInt(data[1]) * 1000
-                datas = data[2];
-            for (var k in datas ) {
-                $.each(datas[k], function(key, val) {
-                    chart.addSeries({
-                        name: key,
-                        data: (function() {
-                            var data = [],
-                                len = val.length;
-                            for (i=0; i<len; i++) {
-                                data.push({
-                                    x: start+offset*i,
-                                    y: val[i]?parseInt(val[i]):0
-                                });
-                            } 
-                            return data;
-                        })()
-                    })
-                });
-            }
-            chart.redraw();
-        });
+        addData(url);
     });
 });
+
+
+function addData(url) {
+    var title = "{$ title $}";
+    $.getJSON(url, function(data) {
+        var chart = $("#chartContainer").highcharts();
+        var offset = parseInt(data[0]) * 1000,
+            start = parseInt(data[1]) * 1000
+            datas = data[2],
+            sumData = 0,
+            maxData = 0,
+            maxIndex = 0;
+        while (chart.series.length > 0) {
+            chart.series[0].remove(true);
+        }
+        for (var k in datas ) {
+            $.each(datas[k], function(key, val) {
+                if (k == 0) {
+                    sumData = eval(val.join('+'));
+                    maxData = Math.max.apply(Math, val);
+                    maxIndex = val.indexOf(maxData.toString());
+                }
+                chart.addSeries({
+                    name: key,
+                    data: (function() {
+                        var data = [],
+                            len = val.length;
+                        for (i=0; i<len; i++) {
+                            data.push({
+                                x: start + offset * i,
+                                y: (val[i] ? parseInt(val[i]) : 0) / 60
+                            });
+                        } 
+                        return data;
+                    })()
+                })
+            });
+        }
+        sumData = numberFix(sumData * (offset / (60 * 1000)), 2);
+        maxDate = dateFormat((start + maxIndex * offset) / 1000);
+        if (offset / 1000 <= 240) {
+            maxTime = maxDate[3] + ':' + maxDate[4];
+        } else {
+            maxTime = maxDate[1] + '/' + maxDate[2] + ' ' + maxDate[3] + ':' + maxDate[4];
+        }
+        maxData = numberFix(maxData / 60, 2);
+        title = [title, sumData, maxTime, maxData].join(' ');
+        chart.setTitle({"text": title});
+        chart.redraw();
+    });
+}
+
+function update(t) {
+    var url = "/status/high/data?date=" + t + "&{$ query_string $}";
+    addData(url);
+};
 
 </script>
 {% end %}
@@ -207,7 +242,7 @@ $(function () {
 <div class="col-lg-1">
 </div>
 <div class="col-lg-10">
-<form class="well" role="form" action="/status/high" method="get">
+<form class="" role="form" action="/status/high" method="get">
 <div class="row">
     <div class="col-lg-2">
     <select class="form-control" name="idc">
@@ -251,6 +286,19 @@ $(function () {
     <button type="submit" class="btn btn-primary">查看</button>
 </div>
 </form>
+
+<br>
+
+<!--<center><div class="alert alert-success" id="sumdata"></div></center>-->
+
+<p>
+    <input class="btn btn-default" type="button" onClick='update("week");' value="1周"></input>
+    <input class="btn btn-default" type="button" onClick='update("day");' value="1天"></input>
+    <input class="btn btn-default" type="button" onClick='update("4hour");' value="4小时"></input>
+    <input class="btn btn-default" type="button" onClick='update("hour");' value="1小时"></input>
+    <input class="btn btn-default" type="button" onClick='update("30min");' value="30分"></input>
+</p>
+
 
 <div id="chartContainer"></div>
 </div>

@@ -25,10 +25,9 @@ class High(object):
     def queryKey(self):
         """redis key suffix by idc and mod, defualt sum"""
         if not self.qidc and not self.qmod:
-            return ("sum", "")
+            return "sum"
         else:
-            return ('-'.join([self.qidc, self.qmod]), ' '.join([self.qidc, \
-                                                                self.qmod]))
+            return '-'.join([v for v in [self.qidc, self.qmod] if v])
 
     def queryTime(self):
         """return offset, start time and dots number by qdate"""
@@ -52,7 +51,8 @@ class High(object):
     def chartData(self):
         """chart data, [offset, start time, [{name: data}, ...]]"""
         ctype = "application/json"
-        qkey, title = self.queryKey()
+        qkey = self.queryKey()
+        print qkey
         offset, start, num = self.queryTime()
         pipe = self.r.pipeline()
         keys = [ pipe.hget('-'.join([str(start+i*offset), qkey]), \
@@ -74,11 +74,11 @@ class High(object):
             "qdomain": self.query.get("domain", [""])[0],
             "qidc": self.qidc,
             "qmod": self.qmod,
-            "qdate": self.qdate,
+            "qdate": self.query.get("date", [""])[0],
             "idc": self.r_info.hgetall("info_idc"),
             "mod": self.r_info.hgetall("info_mod"),
             "dates": dates,
-            "title": self.qdomain,
+            "title": ' '.join([self.qidc, self.qmod, self.qdomain]),
         }
 
         return (self.ctype, web.template(self.environ, "high.html", tdict))
