@@ -21,6 +21,8 @@ class High(object):
         self.qdate = self.query.get("date", ["day"])[0]
         self.qidc = self.query.get("idc", [""])[0]
         self.qmod = self.query.get("mod", [""])[0]
+        self.qrtime = self.query.get("rtime", [""])[0]
+        self.quri = self.query.get("uri", [""])[0]
 
     def queryKey(self):
         """redis key suffix by idc and mod, defualt sum"""
@@ -55,8 +57,10 @@ class High(object):
         print qkey
         offset, start, num = self.queryTime()
         pipe = self.r.pipeline()
+        domain = '_'.join([ v for v in [self.qdomain, self.qrtime, self.quri] \
+                            if v ])
         keys = [ pipe.hget('-'.join([str(start+i*offset), qkey]), \
-                           self.qdomain) for i in xrange(num + 1) ]
+                           domain) for i in xrange(num + 1) ]
         values = pipe.execute()
         chartdata = [offset, start, [{self.qdate: values}]]
         response_body = json.JSONEncoder().encode(chartdata)
@@ -69,16 +73,33 @@ class High(object):
         for i in xrange(1, 7):
             dates.append(time.strftime("%Y-%m-%d", time.localtime(t - \
                                        i * 86400)))
+
+        domain_status = self.r_info.hget("info_domain_status", self.qdomain)
+        if domain_status:
+            domain_status = eval(domain_status)
+        else:
+            domain_status = {}
+
+        rtime_title = ''
+        if self.qrtime:
+            rtime_title = self.qrtime.replace('_', '~').replace('1000', \
+                                                                '+inf') + 's'
+
         tdict = {
             "query_string": self.environ["QUERY_STRING"],
             "qdomain": self.query.get("domain", [""])[0],
+            "qdate": self.query.get("date", [""])[0],
             "qidc": self.qidc,
             "qmod": self.qmod,
-            "qdate": self.query.get("date", [""])[0],
+            "qrtime": self.qrtime,
+            "quri": self.quri,
             "idc": self.r_info.hgetall("info_idc"),
             "mod": self.r_info.hgetall("info_mod"),
             "dates": dates,
-            "title": ' '.join([self.qidc, self.qmod, self.qdomain]),
+            "title": ' '.join([self.qidc, self.qmod, self.qdomain, \
+                               rtime_title, self.quri]),
+            "domain_status": domain_status,
         }
 
         return (self.ctype, web.template(self.environ, "high.html", tdict))
+

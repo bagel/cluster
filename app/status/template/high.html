@@ -172,19 +172,18 @@ $(function () {
         });
 
         var url = "/status/high/data?{$ query_string $}";
-        addData(url);
+        addData(url, "{$ title $}");
     });
 });
 
 
-function addData(url) {
-    var title = "{$ title $}";
+function addData(url, title) {
     $.getJSON(url, function(data) {
         var chart = $("#chartContainer").highcharts();
         var offset = parseInt(data[0]) * 1000,
             start = parseInt(data[1]) * 1000
             datas = data[2],
-            sumData = 0,
+            sumData = [],
             maxData = 0,
             maxIndex = 0;
         while (chart.series.length > 0) {
@@ -195,7 +194,6 @@ function addData(url) {
         for (var k in datas ) {
             $.each(datas[k], function(key, val) {
                 if (k == 0) {
-                    sumData = eval(val.join('+'));
                     maxData = Math.max.apply(Math, val);
                     maxIndex = val.indexOf(maxData.toString());
                 }
@@ -209,7 +207,9 @@ function addData(url) {
                                 x: start + offset * i,
                                 y: (val[i] ? parseInt(val[i]) : 0) / 60
                             });
+                            sumData.push(data[i]["y"]);
                         } 
+                        sumData = eval(sumData.join('+'));
                         return data;
                     })()
                 })
@@ -230,8 +230,62 @@ function addData(url) {
 }
 
 function update(t) {
-    var url = "/status/high/data?date=" + t + "&{$ query_string $}";
-    addData(url);
+    var url_suffix = "";
+    if (document.getElementById("domainstatus")) {
+        var rtime_id = document.getElementById("rtime"),
+            rtime = 'rtime=' + rtime_id.options[rtime_id.selectedIndex].value,
+            uri_id = document.getElementById("uri"),
+            uri = 'uri=' + uri_id.options[uri_id.selectedIndex].value,
+        url_suffix = [rtime, uri].join('&');
+    }
+    if (url_suffix) {
+        var url = "/status/high/data?date=" + t + "&{$ query_string $}" + '&' + url_suffix;
+    } else {
+        var url = "/status/high/data?date=" + t + "&{$ query_string $}";
+    }
+    addData(url, "{$ title $}");
+};
+
+function domainStatus() {
+    var domain_status = {$ domain_status $};
+    if (domain_status == 0) {
+        return 0
+    }
+    var domainstatus = '';
+    $.each(domain_status, function(key, val) {
+        if (key == "rtime") {
+            domainstatus += '<div class="col-lg-2"><select id="rtime" name="rtime" class="form-control"><option value="">处理时间</option>';
+            len = val.length;
+            var i = 0;
+            while (i < len) {
+                value = val[i][0].toString() + '_' + val[i][1].toString();
+                value_s = val[i][0].toString() + '~' + val[i][1].toString() + 's';
+                domainstatus += '<option value="' + value + '">' + value_s + '</option>';
+                i += 1;
+            }
+            domainstatus += '</select></div>';
+        }
+        if (key == "uri") {
+            domainstatus += '<div class="col-lg-2"><select id="uri" name="uri" class="form-control"><option value="">请求uri</option>';
+            for (var i in val) {
+                domainstatus += '<option value="' + val[i] + '">' + val[i] + '</option>';
+            }
+            domainstatus += '</select></div>';
+        }
+    });
+    domainstatus += '<button class="btn btn-primary" onclick="updateDomain()">查看</button>';
+    document.getElementById("domainstatus").innerHTML = domainstatus;
+};
+
+function updateDomain() {
+    var rtime_id = document.getElementById("rtime"),
+        rtime = 'rtime=' + rtime_id.options[rtime_id.selectedIndex].value,
+        uri_id = document.getElementById("uri"),
+        uri = 'uri=' + uri_id.options[uri_id.selectedIndex].value,
+        url = "/status/high/data?{$ query_string $}",
+    url = url + '&' + [rtime, uri].join('&');
+    title = "{$ title $}";
+    addData(url, title);
 };
 
 </script>
@@ -284,9 +338,33 @@ function update(t) {
     </div>
     <button type="submit" class="btn btn-primary">查看</button>
 </div>
+
+<p>
+<div class="row">
+<script type="text/python">
+    if Tdict["domain_status"].has_key("uri"):
+        echo '''<div class="col-lg-2"><select class="form-control" name="uri"><option value="">请求uri</option>'''
+        for uri in Tdict["domain_status"]["uri"]:
+            #if uri == Tdict["quri"]:
+            #    echo '<option value="%s" selected="selected">%s</option>' % (uri, uri)
+            #else:
+            echo '<option value="%s">%s</option>' % (uri, uri)
+        echo '</select></div>'
+    if Tdict["domain_status"].has_key("rtime"):
+        echo '''<div class="col-lg-2"><select class="form-control" name="rtime"><option value="">处理时间</option>'''
+        for rmin, rmax in Tdict["domain_status"]["rtime"]:
+            rtime = '_'.join([str(rmin), str(rmax)])
+            rtime_s = '~'.join([str(rmin), str(rmax)]) + 's'
+            #if rtime == Tdict["qrtime"]:
+            #    echo '<option value="%s" selected="selected">%s</option>' % (rtime, rtime_s)
+            #else:
+            echo '<option value="%s">%s</option>' % (rtime, rtime_s)
+        echo '</select></div>'
+</script>
+</div>
+</p>
 </form>
 
-<br>
 
 <!--<center><div class="alert alert-success" id="sumdata"></div></center>-->
 
@@ -300,6 +378,8 @@ function update(t) {
 
 
 <div id="chartContainer"></div>
-</div>
 
+<br> 
+
+</div>
 {% end %}
