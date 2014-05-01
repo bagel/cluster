@@ -5,14 +5,15 @@
 </title>
 <head>
     <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-    <link rel="stylesheet" type="text/css" href="/static/bootstrap-3.1.0/css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="/static/bootstrap-3.1.0/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/static/css/cluster.css">
     <script src="/static/js/jquery.min.js"></script>
+    <script src="/static/js/cluster.js"></script>
     <script src="/static/bootstrap-3.1.0/js/bootstrap.min.js"></script>
 {+ head +}
 </head>
 <body>
-<nav class="navbar navbar-default" role="navigation">
+<nav class="navbar navbar-default navbar-static-top" role="navigation">
     <div class="container-fluid">
         <div class="navbar-header">
             <a class="navbar-brand" href="/home">动态平台 <i class="glyphicon glyphicon-home"></i></a>
@@ -25,13 +26,9 @@
                 <li><a href="/util">附加功能</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
-                <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">{$ user $}</a>
-                    <ul class="dropdown-menu">
-                        <li><a href="/profile">设置</a></li>
-                        <li><a href="/logout">退出</a></li>
-                    </ul>
-                </li>
+                <li><a href="#">{$ user $}</a></li>
+                <li><a href="/profile">设置</a></li>
+                <li><a href="/logout">退出</a></li>
             </ul>
         </div>
     </div>
