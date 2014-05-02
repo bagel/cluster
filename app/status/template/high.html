@@ -207,17 +207,19 @@ function addData(url, title) {
                                 x: start + offset * i,
                                 y: (val[i] ? parseInt(val[i]) : 0) / 60
                             });
-                            sumData.push(data[i]["y"]);
-                        } 
-                        sumData = eval(sumData.join('+'));
+                            if (k == 0) {
+                                sumData.push(data[i]["y"]);
+                            }
+                        }
                         return data;
                     })()
                 })
             });
         }
+        sumData = eval(sumData.join('+')) * 60;
         sumData = numberFix(sumData * (offset / (60 * 1000)), 2);
         maxDate = dateFormat((start + maxIndex * offset) / 1000);
-        if (offset / 1000 <= 240) {
+        if (offset / 1000 <= 60) {
             maxTime = maxDate[3] + ':' + maxDate[4];
         } else {
             maxTime = maxDate[1] + '/' + maxDate[2] + ' ' + maxDate[3] + ':' + maxDate[4];

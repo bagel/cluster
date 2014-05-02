@@ -5,7 +5,7 @@ import os
 import redis
 import urllib2
 import json
-import util
+import util2 as util
 
 
 def domainCmdb(domain):

@@ -11,7 +11,7 @@ route = {
     "^/status": ("app/status/",),
     "^/mon": ("app/mon/",),
     "^/info": ("app/info/",),
-    "^/(home|profile|util|plot|online|purge|test)": ("app/public/",),
+    "^/(home|profile|util|plot|online|purge|test|convert)": ("app/public/",),
 }
 
 def urls(environ):

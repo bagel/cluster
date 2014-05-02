@@ -7,7 +7,7 @@ import urllib2
 import re
 import socket
 import ConfigParser
-import util
+import util2 as util
 
 def confData(conf):
     url = 'http://dpadmin.grid.sina.com.cn/api/fetch_newestfile.php?title=' + conf

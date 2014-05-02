@@ -6,7 +6,7 @@ import os
 import urllib2
 import json
 import re
-import util
+import util2 as util
 
 def node_info(mods, m=0):
     url = "http://dpadmin.grid.sina.com.cn/api/serverlist.php?mod=" + ','.join(mods)

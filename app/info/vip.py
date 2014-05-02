@@ -7,7 +7,7 @@ import json
 import urllib2
 import re
 import ConfigParser
-import util
+import util2 as util
 
 def vipData(server):
     url = 'http://w5.lb.sina.com.cn/api/api.php?action=info&realserver=' + server

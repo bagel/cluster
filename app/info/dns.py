@@ -6,7 +6,7 @@ import redis
 import json
 import urllib2
 import re
-import util
+import util2 as util
 
 
 class Domain:

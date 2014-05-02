@@ -96,8 +96,8 @@ class High(object):
             "idc": self.r_info.hgetall("info_idc"),
             "mod": self.r_info.hgetall("info_mod"),
             "dates": dates,
-            "title": ' '.join([self.qidc, self.qmod, self.qdomain, \
-                               rtime_title, self.quri]),
+            "title": ' '.join([ v for v in [self.qidc, self.qmod, \
+                                self.qdomain, rtime_title, self.quri] if v ]),
             "domain_status": domain_status,
         }
 

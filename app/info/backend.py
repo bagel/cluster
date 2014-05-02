@@ -6,7 +6,7 @@ import urllib2
 import json
 import redis
 import ConfigParser
-import util
+import util2 as util
 
 
 def confData(conf):

@@ -3,10 +3,10 @@ import uwsgi
 import web
 import dpool
 
-uwsgi.cache_set("a", "hello")
 
-@web.timefunc
+@web.response
+@web.util.timefunc
 def test(e):
-    print type(dpool.get_serverlist("varnish"))
-    #return ("text/html", ":%s:" % "h")
-    return web.error.errapi(403)
+    web.setenv("test", "hello")
+    web.setenv("test", "world")
+    return ("text/html", ":%s:" % web.getenv("test"))

@@ -4,7 +4,7 @@ import sys
 import os
 import urllib2
 import re
-import util
+import util2 as util
 
 def domainConf(conf):
     url = 'http://dpadmin.grid.sina.com.cn/api/fetch_newestfile.php?title=' + conf

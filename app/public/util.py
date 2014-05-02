@@ -31,7 +31,7 @@ def cachefunc(expire=600):
         return __cachefunc
     return _cachefunc
 
-@web.cachefunc(expire=86400)
+@web.util.cachefunc(expire=86400)
 def userkey(user):
     return hashlib.md5('%s@dpooluser' % user).hexdigest()
 
