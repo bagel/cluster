@@ -16,6 +16,8 @@ route = {
 
 def urls(environ):
     environ["TEMP_PATH"] = [os.path.join(environ["DOCUMENT_ROOT"], "app/public/template")]
+    environ["USER"] = ""
+    web.initenv(environ)
     path =  environ["PATH_INFO"].split('/')[1]
     if path == "logout":
         return login.Login(environ).logout()
@@ -24,5 +26,5 @@ def urls(environ):
     environ = login.Login(environ).auth()
     if not isinstance(environ, dict):
         return environ
-
+    os.environ["USER"] = environ["USER"]
     return web.execute(environ, route)

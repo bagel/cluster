@@ -105,7 +105,7 @@ class Login:
         #response_body = "success...."
         response_body = ""
         headers = {}
-        headers["Status"] = "301 Moved Permanently"
+        headers["Status"] = "302"
         headers["Location"] = "http://%s/home" % self.environ["HTTP_HOST"]
         headers["Set-Cookie"] = "DP_token=%s; path=/; expires=Thu, 01 Jan %d 00:00:00 GMT" % (base64.b64encode("%s.%d.%s" % (user, int(time.time()), util.userkey(user)[:5])), int(time.strftime("%Y")) + 10)
         return (self.ctype, response_body, headers)
@@ -126,11 +126,10 @@ class Login:
         #response_body = "login...."
         response_body = ""
         headers = {}
-        headers["Status"] = "301 Moved Permanently"
+        headers["Status"] = "302"
         headers["Location"] = "http://%s/login" % self.environ["HTTP_HOST"]
         return (self.ctype, response_body, headers)
         
-
     def auth(self):
         """Visit api domain or not browser like curl, use api auth and query_string should contain user and key.
            If use browser visit, redirected to intra login if get user from cookie failed, try this again after login success.
@@ -163,7 +162,7 @@ class Login:
         #response_body = "logout...."
         response_body = ""
         headers = {}
-        headers["Status"] = "301 Moved Permanently"
+        headers["Status"] = "302"
         headers["Set-Cookie"] = "DP_token=delete; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
         headers["Location"] = "http://%s/login" % self.environ["HTTP_HOST"]
         return (self.ctype, response_body, headers)

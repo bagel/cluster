@@ -50,11 +50,12 @@ class High(object):
             return (240, start(t, 240, 360), 360)
 
     @web.response
+    @web.util.logfunc
     def chartData(self):
         """chart data, [offset, start time, [{name: data}, ...]]"""
         ctype = "application/json"
         qkey = self.queryKey()
-        print qkey
+        #print qkey
         offset, start, num = self.queryTime()
         pipe = self.r.pipeline()
         domain = '_'.join([ v for v in [self.qdomain, self.qrtime, self.quri] \
@@ -67,6 +68,7 @@ class High(object):
         return (ctype, response_body)
 
     @web.response
+    @web.util.logfunc
     def response(self):
         dates = ["30min", "hour", "4hour", "day", "week"]
         t = time.time()
