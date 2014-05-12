@@ -13,7 +13,7 @@ class _Auth(object):
         self.domain = domain
         self.r = redis.StrictRedis(web.getenv("REDIS_INFO_HOST"), int(web.getenv("REDIS_INFO_PORT")))
 
-    def authdomain(self, err):
+    def authdomain(self):
         """if user in dpool or is domains admin or in domains users has permission"""
         user_admin = self.r.get("info_dpool_admin")
         #print self.user, user_admin
@@ -24,19 +24,11 @@ class _Auth(object):
             return self.user
         domains = self.r.hget("info_domain_user", self.user)
         if not domains:
-            return err
+            return web.error.error(403)
         domains = eval(domains)
         if self.domain in domains:
             return self.user
-        return err
-
-    def auth(self):
-        """api visit return json format error"""
-        if self.host == "api.dpool.cluster.sina.com.cn":
-            return self.authdomain(web.error.errapi(403))
-        else:
-            return self.authdomain(web.error.errweb(403))
-
+        return web.error.error(403)
 
 def authdomain(user, domain):
-    return _Auth(user, domain).auth()
+    return _Auth(user, domain).authdomain()

@@ -32,64 +32,36 @@ function domainauthdel() {
 }
 
 function statpage(s) {
-    var url = "/profile/domainstat";
-    $.getJSON(url, function(jsonData) {
-        var pagehtml = "";
-        count = jsonData["count"];
-        if ( count % 20 != 0 ) {
-            var pageMax = Math.floor(count / 20 + 1);
-        } else {
-            var pageMax = count / 20;
-        }
-        if (!s) {
-            s = 1;
-        }
-        if (s == 1) {
-            if ( pageMax != 0 ) {
-                pagehtml += '<li class="disabled"><a>1</a></li>';
-            }
-        } else {
-            pagehtml += '<li><a onclick=domainstat(' + (s - 1) + ')>&laquo;</a></li>';
-            pagehtml += '<li><a onclick=domainstat(1)>1</a></li>';
-            if ( s != 2 ) {
-                pagehtml += '<li class="disabled"><a>...</a></li>';
-            }
-        }
-        if ( s != 1 && s != pageMax) {
-            pagehtml += '<li class="disabled"><a>' + s + '</a></li>';
-        }
-        if ( pageMax > 1) {
-            if ( s == pageMax ) {
-                pagehtml += '<li class="disabled"><a>' + pageMax + '</a></li>';
-            } else {
-                if ( s != (pageMax - 1) ) {
-                    pagehtml += '<li class="disabled"><a>...</a></li>';
-                }
-                pagehtml += '<li><a onclick=domainstat(' + pageMax + ')>' + pageMax + '</a></li>';
-                pagehtml += '<li><a onclick=domainstat(' + (s + 1) + ')>&raquo;</a></li>';
-            }
-        }
-        document.getElementById("statpage").innerHTML = pagehtml;
-    });
+    var url = "/profile/domainstat",
+        num = 20,
+        id = "statpage";
+    page(s, url, num, id, "domainstat");
 }
 
 function domainstat(s) {
-    if(!s) {
-        s = 1;
-    }
-    var st = (s - 1) * 10;
-    var url = "/profile/domainstat?num=20&start=" + st;
-    $.getJSON(url, function(jsonData) {
-        var stathtml = "";
-        for (k in jsonData) {
-            stathtml += "<tr><td>" + k + "</td><td>" + jsonData[k] + "</td></tr>";
-        }
-        document.getElementById("domainstat").innerHTML = stathtml;
-    });
-    statpage(s);
+    var url = "/profile/domainstat",
+        num = 20,
+        id = "domainstat";
+    pageContent(s, url, num, id, statpage);
 }
 
 domainstat();
+
+function statuspage(s) {
+    var url = "/profile/domainstatus",
+        num = 20,
+        id = "statuspage";
+    page(s, url, num, id, "domainstatus");
+}
+
+function domainstatus(s) {
+    var url = "/profile/domainstatus",
+        num = 20,
+        id = "domainstatus";
+    pageContent(s, url, num, id, statuspage);
+}
+
+domainstatus();
 
 function domainstatdomain() {
     var domain = document.getElementById("domainstatdomain").value;
@@ -127,6 +99,38 @@ function domainstatdomain() {
     echo '<h4><strong>key: </strong><code>%s</code><h4><h3><small>例: <code>http://api.dpool.cluster.sina.com.cn/info/data?domain=www.example.com&user=%s&key=%s</code></small></h3>' % (Tdict["key"], Tdict["user"], Tdict["key"])
 </script>
 <br>
+<br>
+<br>
+<legend>访问统计定制</legend>
+<div class="row">
+    <div class="col-lg-3">
+        <input type="text" class="form-control" placeholder="域名">
+    </div>
+    <div class="col-lg-3">
+        <input type="text" class="form-control" placeholder="请求uri">
+    </div>
+    <div class="col-lg-2">
+        <input type="text" class="form-control" placeholder="处理时间">
+    </div>
+    <button class="btn btn-primary">添加</button>
+    <button class="btn btn-warning">取消</button>
+</div>
+<br>
+<div id="status">
+<table class="table table-striped table-bordered">
+    <thead>
+        <tr>
+            <th>域名</th>
+            <th>请求uri</th>
+            <th>处理时间</th>
+        </tr>
+    </thead>
+    <tbody id="domainstatus">
+    </tbody>
+</table>
+<ul class="pagination" id="statuspage">
+</ul>
+</div>
 <br>
 <br>
 <legend>域名授权状态</legend>

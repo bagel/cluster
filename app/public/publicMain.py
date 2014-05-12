@@ -19,6 +19,13 @@ class Public(object):
     def __init__(self, environ):
         self.environ = environ
 
+    @web.response
+    def response_env(self):
+        ctype = "text/plain"
+        response_body = ""
+        for k in sorted(self.environ.keys()):
+            response_body += "%s = %s\n" % (k, self.environ[k])
+        return (ctype, response_body)
 
 class Home(Public):
     def __init__(self, environ):
@@ -125,3 +132,11 @@ class Purge(Public):
             return ("application/json", json.dumps(status))
         print status
         return ("text/html", web.template(self.environ, "purge.html", {"status": status, "user": self.environ["USER"], "key": util.userkey(self.environ["USER"])}))
+
+
+class DnsChange(Public):
+    def __init__(self, environ):
+        super(DnsChange, self).__init__(environ)
+
+    def request(self):
+        pass

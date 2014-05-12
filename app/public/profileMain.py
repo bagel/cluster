@@ -8,7 +8,7 @@ import time
 import web
 import util
 
-class Profile:
+class Profile(object):
     def __init__(self, environ):
         self.environ = environ
         self.user = self.environ["USER"]
@@ -18,6 +18,7 @@ class Profile:
         self.key_domain = "info_user_domain"
         self.key_admin = "info_domain_admin"
         self.key_dpool = "info_dpool_admin" 
+        self.key_status = "info_domain_status"
 
     def domainAuth(self):
         """post /profile/domainauth(add|del), {"domains": domains, "users": users},
@@ -110,10 +111,7 @@ class Profile:
                         self.r.hset(self.key_domain, d, us)
         return ("application/json", json.JSONEncoder().encode({"success": 0}))
 
-    def domainStat(self, start=0, num=10):
-        """domains that user admin and user has permission, include every domain's users,
-           {"example.com": ["caoyu2", ...], ... }
-        """
+    def domainUser(self):
         domains = set()
         domain_admin = self.r.hget(self.key_admin, self.user)
         if domain_admin:
@@ -123,7 +121,14 @@ class Profile:
         if domain_user:
             domain_user = eval(domain_user)
             domains.update(domain_user)
-        domain_stat = {}
+        return domains
+
+    def domainStat(self, start=0, num=10):
+        """domains that user admin and user has permission, include every domain's users,
+           {"example.com": ["caoyu2", ...], ... }
+        """
+        domains = self.domainUser()
+        domain_stat = []
         domains = sorted(list(domains))
         count = len(domains)
         domains = domains[start:start+num]
@@ -134,7 +139,7 @@ class Profile:
                 stat = ','.join([ u.split('@')[0] for u in stat ])
             else:
                 stat = ""
-            domain_stat[domain] = stat
+            domain_stat.append([domain, stat])
         return (domain_stat, count)
 
     @web.response
@@ -160,6 +165,45 @@ class Profile:
         else:
             stat = ""
         return ("application/json", json.JSONEncoder().encode({domain: stat}))
+
+    def domainStatus(self, domain):
+        """uri and rtime in domain status that user admin and user has permission.
+           {"example.com": {"uri": ["/test"], "rtime": [[0, 0.1], [0.1, 1000]], "uri_rtime":...}
+        """
+        domain_status = []
+        status = self.r.hget(self.key_status, domain)
+        if status:
+            status = eval(status)
+            if status.has_key("uri"):
+                for u in status["uri"]:
+                    domain_status.append([domain, u, ""])
+            if status.has_key("rtime"):
+                for rtime in status["rtime"]:
+                    domain_status.append([domain, "", "~".join([str(rt) for rt in rtime]) + "s"])
+            if status.has_key("uri_rtime"):
+                for u in status["uri_rtime"].iterkeys():
+                    for rtime in status["uri_rtime"][u]:
+                        domain_status.append([domain, u, "~".join([str(rt) for rt in rtime]) + "s"])
+        return domain_status
+
+    @web.response
+    def responseStatus(self):
+        """if no query then response count of domains has status.
+        """
+        start = int(self.query.get("start", [0])[0])
+        num = int(self.query.get("num", [0])[0])
+        domains = self.query.get("domain", [])
+        if not domains:
+            domains = self.domainUser()
+        domain_status = []
+        for domain in domains:
+            domain_status.extend(self.domainStatus(domain))
+        count = len(domain_status)
+        domain_status = domain_status[start:start+num]
+        if not self.query.has_key("num"):
+            return ("application/json", json.dumps({"count": count}))
+        else:
+            return ("application/json", json.dumps(domain_status))
 
     @web.response
     def response(self):

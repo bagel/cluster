@@ -24,7 +24,9 @@ function page(s, url, num, id, func) {
     $.getJSON(url, function(jsonData) {
         var pagehtml = "";
         count = jsonData["count"];
-        if ( count % num != 0 ) {
+        if ( count < num ) {
+            var pageMax = 0;
+        } else if ( count % num != 0 ) {
             var pageMax = Math.floor(count / num + 1);
         } else {
             var pageMax = count / num;

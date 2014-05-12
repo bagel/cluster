@@ -22,7 +22,7 @@ class Login:
         self.domain = self.query.get("domain", [""])[0]
         self.ctype = "text/html"
 
-    def authDomain(self, user, err):
+    def authDomain(self, user):
         """user in info_dpool_admin and domain's adminer has domain's permission,
            if self.domain in info_domain_user user's domains list, request accept.
         """
@@ -36,41 +36,35 @@ class Login:
             return self.environ
         domains = self.r.hget("info_domain_user", user)
         if not domains:
-            return self.authResponse(err)
+            return web.error.error_response(403)
         domains = eval(domains)
         if self.domain in domains:
             self.environ["USER"] = user
             return self.environ
-        return self.authResponse(err)
+        return web.error.error_response(403)
 
     def authApi(self):
         """query key should match "user@dpooluser" md5sum.
         """
-        err_api = ("application/json", json.JSONEncoder().encode({"errmsg": "Permission denied"}), {"Status": "403"})
         key = self.query.get("key", [""])[0]
         if not key:
-            return self.authResponse(err_api)
+            return web.error.error_response(403)
         if key == "be9c2fd551734345064b1f765f115a08" or key== "c09551c8a636c68dc06e7c346ea9b70c":
             self.environ["USER"] = "default"
             return self.environ
         user = self.query.get("user", [""])[0]
         if not user:
-            return self.authResponse(err_api)
+            return web.error.error_response(403)
         hash_user = util.userkey(user)
         if key != hash_user:
-            return self.authResponse(err_api)
+            return web.error.error_response(403)
         if not self.domain or self.domain == "sum":
             self.environ["USER"] = user
             return self.environ
-        return self.authDomain(user, err_api)
+        return self.authDomain(user)
 
     def authWeb(self, user):
-        err_web = ("text/html", "Permission denied", {"Status": "403"})
-        return self.authDomain(user, err_web)
-
-    @web.response
-    def authResponse(self, err):
-        return err
+        return self.authDomain(user)
 
     def authStaff(self):
         postData = urlparse.parse_qs(self.environ['wsgi.input'].read(int(self.environ['CONTENT_LENGTH'])))

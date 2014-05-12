@@ -12,3 +12,4 @@ def localenv(key):
             return v
     return None
 
+getenv = localenv
