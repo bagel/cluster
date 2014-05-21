@@ -83,3 +83,15 @@ function pageContent(s, url, num, id, func) {
     func(s);
 }
 
+function postJSON(postUrl, postData) {
+    $.ajax({
+        async: false,
+        type: "POST",
+        url: postUrl,
+        data: postData,
+        dataType: "json",
+        contentType: "application/json",
+        success: function() { alert("完成"); }
+    });
+}
+
