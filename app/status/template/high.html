@@ -248,47 +248,19 @@ function update(t) {
     addData(url, "{$ title $}");
 };
 
-function domainStatus() {
-    var domain_status = {$ domain_status $};
-    if (domain_status == 0) {
-        return 0
+function rtimeChange(obj) {
+    var uri_rtime = JSON.parse('{$ domain_uri_rtime $}'),
+        rtimes = uri_rtime[obj.value],
+        selecthtml = '<option value="">处理时间</option>';
+    var length = 0;
+    if (rtimes) {
+        length = rtimes.length;
     }
-    var domainstatus = '';
-    $.each(domain_status, function(key, val) {
-        if (key == "rtime") {
-            domainstatus += '<div class="col-lg-2"><select id="rtime" name="rtime" class="form-control"><option value="">处理时间</option>';
-            len = val.length;
-            var i = 0;
-            while (i < len) {
-                value = val[i][0].toString() + '_' + val[i][1].toString();
-                value_s = val[i][0].toString() + '~' + val[i][1].toString() + 's';
-                domainstatus += '<option value="' + value + '">' + value_s + '</option>';
-                i += 1;
-            }
-            domainstatus += '</select></div>';
-        }
-        if (key == "uri") {
-            domainstatus += '<div class="col-lg-2"><select id="uri" name="uri" class="form-control"><option value="">请求uri</option>';
-            for (var i in val) {
-                domainstatus += '<option value="' + val[i] + '">' + val[i] + '</option>';
-            }
-            domainstatus += '</select></div>';
-        }
-    });
-    domainstatus += '<button class="btn btn-primary" onclick="updateDomain()">查看</button>';
-    document.getElementById("domainstatus").innerHTML = domainstatus;
-};
-
-function updateDomain() {
-    var rtime_id = document.getElementById("rtime"),
-        rtime = 'rtime=' + rtime_id.options[rtime_id.selectedIndex].value,
-        uri_id = document.getElementById("uri"),
-        uri = 'uri=' + uri_id.options[uri_id.selectedIndex].value,
-        url = "/status/high/data?{$ query_string $}",
-    url = url + '&' + [rtime, uri].join('&');
-    title = "{$ title $}";
-    addData(url, title);
-};
+    for (i=0; i<length; i++) {
+        selecthtml += '<option value="' + rtimes[i].join("_") + '">' + rtimes[i].join("~") + 's</option>';
+    }
+    document.getElementById("rtime").innerHTML = selecthtml;
+}
 
 </script>
 {% end %}
@@ -346,16 +318,29 @@ function updateDomain() {
 <div class="row">
 <script type="text/python">
     if Tdict["domain_status"].has_key("uri"):
-        echo '''<div class="col-lg-2"><select class="form-control" name="uri"><option value="">请求uri</option>'''
-        for uri in Tdict["domain_status"]["uri"]:
+        echo '''<div class="col-lg-2"><select class="form-control" name="uri" onchange="if (this.selectedIndex) rtimeChange(this);"><option value="">请求uri</option>'''
+        uris = []
+        if Tdict["domain_status"].has_key("uri"):
+            uris.extend(Tdict["domain_status"]["uri"])
+        if Tdict["domain_status"].has_key("uri_rtime"):
+            for k in Tdict["domain_status"]["uri_rtime"].iterkeys():
+                if Tdict["domain_status"]["uri_rtime"][k]:
+                    uris.append(k)
+        for uri in set(uris):
             if uri == Tdict["quri"]:
                 echo '<option value="%s" selected="selected">%s</option>' % (uri, uri)
             else:
                 echo '<option value="%s">%s</option>' % (uri, uri)
         echo '</select></div>'
-    if Tdict["domain_status"].has_key("rtime"):
-        echo '''<div class="col-lg-2"><select class="form-control" name="rtime"><option value="">处理时间</option>'''
-        for rmin, rmax in Tdict["domain_status"]["rtime"]:
+    rtimes = []
+    if Tdict["quri"] and Tdict["domain_status"].has_key("uri_rtime"):
+        rtimes = Tdict["domain_status"]["uri_rtime"].get(Tdict["quri"], [])
+    elif not Tdict["quri"]:
+        rtimes = Tdict["domain_status"].get("rtime", [])
+
+    if rtimes or Tdict["quri"]:
+        echo '''<div class="col-lg-2"><select id="rtime" class="form-control" name="rtime"><option value="">处理时间</option>'''
+        for rmin, rmax in rtimes:
             rtime = '_'.join([str(rmin), str(rmax)])
             rtime_s = '~'.join([str(rmin), str(rmax)]) + 's'
             if rtime == Tdict["qrtime"]:

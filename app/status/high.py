@@ -101,6 +101,7 @@ class High(object):
             "title": ' '.join([ v for v in [self.qidc, self.qmod, \
                                 self.qdomain, self.quri, rtime_title] if v ]),
             "domain_status": domain_status,
+            "domain_uri_rtime": json.dumps(domain_status.get("uri_rtime", {})),
         }
 
         return (self.ctype, web.template(self.environ, "high.html", tdict))

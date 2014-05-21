@@ -77,14 +77,13 @@ class Custom(object):
         uri = postData.get("uri", "").encode('utf-8')
         rmin = postData.get("rmin", "").encode('utf-8')
         rmax = postData.get("rmax", "").encode('utf-8')
-        rtime = []
         if rmin and float(rmin).is_integer():
             rmin = int(float(rmin))
-        else:
+        elif rmin:
             rmin = float(rmin)
         if rmax and float(rmax).is_integer():
             rmax = int(float(rmax))
-        else:
+        elif rmax:
             rmax = float(rmax)
         return (domain, uri, rmin, rmax)
 
@@ -93,6 +92,7 @@ class Custom(object):
         """add domain uri or rtime status"""
         ctype = "application/json"
         domain, uri, rmin, rmax = self.getStatus()
+        rtime = []
         if rmin and rmax:
             if rmin > rmax:
                 return (ctype, json.dumps({"msg": "error"}))
@@ -133,6 +133,7 @@ class Custom(object):
         """add domain uri or rtime status"""
         ctype = "application/json"
         domain, uri, rmin, rmax = self.getStatus()
+        rtime = []
         if rmin and rmax:
             if rmin > rmax:
                 return (ctype, json.dumps({"msg": "error"}))

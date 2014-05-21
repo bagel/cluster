@@ -46,15 +46,21 @@ function domainstatusadd() {
     postJSON(url, data);
 }
 
-function domainstatusdel(btn) {
+function domainstatusdel(obj) {
     var url = '/status/custom/domainstatusdel',
-        row = btn.parentNode.parentNode,
-        rows = row.innerHTML.replace(/^<td>/, '').split('</td><td>'),
-        domain = rows[0],
+        row = obj.parentNode.parentNode,
+        rows = row.innerHTML.replace(/^<td>/, '').split('</td><td>');
+
+    var domain = rows[0],
         uri = rows[1],
-        rmin = rows[2].split('~')[0],
-        rmax = rows[2].split('~')[1].replace(/s/,''),
-        data = JSON.stringify({"domain": domain, "uri": uri, "rmin": rmin, "rmax": rmax});
+        rmin,
+        rmax;
+
+    if (rows[2]) {
+        rmin = rows[2].split('~')[0];
+        rmax = rows[2].split('~')[1].replace(/s/,'');
+    }
+    var data = JSON.stringify({"domain": domain, "uri": uri, "rmin": rmin, "rmax": rmax});
     postJSON(url, data);
     row.parentNode.removeChild(row);
 }
