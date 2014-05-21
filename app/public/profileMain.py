@@ -166,45 +166,6 @@ class Profile(object):
             stat = ""
         return ("application/json", json.JSONEncoder().encode({domain: stat}))
 
-    def domainStatus(self, domain):
-        """uri and rtime in domain status that user admin and user has permission.
-           {"example.com": {"uri": ["/test"], "rtime": [[0, 0.1], [0.1, 1000]], "uri_rtime":...}
-        """
-        domain_status = []
-        status = self.r.hget(self.key_status, domain)
-        if status:
-            status = eval(status)
-            if status.has_key("uri"):
-                for u in status["uri"]:
-                    domain_status.append([domain, u, ""])
-            if status.has_key("rtime"):
-                for rtime in status["rtime"]:
-                    domain_status.append([domain, "", "~".join([str(rt) for rt in rtime]) + "s"])
-            if status.has_key("uri_rtime"):
-                for u in status["uri_rtime"].iterkeys():
-                    for rtime in status["uri_rtime"][u]:
-                        domain_status.append([domain, u, "~".join([str(rt) for rt in rtime]) + "s"])
-        return domain_status
-
-    @web.response
-    def responseStatus(self):
-        """if no query then response count of domains has status.
-        """
-        start = int(self.query.get("start", [0])[0])
-        num = int(self.query.get("num", [0])[0])
-        domains = self.query.get("domain", [])
-        if not domains:
-            domains = self.domainUser()
-        domain_status = []
-        for domain in domains:
-            domain_status.extend(self.domainStatus(domain))
-        count = len(domain_status)
-        domain_status = domain_status[start:start+num]
-        if not self.query.has_key("num"):
-            return ("application/json", json.dumps({"count": count}))
-        else:
-            return ("application/json", json.dumps(domain_status))
-
     @web.response
     def response(self):
         key = util.userkey(self.user)

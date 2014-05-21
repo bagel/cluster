@@ -10,7 +10,7 @@ function postJSON(postUrl, postData) {
         data: postData,
         dataType: "json",
         contentType: "application/json",
-        success: function() { alert("完成"); domainstat(); }
+        success: function() { alert("完成"); }
     });
 }
 
@@ -58,7 +58,25 @@ function domainstatus(s) {
     var url = "/profile/domainstatus",
         num = 20,
         id = "domainstatus";
-    pageContent(s, url, num, id, statuspage);
+
+    if(!s) {
+        s = 1;
+    }
+    var st = (s - 1) * num;
+    var url = url + "?num=" + num.toString() + "&start=" + st;
+    $.getJSON(url, function(jsonData) {
+        var contenthtml = "";
+        for (i in jsonData) {
+            contenthtml += "<tr>";
+            for (j in jsonData[i]) {
+                contenthtml += "<td>" + jsonData[i][j] + "</td>";
+            }
+            contenthtml += '<td><button class="btn btn-warning">删除</button></td>'
+            contenthtml += "</tr>";
+        }
+        document.getElementById(id).innerHTML = contenthtml;
+    });
+    statuspage(s);
 }
 
 domainstatus();
@@ -71,6 +89,16 @@ function domainstatdomain() {
         document.getElementById("domainstat").innerHTML = domainhtml;
         document.getElementById("statpage").innerHTML = "";
     });
+}
+
+function domainstatusadd() {
+    var url = '/profile/domainstatusadd',
+        domain = document.getElementById("domain").value,
+        uri = document.getElementById("uri").value,
+        rmin = document.getElementById("rmin").value,
+        rmax = document.getElementById("rmax").value,
+        data = JSON.stringify({"domain": domain, "uri": uri, "rmin": rmin, "rmax": rmax});
+    postJSON(url, data);
 }
 </script>
 <div class="col-lg-1">
@@ -99,38 +127,6 @@ function domainstatdomain() {
     echo '<h4><strong>key: </strong><code>%s</code><h4><h3><small>例: <code>http://api.dpool.cluster.sina.com.cn/info/data?domain=www.example.com&user=%s&key=%s</code></small></h3>' % (Tdict["key"], Tdict["user"], Tdict["key"])
 </script>
 <br>
-<br>
-<br>
-<legend>访问统计定制</legend>
-<div class="row">
-    <div class="col-lg-3">
-        <input type="text" class="form-control" placeholder="域名">
-    </div>
-    <div class="col-lg-3">
-        <input type="text" class="form-control" placeholder="请求uri">
-    </div>
-    <div class="col-lg-2">
-        <input type="text" class="form-control" placeholder="处理时间">
-    </div>
-    <button class="btn btn-primary">添加</button>
-    <button class="btn btn-warning">取消</button>
-</div>
-<br>
-<div id="status">
-<table class="table table-striped table-bordered">
-    <thead>
-        <tr>
-            <th>域名</th>
-            <th>请求uri</th>
-            <th>处理时间</th>
-        </tr>
-    </thead>
-    <tbody id="domainstatus">
-    </tbody>
-</table>
-<ul class="pagination" id="statuspage">
-</ul>
-</div>
 <br>
 <br>
 <legend>域名授权状态</legend>
