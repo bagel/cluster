@@ -339,6 +339,7 @@ function updateDomain() {
     <input class="form-control" id="domain" type="text" name="domain" placeholder="域名" value="{$ qdomain $}">
     </div>
     <button type="submit" class="btn btn-primary">查看</button>
+    <a href="/status/custom"><button type="button" class="btn btn-success">定制</button></a>
 </div>
 
 <p>
@@ -347,20 +348,20 @@ function updateDomain() {
     if Tdict["domain_status"].has_key("uri"):
         echo '''<div class="col-lg-2"><select class="form-control" name="uri"><option value="">请求uri</option>'''
         for uri in Tdict["domain_status"]["uri"]:
-            #if uri == Tdict["quri"]:
-            #    echo '<option value="%s" selected="selected">%s</option>' % (uri, uri)
-            #else:
-            echo '<option value="%s">%s</option>' % (uri, uri)
+            if uri == Tdict["quri"]:
+                echo '<option value="%s" selected="selected">%s</option>' % (uri, uri)
+            else:
+                echo '<option value="%s">%s</option>' % (uri, uri)
         echo '</select></div>'
     if Tdict["domain_status"].has_key("rtime"):
         echo '''<div class="col-lg-2"><select class="form-control" name="rtime"><option value="">处理时间</option>'''
         for rmin, rmax in Tdict["domain_status"]["rtime"]:
             rtime = '_'.join([str(rmin), str(rmax)])
             rtime_s = '~'.join([str(rmin), str(rmax)]) + 's'
-            #if rtime == Tdict["qrtime"]:
-            #    echo '<option value="%s" selected="selected">%s</option>' % (rtime, rtime_s)
-            #else:
-            echo '<option value="%s">%s</option>' % (rtime, rtime_s)
+            if rtime == Tdict["qrtime"]:
+                echo '<option value="%s" selected="selected">%s</option>' % (rtime, rtime_s)
+            else:
+                echo '<option value="%s">%s</option>' % (rtime, rtime_s)
         echo '</select></div>'
 </script>
 </div>

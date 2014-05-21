@@ -50,16 +50,17 @@ class High(object):
             return (240, start(t, 240, 360), 360)
 
     @web.response
-    @web.util.logfunc
+    @web.util.tracefunc
     def chartData(self):
         """chart data, [offset, start time, [{name: data}, ...]]"""
         ctype = "application/json"
         qkey = self.queryKey()
-        #print qkey
+        print qkey
         offset, start, num = self.queryTime()
         pipe = self.r.pipeline()
-        domain = '_'.join([ v for v in [self.qdomain, self.qrtime, self.quri] \
+        domain = '_'.join([ v for v in [self.qdomain, self.quri, self.qrtime] \
                             if v ])
+        print domain
         keys = [ pipe.hget('-'.join([str(start+i*offset), qkey]), \
                            domain) for i in xrange(num + 1) ]
         values = pipe.execute()
@@ -68,7 +69,7 @@ class High(object):
         return (ctype, response_body)
 
     @web.response
-    @web.util.logfunc
+    @web.util.tracefunc
     def response(self):
         dates = ["30min", "hour", "4hour", "day", "week"]
         t = time.time()
@@ -84,8 +85,7 @@ class High(object):
 
         rtime_title = ''
         if self.qrtime:
-            rtime_title = self.qrtime.replace('_', '~').replace('1000', \
-                                                                '+inf') + 's'
+            rtime_title = self.qrtime.replace('_', '~') + 's'
 
         tdict = {
             "query_string": self.environ["QUERY_STRING"],
@@ -99,9 +99,10 @@ class High(object):
             "mod": self.r_info.hgetall("info_mod"),
             "dates": dates,
             "title": ' '.join([ v for v in [self.qidc, self.qmod, \
-                                self.qdomain, rtime_title, self.quri] if v ]),
+                                self.qdomain, self.quri, rtime_title] if v ]),
             "domain_status": domain_status,
         }
 
         return (self.ctype, web.template(self.environ, "high.html", tdict))
+
 

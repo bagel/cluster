@@ -1,0 +1,102 @@
+{# base.html #}
+
+{% content %}
+<script>
+function statuspage(s) {
+    var url = "/profile/domainstatus",
+        num = 10,
+        id = "statuspage";
+    page(s, url, num, id, "domainstatus");
+}
+
+function domainstatus(s) {
+    var url = "/status/custom/domainstatus",
+        num = 10,
+        id = "domainstatus";
+
+    if(!s) {
+        s = 1;
+    }
+    var st = (s - 1) * num;
+    var url = url + "?num=" + num.toString() + "&start=" + st;
+    $.getJSON(url, function(jsonData) {
+        var contenthtml = "";
+        for (i in jsonData) {
+            contenthtml += "<tr>";
+            for (j in jsonData[i]) {
+                contenthtml += "<td>" + jsonData[i][j] + "</td>";
+            }
+            contenthtml += '<td><button class="btn btn-warning" onclick="domainstatusdel(this)">删除</button></td>'
+            contenthtml += "</tr>";
+        }
+        document.getElementById(id).innerHTML = contenthtml;
+    });
+    statuspage(s);
+}
+
+domainstatus();
+
+function domainstatusadd() {
+    var url = '/status/custom/domainstatusadd',
+        domain = document.getElementById("domain").value,
+        uri = document.getElementById("uri").value,
+        rmin = document.getElementById("rmin").value,
+        rmax = document.getElementById("rmax").value,
+        data = JSON.stringify({"domain": domain, "uri": uri, "rmin": rmin, "rmax": rmax});
+    postJSON(url, data);
+}
+
+function domainstatusdel(btn) {
+    var url = '/status/custom/domainstatusdel',
+        row = btn.parentNode.parentNode,
+        rows = row.innerHTML.replace(/^<td>/, '').split('</td><td>'),
+        domain = rows[0],
+        uri = rows[1],
+        rmin = rows[2].split('~')[0],
+        rmax = rows[2].split('~')[1].replace(/s/,''),
+        data = JSON.stringify({"domain": domain, "uri": uri, "rmin": rmin, "rmax": rmax});
+    postJSON(url, data);
+    row.parentNode.removeChild(row);
+}
+
+</script>
+
+<div class="col-lg-1">
+</div>
+<div class="col-lg-10">
+<legend>访问统计定制</legend>
+<div class="row">
+    <div class="col-lg-3">
+        <input type="text" class="form-control" id="domain" name="domain" placeholder="域名">
+    </div>
+    <div class="col-lg-3">
+        <input type="text" class="form-control" id="uri" name="uri" placeholder="请求uri">
+    </div>
+    <div class="col-lg-2">
+        <input type="text" class="form-control" id="rmin" name="rmin" placeholder="最小处理时间">
+    </div>
+    <div class="col-lg-2">
+        <input type="text" class="form-control" id="rmax" name="rmax" placeholder="最大处理时间">
+    </div>
+    <button class="btn btn-primary" onclick="domainstatusadd()">添加</button>
+</div>
+<br>
+<div id="status">
+<table class="table table-striped table-bordered">
+    <thead>
+        <tr>
+            <th>域名</th>
+            <th>请求uri</th>
+            <th>处理时间</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody id="domainstatus">
+    </tbody>
+</table>
+<ul class="pagination" id="statuspage">
+</ul>
+</div>
+
+</div>
+{% end %}
