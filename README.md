@@ -1,6 +1,6 @@
 web admin
 ========
-admin.dpool.cluster.sina.com.cn
+
 
 #Nginx
 
@@ -10,15 +10,15 @@ run with nginx + uwsgi
 
 	server {
 	        listen       80 ;
-	        root /data1/www/htdocs/api.dpool.cluster.sina.com.cn;
-	        server_name api.dpool.cluster.sina.com.cn;
+	        root /data1/www/htdocs/www.example.com;
+	        server_name www.example.com;
 	
-	        access_log  /data1/www/logs/api.dpool.cluster.sina.com.cn-access_log  main;
+	        access_log  /data1/www/logs/www.example.com-access_log  main;
 	        access_log  /data1/www/logs/all_items_http_log  main;
-	        error_log   /data1/www/logs/api.dpool.cluster.sina.com.cn-error_log;
+	        error_log   /data1/www/logs/www.example.com-error_log;
 	
 	        location ~ /static/(.*) {
-	                alias /data1/www/htdocs/api.dpool.cluster.sina.com.cn/static/$1;
+	                alias /data1/www/htdocs/www.example.com/static/$1;
 	                expires 1d;
 	        }
 	
@@ -59,14 +59,14 @@ run with apache
 ##apache
 
 	<VirtualHost *:80>
-	    ServerName api.dpool.cluster.sina.com.cn
+	    ServerName www.example.com
 	    ServerAdmin admin@localhost
-	    DocumentRoot /data1/www/htdocs/api.dpool.cluster.sina.com.cn
-	    ErrorLog /data1/www/logs/api.dpool.cluster.sina.com.cn-error_log
-	    CustomLog /data1/www/logs/api.dpool.cluster.sina.com.cn-access_log combinedalias
+	    DocumentRoot /data1/www/htdocs/www.example.com
+	    ErrorLog /data1/www/logs/www.example.com-error_log
+	    CustomLog /data1/www/logs/www.example.com-access_log combinedalias
 
-	    Alias /static /data1/www/htdocs/api.dpool.cluster.sina.com.cn/static
-	    WSGIScriptAlias / /data1/www/htdocs/api.dpool.cluster.sina.com.cn/wsgi
+	    Alias /static /data1/www/htdocs/www.example.com/static
+	    WSGIScriptAlias / /data1/www/htdocs/www.example.com/wsgi
 	</VirtualHost>
 	
 
