@@ -1,0 +1,234 @@
+{# base.html #}
+
+{% head %}
+<script src="/static/highmaps/js/highmaps.js"></script>
+<script src="/static/highmaps/js/modules/data.js"></script>
+<script src="/static/highmaps/js/modules/exporting.js"></script>
+<script src="/static/highmaps/js/maps/cn-all.js"></script>
+<script>
+var cnProvs = {
+    "CN.XJ": "新疆",
+    "CN.XZ": "西藏",
+    "CN.GS": "甘肃",
+    "CN.QH": "青海",
+    "CN.NX": "宁夏",
+    "CN.SA": "陕西",
+    "CN.SC": "四川",
+    "CN.CQ": "重庆",
+    "CN.YN": "云南",
+    "CN.GX": "广西",
+    "CN.GD": "广东",
+    "CN.HA": "海南",
+    "CN.FJ": "福建",
+    "CN.HN": "湖南",
+    "CN.JX": "江西",
+    "CN.ZJ": "浙江",
+    "CN.HU": "湖北",
+    "CN.AH": "安徽",
+    "CN.SH": "上海",
+    "CN.JS": "江苏",
+    "CN.HE": "河南",
+    "CN.SD": "山东",
+    "CN.SX": "山西",
+    "CN.JL": "吉林",
+    "CN.GZ": "贵州",
+    "CN.NM": "内蒙古",
+    "CN.BJ": "北京",
+    "CN.HB": "河北",
+    "CN.HL": "黑龙江",
+    "CN.LN": "辽宁",
+    "CN.TJ": "天津",
+};
+
+var provsCN = {};
+$.each(cnProvs, function(cn, prov) {
+    provsCN[prov] = cn;
+});
+
+$(function () {
+    var mapData = Highcharts.geojson(Highcharts.maps['countries/cn/cn-all']);
+    $.each(mapData, function() {
+        this.properties["cnname"] = cnProvs[this.properties["hasc"]];
+    });
+
+    $('#chartContainer').highcharts('Map', {
+        chart : {
+            borderWidth : 0,  //去掉边框
+        },
+ 
+        colors: ['rgba(19,64,117,0.05)', 'rgba(19,64,117,0.2)', 'rgba(19,64,117,0.4)',
+            'rgba(19,64,117,0.5)', 'rgba(19,64,117,0.6)', 'rgba(19,64,117,0.8)', 'rgba(19,64,117,1)'],
+ 
+        title : {
+            text : ''
+        },
+
+        credits: {
+            enabled: false,  //去掉highcharts标识
+            text: ''
+        },
+
+        exporting: {
+            enabled: false, //去掉打印
+        },
+ 
+        mapNavigation: {
+            enabled: false,  //去掉缩放
+        },
+ 
+        legend: {
+            title: {
+                text: '万hits',
+            },
+        },
+
+        colorAxis: {
+            min: 1,
+            max: 1000,
+            type: 'logarithmic',
+        },
+ 
+        series : [{
+            mapData: mapData,
+            joinBy: 'cnname',
+            animation: true,
+            //name: 'test2',
+            states: {
+                hover: {
+                    color: '#BADA55'
+                }
+            },
+            dataLabels: {
+                enabled: true,
+                format: '{point.cnname}',
+                //color: 'black',
+            },
+            tooltip: {
+                headerFormat: '<b>全国各省访问统计</b><br/>',
+                pointFormat: '{point.cnname}: {point.value}万 {point.cnt}<br/>电信: {point.value_chinanet}万 {point.chinanet}<br/>网通: {point.value_cnc}万 {point.cnc}<br/>移动: {point.value_cmnet}万 {point.cmnet}<br/>默认: {point.value_default}万 {point.default}'
+            }
+        }]
+    });
+
+    var url = "/status/highmap/data?{$ query_string $}";
+    addData(url, "{$ qdomain $}");
+});
+
+function addData(url, domain) {
+    $.getJSON(url, function(data) {
+        var chart = $("#chartContainer").highcharts();
+        var i = 0,
+            data_min = 0,
+            data_max = 0,
+            data_sum = 0,
+            data_new = [];
+        $.each(data["中国"], function(prov, provData) {
+            var count = 0,
+                count_cnc = 0,
+                count_cmnet = 0,
+                count_chinanet = 0,
+                count_default = 0;
+            $.each(provData, function(isp, ispData) {
+                $.each(ispData, function(timeflag, cnt) {
+                    cnt = parseInt(cnt);
+                    count += cnt; 
+                    if (isp == "网通") {
+                        count_cnc += cnt;
+                    } else if (isp == "移动") {
+                        count_cmnet += cnt;
+                    } else if (isp == "电信") {
+                        count_chinanet += cnt;
+                    } else if (isp == "默认") {
+                        count_default += cnt;
+                    }
+                });
+            });
+            if (provsCN[prov]) {
+                data_new[i] = {"cnname": prov, "cnt": count, "cnt_cnc": count_cnc, "cnt_cmnet": count_cmnet, "cnt_chinanet": count_chinanet, "cnt_default": count_default};
+                data_sum += count;
+                if (count > data_max) {
+                    data_max = count;
+                }
+                if (data_min == 0 || count < data_min) {
+                    data_min = count;
+                }
+                i = i + 1;
+            } else {
+                data_sum += count;
+            }
+        });
+        $.each(data_new, function(i) {
+            data_new[i]["value"] = (data_new[i]["cnt"] / 10000).toFixed(1);
+            data_new[i]["cnt"] = (data_new[i]["cnt"] / data_sum * 100).toFixed(2) + "%";
+            data_new[i]["value_cnc"] = (data_new[i]["cnt_cnc"] / 10000).toFixed(1);
+            data_new[i]["cnc"] = (data_new[i]["cnt_cnc"] / data_sum * 100).toFixed(2) + "%";
+            data_new[i]["value_cmnet"] = (data_new[i]["cnt_cmnet"] / 10000).toFixed(1);
+            data_new[i]["cmnet"] = (data_new[i]["cnt_cmnet"] / data_sum * 100).toFixed(2) + "%";
+            data_new[i]["value_chinanet"] = (data_new[i]["cnt_chinanet"] / 10000).toFixed(1);
+            data_new[i]["chinanet"] = (data_new[i]["cnt_chinanet"] / data_sum * 100).toFixed(2) + "%";
+            data_new[i]["value_default"] = (data_new[i]["cnt_default"] / 10000).toFixed(1);
+            data_new[i]["default"] = (data_new[i]["cnt_default"] / data_sum * 100).toFixed(2) + "%";
+        });
+        chart.series[0].setData(data_new);
+        chart.setTitle({"text": "全国(除港澳台)访问统计 " + domain + " " + (data_sum/10000).toFixed(0).toString() + " 万hits"});
+        chart.colorAxis[0].update({
+            min: (data_min / 10000).toFixed(0),
+            max: (data_max / 10000).toFixed(0),
+        });
+        chart.redraw();
+    });
+}
+
+</script>
+{% end %}
+
+{% content %}
+<div class="col-lg-1">
+</div>
+<div class="col-lg-10">
+<div id="chartContainer" style="height: 750px; width: 800px; margin: 0 auto"></div>
+<br>
+<div class="">
+<table class="table table-striped table-bordered">
+    <thead>
+        <tr>
+            <th>省份</th>
+            <th colspan="6">电信</th>
+            <th colspan="6">网通</th>
+            <th colspan="6">移动</th>
+            <th colspan="6">默认</th>
+        </tr>
+        <tr>
+            <th></th>
+            <th>A</th>
+            <th>B</th>
+            <th>C</th>
+            <th>D</th>
+            <th>E</th>
+            <th>F</th>
+            <th>A</th>
+            <th>B</th>
+            <th>C</th>
+            <th>D</th>
+            <th>E</th>
+            <th>F</th>
+            <th>A</th>
+            <th>B</th>
+            <th>C</th>
+            <th>D</th>
+            <th>E</th>
+            <th>F</th>
+            <th>A</th>
+            <th>B</th>
+            <th>C</th>
+            <th>D</th>
+            <th>E</th>
+            <th>F</th>
+        <tr>
+    </thead>
+    <tbody id="">
+    </tbody>
+</table>
+</div>
+</div>
+{% end %}

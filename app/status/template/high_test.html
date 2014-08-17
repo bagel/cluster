@@ -171,7 +171,7 @@ $(function () {
             series: [],
         });
 
-        var url = "/status/high/data?{$ query_string $}";
+        var url = "/status/high_test/data?{$ query_string $}";
         addData(url, "{$ title $}");
     });
 });
@@ -241,9 +241,9 @@ function update(t) {
         url_suffix = [rtime, uri].join('&');
     }
     if (url_suffix) {
-        var url = "/status/high/data?date=" + t + "&{$ query_string $}" + '&' + url_suffix;
+        var url = "/status/high_test/data?date=" + t + "&{$ query_string $}" + '&' + url_suffix;
     } else {
-        var url = "/status/high/data?date=" + t + "&{$ query_string $}";
+        var url = "/status/high_test/data?date=" + t + "&{$ query_string $}";
     }
     addData(url, "{$ title $}");
 };

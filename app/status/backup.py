@@ -17,7 +17,7 @@ p = r.pipeline()
 
 #delete more than 4 hour not 4 min
 t = t1 = t0 - 4 * 3600 - 3600
-while t > t1 - 3600 - 1200 - 4 * 3600 - 86400:
+while t > t1 - 3600 - 1200 - 4 * 3600 - 7 * 86400:
     print t
 
     if t % 240 != 0:
