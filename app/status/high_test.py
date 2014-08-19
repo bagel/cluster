@@ -23,6 +23,7 @@ class High(object):
         self.qmod = self.query.get("mod", [""])[0]
         self.qrtime = self.query.get("rtime", [""])[0]
         self.quri = self.query.get("uri", [""])[0]
+        self.qurl = self.query.get("url", [""])[0]
 
     def queryKey(self):
         """redis key suffix by idc and mod, defualt sum"""
@@ -54,17 +55,45 @@ class High(object):
     def chartData(self):
         """chart data, [offset, start time, [{name: data}, ...]]"""
         ctype = "application/json"
-        qkey = self.queryKey()
+        qkey = self.qurl
         print qkey
-        offset, start, num = self.queryTime()
-        pipe = self.r.pipeline()
-        domain = '_'.join([ v for v in [self.qdomain, self.quri, self.qrtime] \
-                            if v ])
-        print domain
-        keys = [ pipe.hget('-'.join([str(start+i*offset), qkey]), \
-                           domain) for i in xrange(num + 1) ]
-        values = pipe.execute()
-        chartdata = [offset, start, [{self.qdate: values}]]
+        data = self.r.hgetall(qkey)
+        data_keys = [ int(dk) for dk in data.iterkeys() ]
+        data_keys.sort()
+        start = data_keys[0]
+        offset = data_keys[1] - data_keys[0]
+        num = len(data_keys)
+        values = [ data[str(k)] for k in data_keys ]
+        chartdata = [offset, start, [{"day": values}]]
+        response_body = json.JSONEncoder().encode(chartdata)
+        return (ctype, response_body)
+
+    @web.response
+    def testData(self):
+        ctype = "application/json"
+        keys = ["card.weibo.com_/page/profile/mobilesquare.json", "card.weibo.com_/page/profile/index.json", "card.weibo.com_/component/task/ProfileTasks.json"]
+        keys = ['card.weibo.com_/page/search/tip.json',
+                'card.weibo.com_/component/task/ProfileTasks.json',
+                'card.weibo.com_/component/task/hometasks.json',
+                'card.weibo.com_/component/task/AppProfileTask.json',
+                'card.weibo.com_/page/suggestion/tip.json',
+                'card.weibo.com_/page/suggestion/postbox.json',
+                'card.weibo.com_/page/statuses/update.json',
+                'card.weibo.com_/component/task/TrendTask.json',
+                'card.weibo.com_/page/subject/main.json',
+                'card.weibo.com_/page/profile/index.json',
+                'card.weibo.com_/page/profile/mobilesquare.json',
+                'card.weibo.com_/page/suggestion/postboxhot.json'
+        ]
+
+        chartdata = {"title": "card.weibo.com", "data": []}
+        for key in keys:
+            url = key.split('_')[1]
+            data =  self.r.hgetall(key)
+            data_keys = [ int(dk) for dk in data.iterkeys() ]
+            data_keys.sort()
+            values = [ [str(k), data[str(k)]] for k in data_keys ]
+            chartdata["data"].append({url: values})
         response_body = json.JSONEncoder().encode(chartdata)
         return (ctype, response_body)
 
@@ -99,7 +128,7 @@ class High(object):
             "mod": self.r_info.hgetall("info_mod"),
             "dates": dates,
             "title": ' '.join([ v for v in [self.qidc, self.qmod, \
-                                self.qdomain, self.quri, rtime_title] if v ]),
+                                self.qdomain, self.quri, self.qurl, rtime_title] if v ]),
             "domain_status": domain_status,
             "domain_uri_rtime": json.dumps(domain_status.get("uri_rtime", {})),
         }

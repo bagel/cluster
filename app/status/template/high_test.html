@@ -154,6 +154,7 @@ $(function () {
                 },
                 series: {
                     cursor: "pointer",
+                    turboThreshold: 3000,
                     /*events: {
                         click: function() {
                             location.href = "http://" + location.hostname + "/mon/data";
@@ -181,7 +182,7 @@ function addData(url, title) {
     $.getJSON(url, function(data) {
         var chart = $("#chartContainer").highcharts();
         var offset = parseInt(data[0]) * 1000,
-            start = parseInt(data[1]) * 1000
+            start = parseInt(data[1]) * 1000,
             datas = data[2],
             sumData = [],
             maxData = 0,
