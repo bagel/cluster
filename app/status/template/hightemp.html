@@ -2,28 +2,55 @@
 
 {% head %}
 <script type="text/javascript" src="/static/highcharts/js/highcharts.js"></script>
+<script>
+$(document).ready(function () {
+    $("#makeChartsMulti").click(function () {
+        var urls = document.getElementById("urls").value.split('\n');
+        var chartsHtml = "";
+    
+        $.each(urls, function(n, url) {
+            var id = "url_id" + n;
+            chartsHtml += '<div id="' + id + '" style="height: 100%; width: 100%; margin: 0 auto; padding-bottom: 15px;"></div>';
+        });
+    
+        document.getElementById("charts").innerHTML = chartsHtml;
+
+        $.each(urls, function(n, url) {
+            var id = "url_id" + n;
+            chartsTemplate("#" + id);
+            chartsData([url], "#" + id);
+        });
+    });
+
+
+    $("#makeChartsSingle").click(function () {
+        var urls = document.getElementById("urls").value.split('\n');
+        var chartsHtml = '<div id="chartContainer" style="height: 100%; width: 100%; margin: 0 auto; padding-bottom: 15px;"></div>';
+ 
+        document.getElementById("charts").innerHTML = chartsHtml;
+
+        chartsTemplate();
+        chartsData(urls);
+    });
+});
+</script>
 {% end %}
 
 {% content %}
-<div id="charts"></div>
-<script>
-var urls = eval("{$ urls $}"),
-    multi = "{$ multi $}",
-    chartsHtml = "";
-
-if (multi == 1) {
-    $.each(urls, function(n, url) {
-        var id = "url_id" + n;
-        chartsTemplate("#" + id);
-        chartsData([url], "#" + id);
-        chartsHtml += '<div id="' + id + '" style="height: 100%; width: 80%; margin: 0 auto; padding: 15px;"></div>';
-    });
-} else {
-    chartsTemplate();
-    chartsData(urls);
-    chartsHtml = '<div id="chartContainer" style="height: 100%; width: 80%; margin: 0 auto; padding: 15px;"></div>';
-}
-
-document.getElementById("charts").innerHTML = chartsHtml;
-</script>
+<div class="col-lg-1">
+</div>
+<div class="col-lg-10">
+    <legend>统计绘图</legend>
+    <div class="row">
+        <div class="col-lg-8">
+            <textarea class="form-control" rows="2" id="urls", name="urls"></textarea>
+        </div>
+    </div>
+    <br>
+    <button id="makeChartsSingle" class="btn btn-primary">单图</button>
+    <button id="makeChartsMulti" class="btn btn-primary">多图</button>
+    <br>
+    <br>
+    <div id="charts"></div>
+</div>
 {% end %}
