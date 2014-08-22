@@ -71,29 +71,19 @@ class High(object):
     @web.response
     def testData(self):
         ctype = "application/json"
-        keys = ["card.weibo.com_/page/profile/mobilesquare.json", "card.weibo.com_/page/profile/index.json", "card.weibo.com_/component/task/ProfileTasks.json"]
-        keys = ['card.weibo.com_/page/search/tip.json',
-                'card.weibo.com_/component/task/ProfileTasks.json',
-                'card.weibo.com_/component/task/hometasks.json',
-                'card.weibo.com_/component/task/AppProfileTask.json',
-                'card.weibo.com_/page/suggestion/tip.json',
-                'card.weibo.com_/page/suggestion/postbox.json',
-                'card.weibo.com_/page/statuses/update.json',
-                'card.weibo.com_/component/task/TrendTask.json',
-                'card.weibo.com_/page/subject/main.json',
-                'card.weibo.com_/page/profile/index.json',
-                'card.weibo.com_/page/profile/mobilesquare.json',
-                'card.weibo.com_/page/suggestion/postboxhot.json'
-        ]
-
-        chartdata = {"title": "card.weibo.com", "data": []}
-        for key in keys:
-            url = key.split('_')[1]
-            data =  self.r.hgetall(key)
-            data_keys = [ int(dk) for dk in data.iterkeys() ]
-            data_keys.sort()
-            values = [ [str(k), data[str(k)]] for k in data_keys ]
-            chartdata["data"].append({url: values})
+        url = self.quri
+        chartdata = {"title": url, "data": []}
+        for i in xrange(1, 4):
+            day_y = time.strftime("%Y%m%d", time.localtime(time.time() - 86400 * i))
+            url_y = "%s_%s" % (url, day_y)
+            key = "card.weibo.com_%s" % url
+            key_y = "%s_%s" % (day_y, key)
+            data_y =  eval(self.r.get(key_y))[2:-2]
+            data_y_new = []
+            for d in data_y:
+                d[0] = str(int(d[0]) + 86400 * (i - 1))
+                data_y_new.append(d)
+            chartdata["data"].append({day_y: data_y_new})
         response_body = json.JSONEncoder().encode(chartdata)
         return (ctype, response_body)
 
