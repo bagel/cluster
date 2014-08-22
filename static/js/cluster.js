@@ -95,3 +95,241 @@ function postJSON(postUrl, postData) {
     });
 }
 
+function chartsTemplate(chartid, yAxis){
+    if (!chartid) {
+        chartid = "#chartContainer";
+    }
+    if (!yAxis) {
+        yAxis = "hits/s";
+    }
+ 
+
+    $(function () {
+        $(document).ready(function() {
+            Highcharts.theme = {
+               colors: ['#058DC7', '#50B432', '#ED561B', '#DDDF00', '#24CBE5', '#64E572', '#FF9655', '#FFF263', '#6AF9C4'],
+               chart: {
+                  backgroundColor: {
+                     linearGradient: { x1: 0, y1: 0, x2: 1, y2: 1 },
+                     stops: [
+                        [0, 'rgb(255, 255, 255)'],
+                        [1, 'rgb(240, 240, 255)']
+                     ]
+                  },
+                  borderColor: '#e3e3e3',
+                  borderWidth: 2,
+                  plotBackgroundColor: 'rgba(255, 255, 255, .9)',
+                  plotShadow: true,
+                  plotBorderWidth: 1
+               },
+               title: {
+                  style: {
+                     color: '#000',
+                     font: '14px "Trebuchet MS", Verdana, sans-serif'
+                  }
+               },
+               subtitle: {
+                  style: {
+                     color: '#666666',
+                     font: 'bold 12px "Trebuchet MS", Verdana, sans-serif'
+                  }
+               },
+               xAxis: {
+                  gridLineWidth: 1,
+                  lineColor: '#000',
+                  tickColor: '#000',
+                  labels: {
+                     style: {
+                        color: '#000',
+                        font: '11px Trebuchet MS, Verdana, sans-serif'
+                     }
+                  },
+                  title: {
+                     style: {
+                        color: '#333',
+                        fontWeight: 'bold',
+                        fontSize: '12px',
+                        fontFamily: 'Trebuchet MS, Verdana, sans-serif'
+            
+                     }
+                  }
+               },
+               yAxis: {
+                  //minorTickInterval: 'auto',
+                  lineColor: '#000',
+                  lineWidth: 1,
+                  tickWidth: 1,
+                  tickColor: '#000',
+                  labels: {
+                     style: {
+                        color: '#000',
+                        font: '11px Trebuchet MS, Verdana, sans-serif'
+                     }
+                  },
+                  title: {
+                     style: {
+                        color: '#333',
+                        fontWeight: 'bold',
+                        fontSize: '12px',
+                        fontFamily: 'Trebuchet MS, Verdana, sans-serif'
+                     }
+                  }
+               },
+               legend: {
+                  itemStyle: {
+                     font: '9pt Trebuchet MS, Verdana, sans-serif',
+                     color: 'black'
+            
+                  },
+                  itemHoverStyle: {
+                     color: '#039'
+                  },
+                  itemHiddenStyle: {
+                     color: 'gray'
+                  }
+               },
+               labels: {
+                  style: {
+                     color: '#99b'
+                  }
+               },
+            
+               navigation: {
+                  buttonOptions: {
+                     theme: {
+                        stroke: '#CCCCCC'
+                     }
+                  }
+               }
+            };
+    
+            Highcharts.setOptions({
+                global: {
+                    useUTC: false
+                }
+            });
+    
+            Highcharts.setOptions(Highcharts.theme);
+
+    
+            $(chartid).highcharts({
+                chart: {
+                    type: "spline",
+                    plotBorderWidth: 0,
+                },
+                title: {
+                    text: "null",
+                },
+                xAxis: {
+                    type: "datetime",
+                    tickPixelInterval: 150,
+                    dateTimeLabelFormats: {
+                        day: "%m/%d %H:%M",
+                    }
+                },
+                yAxis: {
+                    title: {
+                        text: yAxis,
+                    },
+                    min: -2,
+                    startOnTick: false
+                },
+                credits: {
+                    enabled: false,
+                    text: ''
+                },
+                plotOptions: {
+                    spline: {
+                        /*events: {
+                            legendItemClick: function() {
+                                location.href = "http://" + location.hostname + "/status";
+                            }
+                        },*/
+                        marker: {
+                            enabled: false
+                        },
+                        states: {
+                            hover: {
+                                enabled: true
+                            }
+                        }
+                    },
+                    series: {
+                        cursor: "pointer",
+                        turboThreshold: 3000,  //最大点数
+                        /*events: {
+                            click: function() {
+                                location.href = "http://" + location.hostname + "/mon/data";
+                            }
+                        }*/
+                    },
+                },
+                tooltip: {
+                    formatter: function() {
+                        return '<b>' + Highcharts.dateFormat('%m/%d %H:%M', this.x) + 
+                               '</b><br/>' + this.series.name + ': ' +
+                               Highcharts.numberFormat(this.y, 0);
+                    }
+                },
+                series: [],
+            });
+    
+        });
+    });
+}
+
+
+function chartsData(urls, chartid) {
+    if(!chartid) {
+        chartid = "#chartContainer";
+    }
+
+    $.each(urls, function(n, url) {
+        var tail = "_url" + n;
+        if (urls.length == 1) {
+            tail = "";
+        }
+        $.getJSON(url, function(data) {
+            var chart = $(chartid).highcharts();
+            /* while (chart.series.length > 0) {
+                chart.series[0].remove(true);
+            }
+            chart.counters.color = 0;
+            chart.counters.symbol = 0; */
+            var title = data["title"],
+                datas = data["data"],
+                sumDatas = {};
+            for (var i in datas) {
+                $.each(datas[i], function(xAxis, values) {
+                    var maxData = 0,
+                        maxDate = "",
+                        sumData = 0; 
+                    chart.addSeries({
+                        name: xAxis + tail,
+                        data: (function() {
+                            var data = [];
+                            for (var j in values) {
+                                var k = parseInt(values[j][0]),
+                                    v = parseInt(values[j][1]);
+                                if (maxData < v) {
+                                    maxDate = k;
+                                    maxData = v;
+                                }
+                                data.push({
+                                    x: k * 1000,
+                                    y: (v ? parseInt(v) : 0) / 60
+                                });
+                                sumData += parseInt(v);
+                            }
+                            return data;
+                        })()
+                    });
+                    sumDatas[xAxis] = {"maxData": numberFix(maxData / 60, 2), "maxDate": dateFormat(maxDate), "sumData": sumData};
+                });
+            }
+            chart.setTitle({"text": title});
+            chart.redraw();
+        });
+    });
+
+}
