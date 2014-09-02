@@ -283,8 +283,7 @@ function chartsData(urls, chartid, maxTitle, single) {
         single = 0;
     }
 
-    var chart = $(chartid).highcharts(),
-        title = "",
+    var title = "",
         mark = "|";
 
     if (single == 0) {
@@ -297,6 +296,7 @@ function chartsData(urls, chartid, maxTitle, single) {
             tail = "";
         }
         $.getJSON(url, function(data) {
+            var chart = $(chartid).highcharts();
             if (single == 0) {
                 while (chart.series.length > 0) {
                     chart.series[0].remove(true);
@@ -337,9 +337,10 @@ function chartsData(urls, chartid, maxTitle, single) {
                     maxDate = dateFormat(maxDate);
                     maxDate = maxDate[3] + ':' + maxDate[4];
                     sumDatas[xAxis] = {"maxData": numberFix(maxData / 60, 2), "maxDate": maxDate, "sumData": numberFix(sumData, 2)};
-                    title += data["title"] + mark;
                     if (maxTitle) {
-                        title += [title, sumDatas[xAxis]["maxData"], sumDatas[xAxis]["maxDate"], sumDatas[xAxis]["sumData"]].join(' ') + mark;
+                        title += [data["title"], sumDatas[xAxis]["maxData"], sumDatas[xAxis]["maxDate"], sumDatas[xAxis]["sumData"]].join(' ') + mark;
+                    } else {
+                        title += data["title"] + mark;
                     }
                     var title0 = 0;
                     if (title.substr(-1) == "|") {
@@ -350,9 +351,9 @@ function chartsData(urls, chartid, maxTitle, single) {
                     if (title0 == 1) {
                         title += "|";
                     }
+                    chart.redraw();
                 });
             }
         });
     });
-    chart.redraw();
 }
