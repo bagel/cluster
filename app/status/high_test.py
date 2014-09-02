@@ -78,6 +78,7 @@ class High(object):
             url_y = "%s_%s" % (url, day_y)
             key = "card.weibo.com_%s" % url
             key_y = "%s_%s" % (day_y, key)
+            print key_y
             data_y =  eval(self.r.get(key_y))[2:-2]
             data_y_new = []
             for d in data_y:

@@ -61,10 +61,16 @@ class High(object):
         domain = '_'.join([ v for v in [self.qdomain, self.quri, self.qrtime] \
                             if v ])
         print domain
-        keys = [ pipe.hget('-'.join([str(start+i*offset), qkey]), \
-                           domain) for i in xrange(num + 1) ]
+        keys = [ str(start+i*offset) for i in xrange(num + 1) ]
+        [ pipe.hget('-'.join([key, qkey]), domain) for key in keys ]
         values = pipe.execute()
-        chartdata = [offset, start, [{self.qdate: values}]]
+        datas = [ (keys[i], values[i]) for i in xrange(num + 1) ]
+        rtime_title = ''
+        if self.qrtime:
+            rtime_title = self.qrtime.replace('_', '~') + 's'
+        title = ' '.join([ v for v in [self.qidc, self.qmod, \
+                           self.qdomain, self.quri, rtime_title] if v ]),
+        chartdata = {"title": title, "data": [{self.qdate: datas}]}
         response_body = json.JSONEncoder().encode(chartdata)
         return (ctype, response_body)
 
@@ -83,10 +89,6 @@ class High(object):
         else:
             domain_status = {}
 
-        rtime_title = ''
-        if self.qrtime:
-            rtime_title = self.qrtime.replace('_', '~') + 's'
-
         tdict = {
             "query_string": self.environ["QUERY_STRING"],
             "qdomain": self.query.get("domain", [""])[0],
@@ -98,8 +100,6 @@ class High(object):
             "idc": self.r_info.hgetall("info_idc"),
             "mod": self.r_info.hgetall("info_mod"),
             "dates": dates,
-            "title": ' '.join([ v for v in [self.qidc, self.qmod, \
-                                self.qdomain, self.quri, rtime_title] if v ]),
             "domain_status": domain_status,
             "domain_uri_rtime": json.dumps(domain_status.get("uri_rtime", {})),
         }

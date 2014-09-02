@@ -8,10 +8,10 @@ import util2 as util
 
 def urlData():
     r = redis.StrictRedis(host=util.localenv("REDIS_STATUS_TEST_HOST"), port=int(util.localenv("REDIS_STATUS_TEST_PORT")))
-    datadir = os.path.join(util.localenv("DATA_DIR"), "hive")
     day = time.strftime("%Y%m%d")
     yday = time.strftime("%Y%m%d", time.localtime(time.time() - 86400))
-    hivefile = os.path.join(datadir, "card_weibo_url_hits_%s/hive_card_weibo_url_hits_%s010000" % (day, day))
+    hivedir = os.path.join(util.localenv("DATA_DIR"), "hive/card_weibo_url_hits_%s" % day)
+    hivefile = os.path.join(hivedir, os.listdir(hivedir)[0])
     regex_url = re.compile('([^\s]+)\s+(\d+)\s+(\d+)')
     fp = open(hivefile, "r")
     data = {}

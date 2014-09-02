@@ -95,14 +95,10 @@ function postJSON(postUrl, postData) {
     });
 }
 
-function chartsTemplate(chartid, yAxis){
+function chartsTemplate(chartid){
     if (!chartid) {
         chartid = "#chartContainer";
     }
-    if (!yAxis) {
-        yAxis = "hits/s";
-    }
- 
 
     $(function () {
         $(document).ready(function() {
@@ -229,7 +225,7 @@ function chartsTemplate(chartid, yAxis){
                 },
                 yAxis: {
                     title: {
-                        text: yAxis,
+                        text: "hits/s",
                     },
                     min: -2,
                     startOnTick: false
@@ -279,9 +275,20 @@ function chartsTemplate(chartid, yAxis){
 }
 
 
-function chartsData(urls, chartid) {
-    if(!chartid) {
+function chartsData(urls, chartid, maxTitle, single) {
+    if (!chartid) {
         chartid = "#chartContainer";
+    }
+    if (!single) {
+        single = 0;
+    }
+
+    var chart = $(chartid).highcharts(),
+        title = "",
+        mark = "|";
+
+    if (single == 0) {
+        var mark = "";
     }
 
     $.each(urls, function(n, url) {
@@ -290,14 +297,14 @@ function chartsData(urls, chartid) {
             tail = "";
         }
         $.getJSON(url, function(data) {
-            var chart = $(chartid).highcharts();
-            /* while (chart.series.length > 0) {
-                chart.series[0].remove(true);
+            if (single == 0) {
+                while (chart.series.length > 0) {
+                    chart.series[0].remove(true);
+                }
+                chart.counters.color = 0;
+                chart.counters.symbol = 0;
             }
-            chart.counters.color = 0;
-            chart.counters.symbol = 0; */
-            var title = data["title"],
-                datas = data["data"],
+            var datas = data["data"],
                 sumDatas = {};
             for (var i in datas) {
                 $.each(datas[i], function(xAxis, values) {
@@ -319,17 +326,33 @@ function chartsData(urls, chartid) {
                                     x: k * 1000,
                                     y: (v ? parseInt(v) : 0) / 60
                                 });
+                                if (! v) {
+                                    v = 0;
+                                }
                                 sumData += parseInt(v);
                             }
                             return data;
                         })()
                     });
-                    sumDatas[xAxis] = {"maxData": numberFix(maxData / 60, 2), "maxDate": dateFormat(maxDate), "sumData": sumData};
+                    maxDate = dateFormat(maxDate);
+                    maxDate = maxDate[3] + ':' + maxDate[4];
+                    sumDatas[xAxis] = {"maxData": numberFix(maxData / 60, 2), "maxDate": maxDate, "sumData": numberFix(sumData, 2)};
+                    title += data["title"] + mark;
+                    if (maxTitle) {
+                        title += [title, sumDatas[xAxis]["maxData"], sumDatas[xAxis]["maxDate"], sumDatas[xAxis]["sumData"]].join(' ') + mark;
+                    }
+                    var title0 = 0;
+                    if (title.substr(-1) == "|") {
+                        title = title.slice(0, -1);
+                        title0 = 1;
+                    }
+                    chart.setTitle({"text": title});
+                    if (title0 == 1) {
+                        title += "|";
+                    }
                 });
             }
-            chart.setTitle({"text": title});
-            chart.redraw();
         });
     });
-
+    chart.redraw();
 }

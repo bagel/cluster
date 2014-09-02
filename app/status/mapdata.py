@@ -13,7 +13,8 @@ def mapData():
     r = redis.StrictRedis(host=util.localenv("REDIS_MAP_HOST"), port=int(util.localenv("REDIS_MAP_PORT")))
     datadir = os.path.join(util.localenv("DATA_DIR"), "hive")
     day = time.strftime("%Y%m%d")
-    hivefile = os.path.join(datadir, 'dpool_access_hits_%s/hive_dpool_access_hits_%s010000' % (day, day))
+    hivedir = os.path.join(datadir, "dpool_access_hits_%s" % day)
+    hivefile = os.path.join(hivedir, os.listdir(hivedir)[0])
     fp = open(hivefile, "r")
     regex = re.compile('([\w\.\-]+)\s+([^\s]+)\s+([^\s]+)\s+([^\s]+)\s+([A-Z]+)\s+(\d+)')
     mapdata = {}

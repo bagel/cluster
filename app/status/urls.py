@@ -21,7 +21,7 @@ route = {
     "/status/custom/domainstatusdel": ("app/status/custom", "Custom.delStatus"),
     "/status/highmap$": ("app/status/highmap", "HighMap.response"),
     "/status/highmap/data": ("app/status/highmap", "HighMap.mapData"),
-    "/status/template$": ("app/status/hightemp", "HighTemp.response"),
+    "/status/charts$": ("app/status/hightemp", "HighTemp.response"),
     "/status/high_test/testdata$": ("app/status/high_test", "High.testData"),
 }
 

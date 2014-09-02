@@ -18,7 +18,6 @@ class HighTemp(object):
         self.r = redis.StrictRedis(host=web.getenv("REDIS_STATUS_TEST_HOST"), \
                                    port=int(web.getenv("REDIS_STATUS_TEST_PORT")))
         self.urls = self.query.get("url", [""])
-        self.multi = self.query.get("multi", ["0"])[0]
 
     @web.response
     @web.util.tracefunc
@@ -26,7 +25,6 @@ class HighTemp(object):
         self.urls = [ urllib2.unquote(url) for url in self.urls ]
         tdict = {
             "urls": self.urls,
-            "multi": self.multi
         }
         return (self.ctype, web.template(self.environ, "hightemp.html", tdict))
 
