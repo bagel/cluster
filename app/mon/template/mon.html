@@ -3,277 +3,20 @@
 {% head %}
 <script type="text/javascript" src="/static/highcharts/js/highcharts.js"></script>
 <script>
-$(function () {
-    var codes = [];
-    var ws = new WebSocket("ws://" + location.hostname + "/mon/ws/data?domain={$ channel $}");
-    ws.onmessage = function(e) {
-        if (!e.data) {
-            return;
-        }
-        var jsonData = JSON.parse(e.data);
-        var chart = $("#chartContainer").highcharts();
-        var x = (new Date()).getTime();
-        var len = codes.length;
-        for (var i=0; i < len; i++) {
-            var ydata = jsonData[codes[i]] ? jsonData[codes[i]] : 0
-            chart.series[i].addPoint([x, parseInt(ydata)], false, true);
-        }
-        for (var key in jsonData) {
-            if (codes.indexOf(key) != -1) {
-                continue;
-            }
-            codes.push(key);
-            chart.addSeries({
-                name: key,
-                data: (function() {
-                    var data = [],
-                        time = (new Date()).getTime(),
-                        j,
-                        ydata = null;
-    
-                    for (j = -59; j <= 0; j++) {
-                        if (j == 0) {
-                            ydata = parseInt(jsonData[key]);
-                        }
-                        data.push({
-                            x: time + j * 1000,
-                            y: ydata
-                        });
-                    }
-                    return data;
-                })()
-            });
-        }
-        chart.redraw();
-    };
+var wsurl = "ws://" + location.hostname + "/mon/ws/data?domain={$ channel $}";
+chartsTemplate();
+chartsWsData(wsurl, "", "5xx监控");
 
-    ws.onerror = function(e) {
-        alert("Error: " + e);
-    };
-
-    ws.onclose = function(e) {
-        alert("Disconnected");
-    };
-
-    $(document).ready(function() {
-        Highcharts.theme = {
-           colors: ['#058DC7', '#50B432', '#ED561B', '#DDDF00', '#24CBE5', '#64E572', '#FF9655', '#FFF263', '#6AF9C4'],
-           chart: {
-              backgroundColor: {
-                 linearGradient: { x1: 0, y1: 0, x2: 1, y2: 1 },
-                 stops: [
-                    [0, 'rgb(255, 255, 255)'],
-                    [1, 'rgb(240, 240, 255)']
-                 ]
-              },
-              borderColor: '#e3e3e3',
-              borderWidth: 2,
-              plotBackgroundColor: 'rgba(255, 255, 255, .9)',
-              plotShadow: true,
-              plotBorderWidth: 1
-           },
-           title: {
-              style: {
-                 color: '#000',
-                 font: 'bold 16px "Trebuchet MS", Verdana, sans-serif'
-              }
-           },
-           subtitle: {
-              style: {
-                 color: '#666666',
-                 font: 'bold 12px "Trebuchet MS", Verdana, sans-serif'
-              }
-           },
-           xAxis: {
-              gridLineWidth: 1,
-              lineColor: '#000',
-              tickColor: '#000',
-              labels: {
-                 style: {
-                    color: '#000',
-                    font: '11px Trebuchet MS, Verdana, sans-serif'
-                 }
-              },
-              title: {
-                 style: {
-                    color: '#333',
-                    fontWeight: 'bold',
-                    fontSize: '12px',
-                    fontFamily: 'Trebuchet MS, Verdana, sans-serif'
-        
-                 }
-              }
-           },
-           yAxis: {
-              minorTickInterval: 'auto',
-              lineColor: '#000',
-              lineWidth: 1,
-              tickWidth: 1,
-              tickColor: '#000',
-              labels: {
-                 style: {
-                    color: '#000',
-                    font: '11px Trebuchet MS, Verdana, sans-serif'
-                 }
-              },
-              title: {
-                 style: {
-                    color: '#333',
-                    fontWeight: 'bold',
-                    fontSize: '12px',
-                    fontFamily: 'Trebuchet MS, Verdana, sans-serif'
-                 }
-              }
-           },
-           legend: {
-              itemStyle: {
-                 font: '9pt Trebuchet MS, Verdana, sans-serif',
-                 color: 'black'
-        
-              },
-              itemHoverStyle: {
-                 color: '#039'
-              },
-              itemHiddenStyle: {
-                 color: 'gray'
-              }
-           },
-           labels: {
-              style: {
-                 color: '#99b'
-              }
-           },
-        
-           navigation: {
-              buttonOptions: {
-                 theme: {
-                    stroke: '#CCCCCC'
-                 }
-              }
-           }
-        };
-
-        Highcharts.setOptions({
-            global: {
-                useUTC: false
-            }
-        });
-
-        Highcharts.setOptions(Highcharts.theme);
-
-        var url = "/mon/data";
-        var chart;
-        $("#chartContainer").highcharts({
-            chart: {
-                type: "spline",
-                plotBorderWidth: 0,
-            },
-            title: {
-                text: "{$ title $} 5xx监控"
-            },
-            xAxis: {
-                type: "datetime",
-                tickPixelInterval: 150
-            },
-            yAxis: {
-                title: {
-                    text: "hit/s",
-                },
-                min: -2,
-                startOnTick: false
-            },
-            credits: {
-                enabled: false,
-                text: ''
-            },
-            plotOptions: {
-                spline: {
-                    /*events: {
-                        legendItemClick: function() {
-                            location.href = "http://" + location.hostname + "/status";
-                        }
-                    },*/
-                    marker: {
-                        enabled: false
-                    },
-                    states: {
-                        hover: {
-                            enabled: true
-                        }
-                    }
-                },
-                series: {
-                    cursor: "pointer",
-                    /*events: {
-                        click: function() {
-                            location.href = "http://" + location.hostname + "/mon/data";
-                        }
-                    }*/
-                },
-            },
-            tooltip: {
-                formatter: function() {
-                    return '<b>' + this.series.name + '</b><br>' + 
-                    Highcharts.dateFormat('%Y/%m/%d %H:%M:%S', this.x) + '<br/>' + 
-                    Highcharts.numberFormat(this.y, 0);
-                }
-            },
-            series: []
-        });
-    });
-});
-
-function dateFormat(t) {
-    var d = new Date(parseInt(t) * 1000);
-    var year = d.getFullYear(),
-        month = d.getMonth() + 1 < 10 ? '0' + (d.getMonth() + 1) : (d.getMonth() + 1),
-        day = d.getDate() < 10 ? '0' + d.getDate() : d.getDate(),
-        hour = d.getHours() < 10 ? '0' + d.getHours() : d.getHours(),
-        minute = d.getMinutes() < 10 ? '0' + d.getMinutes() : d.getMinutes(),
-        second = d.getSeconds() < 10 ? '0' + d.getSeconds() : d.getSeconds();
-    return year + '/' + month + '/' + day + ' ' + hour + ':' + minute + ':' + second;
+function dateNewFormat(t) {
+    var d = dateFormat(t);
+    return d[0] + '/' + d[1] + '/' + d[2] + ' ' + d[3] + ':' + d[4] + ':' + d[5];
 }
 
 function accesspage(s) {
-    var url = "/mon/accesscount?domain={$ channel $}";
-    $.getJSON(url, function(jsonData) {
-        var pagehtml = "";
-        count = jsonData["count"];
-        if ( count % 50 != 0 ) {
-            var pageMax = Math.floor(count / 50 + 1);
-        } else {
-            var pageMax = count / 50;
-        }
-        if (!s) {
-            s = 1;
-        }
-        if (s == 1) {
-            if ( pageMax != 0 ) {
-                pagehtml += '<li class="disabled"><a>1</a></li>';
-            }
-        } else {
-            pagehtml += '<li><a onclick=accesslog(' + (s - 1) + ')>&laquo;</a></li>';
-            pagehtml += '<li><a onclick=accesslog(1)>1</a></li>';
-            if ( s != 2 ) {
-                pagehtml += '<li class="disabled"><a>...</a></li>';
-            }
-        }
-        if ( s != 1 && s != pageMax) {
-            pagehtml += '<li class="disabled"><a>' + s + '</a></li>';
-        }
-        if ( pageMax > 1) {
-            if ( s == pageMax ) {
-                pagehtml += '<li class="disabled"><a>' + pageMax + '</a></li>';
-            } else {
-                if ( s != (pageMax - 1) ) {
-                    pagehtml += '<li class="disabled"><a>...</a></li>';
-                }
-                pagehtml += '<li><a onclick=accesslog(' + pageMax + ')>' + pageMax + '</a></li>';
-                pagehtml += '<li><a onclick=accesslog(' + (s + 1) + ')>&raquo;</a></li>';
-            }
-        }
-        document.getElementById("accesspage").innerHTML = pagehtml;
-    });
+    var url = "/mon/accesscount?domain={$ channel $}",
+        num = 50,
+        id = "accesspage";
+    page(s, url, num, id, "accesslog");
 }
 
 function accesslog(s) {
@@ -290,7 +33,7 @@ function accesslog(s) {
             var len = lineNew.length - 1;
             for (var i=0; i<len; i++) {
                 if ( i == 0) {
-                    accesshtml += '<td>' + dateFormat(lineNew[i]) + '</td>';
+                    accesshtml += '<td>' + dateNewFormat(lineNew[i]) + '</td>';
                     continue;
                 }
                 if ( i == len - 2) {
@@ -309,45 +52,10 @@ function accesslog(s) {
 }
 
 function errorpage(s) {
-    var url = "/mon/errorcount?domain={$ channel $}";
-    $.getJSON(url, function(jsonData) {
-        var pagehtml = "";
-        count = jsonData["count"];
-        if ( count % 50 != 0 ) {
-            var pageMax = Math.floor(count / 50 + 1);
-        } else {
-            var pageMax = count / 50;
-        }
-        if (!s) {
-            s = 1;
-        }
-        if (s == 1) {
-            if ( pageMax != 0 ) {
-                pagehtml += '<li class="disabled"><a>1</a></li>';
-            }
-        } else {
-            pagehtml += '<li><a onclick=errorlog(' + (s - 1) + ')>&laquo;</a></li>';
-            pagehtml += '<li><a onclick=errorlog(1)>1</a></li>';
-            if ( s != 2 ) {
-                pagehtml += '<li class="disabled"><a>...</a></li>';
-            }
-        }
-        if ( s != 1 && s != pageMax) {
-            pagehtml += '<li class="disabled"><a>' + s + '</a></li>';
-        }
-        if ( pageMax > 1 ) {
-            if ( s == pageMax ) {
-                pagehtml += '<li class="disabled"><a>' + pageMax + '</a></li>';
-            } else {
-                if ( s != (pageMax - 1) ) {
-                    pagehtml += '<li class="disabled"><a>...</a></li>';
-                }
-                pagehtml += '<li><a onclick=errorlog(' + pageMax + ')>' + pageMax + '</a></li>';
-                pagehtml += '<li><a onclick=errorlog(' + (s + 1) + ')>&raquo;</a></li>';
-            }
-        }
-        document.getElementById("errorpage").innerHTML = pagehtml;
-    });
+    var url = "/mon/errorcount?domain={$ channel $}",
+        num = 50,
+        id = "errorpage";
+    page(s, url, num, id, "errorlog");
 }
 
 function errorlog(s) {
@@ -363,7 +71,7 @@ function errorlog(s) {
             errorhtml += '<tr>'
             for (var i=1; i<lineNew.length; i++) {
                 if (i == 1) {
-                    errorhtml += '<td>' + dateFormat(lineNew[i]) + '</td>';
+                    errorhtml += '<td>' + dateNewFormat(lineNew[i]) + '</td>';
                     continue;
                 } else if (i < 5) {
                     errorhtml += '<td>' + lineNew[i] + '</td>'

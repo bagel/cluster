@@ -11,7 +11,7 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.header import Header
-import util
+import util2 as util
 
 
 class AutoMail:
@@ -20,22 +20,6 @@ class AutoMail:
         self.r_info = redis.StrictRedis(util.localenv("REDIS_INFO_HOST"), util.localenv("REDIS_INFO_PORT"))
         self.dptitle = '【动态平台自动报警】'
 
-    def topHits(self, day):
-        data = json.loads(urllib2.urlopen('http://api.dpool.cluster.sina.com.cn/status/sum?time=%s' % day).read()).items()
-        data_new = []
-        for k, v in data:
-            for kn, vn in data_new:
-                if int(v) >= int(vn):
-                    data_new.insert(data_new.index((kn, vn)), (k, v))
-                    break
-            if (k, v) not in data_new:
-                data_new.append((k, v))
-        return data_new[:100]
-    
-    def topYestoday(self):
-        day = time.strftime("%Y%m%d" , time.localtime(time.time() - 86400))
-        return topHits(day)
-    
     def domainMail(self, domain, fmin, to, cc):
         title = '%s 访问出现5xx错误' % domain
         subject = self.dptitle + title
@@ -77,7 +61,7 @@ class AutoMail:
             if n == 1:
                 return 0
             msg += '<br>null'
-        msg += '<br><br>更多日志及实时监控请访问 <a href="http://admin.dpool.cluster.sina.com.cn/mon?channel=%s">http://admin.dpool.cluster.sina.com.cn/mon?domain=%s</a>' % (domain, domain)
+        msg += '<br><br>更多日志及实时监控请访问 <a href="http://admin.dpool.cluster.sina.com.cn/mon?domain=%s">http://admin.dpool.cluster.sina.com.cn/mon?domain=%s</a>' % (domain, domain)
         self.mail(subject, msg, to, cc)
 
     def codeMail(self):
@@ -102,7 +86,7 @@ class AutoMail:
             self.domainMail(domain, fmin, to, cc)
         
     
-    def mail(self, subject, message, to, cc):
+    def mail(self, subject, message, to=[], cc=[]):
         fr = "dpool_auto@staff.sina.com.cn"
         
         msg = MIMEMultipart('alternative')

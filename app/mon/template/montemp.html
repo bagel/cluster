@@ -1,0 +1,33 @@
+{# base.html #}
+
+{% head %}
+<script type="text/javascript" src="/static/highcharts/js/highcharts.js"></script>
+<script>
+$(document).ready(function () {
+    $("#makeCharts").click(function () {
+        var wsurl = document.getElementById("urls").value.trim();
+        var chartsHtml = '<div id="chartContainer" style="height: 100%; width: 100%; margin: 0 auto; padding-bottom: 15px;"></div>';
+        document.getElementById("charts").innerHTML = chartsHtml;
+        chartsTemplate();
+        chartsWsData(wsurl, "", "{$ title $}");
+    });
+});
+</script>
+{% end %}
+
+{% content %}
+<div class="col-lg-1"></div>
+<div class="col-lg-10">
+    <legend>实时曲线</legend>
+    <div class="row">
+        <div class="col-lg-8">
+            <textarea class="form-control" rows="2" id="urls", name="urls"></textarea>
+        </div>
+    </div>
+    <br>
+    <button id="makeCharts" class="btn btn-primary">查看</button>
+    <br>
+    <br>
+    <div id="charts"></div>
+</div>
+{% end %}

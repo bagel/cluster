@@ -12,6 +12,7 @@ route = {
     "/mon/errorlog": ("app/mon/monMain", "Mon.LogError"),
     "/mon/accesscount": ("app/mon/monMain", "Mon.LogAccessCount"),
     "/mon/errorcount": ("app/mon/monMain", "Mon.LogErrorCount"),
+    "/mon/charts": ("app/mon/monMain", "Mon.responseTemp"),
 }
 
 def urls(environ):

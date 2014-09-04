@@ -130,4 +130,8 @@ class Mon:
         else:
             title = self.channel
         return (self.ctype, web.template(self.environ, "mon.html", {"channel": self.channel, "title": title}))
+
+    @web.response
+    def responseTemp(self):
+        return (self.ctype, web.template(self.environ, "montemp.html", {"title": "test"}))
  
