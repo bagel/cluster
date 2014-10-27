@@ -12,7 +12,7 @@ conf.json
 
 	{
 	    "name": "php-fpm.ini",
-	    "path": "/usr/local/sinadata/php-fpm/php-fpm.ini",
+	    "path": "/usr/local/exmapledata/php-fpm/php-fpm.ini",
 	    "owner": "root:root",
 	    "perm": "0644",
 	    "type": "file",
